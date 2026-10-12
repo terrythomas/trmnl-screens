@@ -18,17 +18,23 @@
           "number": 1,
           "title": "Low Tide"
         },
-        "progress": null,
         "last_viewed": "2026-06-29",
-        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNISGAAIwAKKQJBD4VzQAAAAABJRU5ErkJggg=="
+        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNISGAAIwAKKQJBD4VzQAAAAABJRU5ErkJggg==",
+        "state": "new",
+        "duration_min": 52,
+        "remaining_min": null,
+        "progress": null
       },
       {
         "kind": "movie",
         "title": "A Quiet Orbit",
         "episode": null,
-        "progress": 42,
         "last_viewed": "2026-08-14",
-        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNYsIABjAAQ6QPBkkCNHgAAAABJRU5ErkJggg=="
+        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNYsIABjAAQ6QPBkkCNHgAAAABJRU5ErkJggg==",
+        "state": "in_progress",
+        "duration_min": 118,
+        "remaining_min": 68,
+        "progress": 42
       },
       {
         "kind": "episode",
@@ -38,9 +44,12 @@
           "number": 6,
           "title": "The Long Way Round"
         },
-        "progress": 12,
         "last_viewed": "2026-09-30",
-        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mO4cIEBjAAV+QThjhhm9AAAAABJRU5ErkJggg=="
+        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mO4cIEBjAAV+QThjhhm9AAAAABJRU5ErkJggg==",
+        "state": "in_progress",
+        "duration_min": 44,
+        "remaining_min": 39,
+        "progress": 12
       }
     ]
   },
@@ -54,7 +63,11 @@
         "title": "Lanterns",
         "air_time": "2026-10-12T09:00:00-04:00",
         "aired": true,
-        "grabbed": true
+        "grabbed": true,
+        "number_end": null,
+        "runtime_min": 30,
+        "milestone": "season_finale",
+        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNISGAAIwAKKQJBD4VzQAAAAABJRU5ErkJggg=="
       },
       {
         "series": "Field Notes",
@@ -63,7 +76,11 @@
         "title": "Migration",
         "air_time": "2026-10-12T21:00:00-04:00",
         "aired": false,
-        "grabbed": false
+        "grabbed": false,
+        "number_end": null,
+        "runtime_min": 58,
+        "milestone": null,
+        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNYsIABjAAQ6QPBkkCNHgAAAABJRU5ErkJggg=="
       }
     ]
   },
@@ -75,14 +92,16 @@
         "year": 2026,
         "kind": "theatrical",
         "grabbed": false,
-        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNoaGAAIwANiQMB6UHnOwAAAABJRU5ErkJggg=="
+        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNoaGAAIwANiQMB6UHnOwAAAABJRU5ErkJggg==",
+        "runtime_min": 112
       },
       {
         "title": "The Glass Orchard",
         "year": 2025,
         "kind": "digital",
         "grabbed": false,
-        "poster": null
+        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mO4cIEBjAAV+QThjhhm9AAAAABJRU5ErkJggg==",
+        "runtime_min": 97
       }
     ]
   }

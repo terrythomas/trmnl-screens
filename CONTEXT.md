@@ -32,7 +32,7 @@ _Avoid_: On Deck, queue, playlist
 Where a Continue Watching item stands for the viewer. One of **New**, **In progress** or **Next**, shown in that order.
 
 **New**:
-An unstarted item that opens something: the first episode of a season (a season premiere), the first appearance of a show the viewer has never watched, or an unstarted movie.
+An unstarted item that brings something new to the viewer: an unstarted movie, a show the viewer has never watched, or the first episode of a season of a show the viewer has not watched for 30 days or more.
 _Avoid_: Unwatched, fresh
 
 **In progress**:
@@ -40,7 +40,7 @@ An item the viewer has started and not finished. Shown with how much time is lef
 _Avoid_: Partially watched, resume
 
 **Next**:
-The next unstarted episode of a season the viewer is partway through.
+Any other unstarted episode: the next episode of a show the viewer is watching, including the first episode of the following season when binge-watching.
 _Avoid_: Up next, on deck
 
 **Neglect order**:
@@ -52,6 +52,13 @@ _Avoid_: Today's episodes, calendar
 
 **Airing window**:
 The 24-hour span from 12 hours before to 12 hours after the moment the collector runs.
+
+**Also waiting**:
+The Continue Watching items beyond the first six, listed as text below the posters.
+
+**Milestone**:
+An Airing episode that opens or closes something: a series premiere, season premiere, midseason finale, season finale or series finale.
+_Avoid_: Special, event
 
 **Grabbed**:
 Whether the file for an episode or movie is already on the server.
