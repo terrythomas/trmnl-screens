@@ -1,0 +1,130 @@
+<title>What to Watch Layouts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a review bench. Controls on top, the device in the middle, notes on the chosen layout beside it. */
+:root {
+  --bg: #eceae6; --panel: #f7f6f3; --ink: #1d1c1a; --muted: #6b6862; --line: #cfccc5;
+  --accent: #2f5d50; --accent-ink: #ffffff; --bezel: #2a2927; --warn: #8a4b1a;
+  --ui: "Atkinson Hyperlegible", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #151514; --panel: #1f1e1c; --ink: #ecebe7; --muted: #a29f98; --line: #3a3835;
+  --accent: #7fb5a3; --accent-ink: #10201b; --bezel: #0b0b0a; --warn: #e0a06a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #151514; --panel: #1f1e1c; --ink: #ecebe7; --muted: #a29f98; --line: #3a3835;
+  --accent: #7fb5a3; --accent-ink: #10201b; --bezel: #0b0b0a; --warn: #e0a06a; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--ui); font-size: 15px; padding-inline: 16px; padding-block: 20px 40px; }
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 18px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+h1 { font-size: 1.5rem; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); }
+.controls { display: grid; gap: 10px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row > .lbl { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); width: 5.5rem; }
+button { font: inherit; color: var(--ink); background: var(--panel); border: 2px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+button:hover { border-color: var(--ink); }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.fx { font-family: var(--mono); font-size: .82rem; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+@media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+.device { background: var(--bezel); border-radius: 22px; padding: 18px; box-shadow: 0 10px 30px rgb(0 0 0 / .18); }
+.device img { display: block; width: 100%; height: auto; aspect-ratio: 1872 / 1404; border-radius: 6px; background: #fff; }
+.compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 900px) { .compare { grid-template-columns: 1fr; } }
+.compare figure { margin: 0; display: grid; gap: 6px; }
+.compare .device { padding: 8px; border-radius: 12px; }
+.compare figcaption { font-weight: 700; }
+.notes { background: var(--panel); border: 2px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.notes h2 { margin: 0; font-size: 1.15rem; }
+.notes h3 { margin: 0; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.notes ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 4px; line-height: 1.4; }
+.weak li::marker { color: var(--warn); }
+.keys { font-size: .8rem; color: var(--muted); }
+kbd { font-family: var(--mono); font-size: .75rem; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; background: var(--panel); }
+.meta { font-family: var(--mono); font-size: .78rem; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>What to Watch layouts</h1>
+    <span class="sub">TRMNL X, 1872×1404 at 4-bit, rendered by LaraPaper. Titles are invented; posters are real.</span>
+  </header>
+
+  <div class="controls">
+    <div class="row" id="variantRow"><span class="lbl">Layout</span></div>
+    <div class="row" id="fixtureRow"><span class="lbl">Fixture</span></div>
+    <div class="row"><span class="lbl">View</span>
+      <button id="modeOne" aria-pressed="true">One layout</button>
+      <button id="modeAll" aria-pressed="false">B2 and B4 side by side</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="stage"></div>
+    <aside class="notes" id="notes"></aside>
+  </div>
+  <p class="keys"><kbd>←</kbd> <kbd>→</kbd> change layout · <kbd>↑</kbd> <kbd>↓</kbd> change fixture · <kbd>c</kbd> toggle side by side</p>
+</div>
+
+<script>
+const VARIANTS = [
+  { key: "b2_shelf_generic_icons", name: "B2 · Shelf + text line",
+    bet: "Up to six posters. Items seven to twelve are listed as text in three columns, each with its state; past twelve, a count.",
+    good: ["Posters stay big at every count", "Order: NEW, then in progress, then NEXT", "NEW covers a season's first episode, a show's first appearance, and unstarted movies"],
+    weak: ["Items past six lose their poster and progress bar (time left is shown as text)", "At four items, two poster slots sit empty"] },
+  { key: "b4_shelf_then_tiles", name: "B4 · Shelf, then tiles past six",
+    bet: "Same as B2 up to six. From seven to twelve, Continue Watching switches to a 3-column grid of small posters with full details.",
+    good: ["All twelve items keep a poster, tag, runtime and progress bar", "Airing goes to two columns to make room"],
+    weak: ["Small posters are harder to recognise from across a room", "The screen changes shape when you cross six items"] },
+];
+const FIXTURES = [
+  ["cw-04", "4 in Continue Watching"], ["cw-06", "6"], ["cw-08", "8"], ["cw-10", "10"], ["cw-12", "12"], ["full", "Everything present"], ["cw-many", "12 sent of 14"], ["cw-one", "1 in Continue Watching"],
+  ["no-continue-watching", "No Continue Watching"], ["no-airing", "No Airing"], ["no-releasing-today", "No Releasing Today"],
+  ["all-empty", "All empty"], ["stale-error", "Sonarr down: stale + banner"], ["long-titles", "Long titles"], ["airing-many", "7 airing, incl. season drop"],
+];
+let v = 0, f = 0, all = false;
+try { const s = JSON.parse(localStorage.getItem("wtw-state-4") || "{}"); v = s.v ?? 0; f = s.f ?? 0; all = !!s.all; } catch {}
+const src = (vi, fi) => `img/${VARIANTS[vi].key}__${FIXTURES[fi][0]}.png`;
+
+function buttons(row, items, cls, onPick) {
+  items.forEach((label, i) => { const b = document.createElement("button"); b.textContent = label; if (cls) b.className = cls;
+    b.addEventListener("click", () => onPick(i)); row.append(b); });
+}
+buttons(document.getElementById("variantRow"), VARIANTS.map(x => x.name), "", i => { v = i; all = false; render(); });
+buttons(document.getElementById("fixtureRow"), FIXTURES.map(x => x[1]), "fx", i => { f = i; render(); });
+document.getElementById("modeOne").onclick = () => { all = false; render(); };
+document.getElementById("modeAll").onclick = () => { all = true; render(); };
+
+function render() {
+  document.querySelectorAll("#variantRow button").forEach((b, i) => b.setAttribute("aria-pressed", String(!all && i === v)));
+  document.querySelectorAll("#fixtureRow button").forEach((b, i) => b.setAttribute("aria-pressed", String(i === f)));
+  document.getElementById("modeOne").setAttribute("aria-pressed", String(!all));
+  document.getElementById("modeAll").setAttribute("aria-pressed", String(all));
+  const stage = document.getElementById("stage");
+  if (all) {
+    stage.innerHTML = `<div class="compare">${VARIANTS.slice(0, 2).map((x, i) =>
+      `<figure><figcaption>${x.name}</figcaption><div class="device"><img src="${src(i, f)}" alt="${x.name} with fixture: ${FIXTURES[f][1]}"></div></figure>`).join("")}</div>`;
+  } else {
+    stage.innerHTML = `<div class="device"><img src="${src(v, f)}" alt="${VARIANTS[v].name} with fixture: ${FIXTURES[f][1]}"></div>`;
+  }
+  const x = VARIANTS[all ? v : v];
+  document.getElementById("notes").innerHTML = all
+    ? `<h2>Comparing B2 and B4</h2><p class="sub">Fixture: ${FIXTURES[f][1]}. Pick a layout above to read its notes.</p><p class="meta">${FIXTURES[f][0]}.json</p>`
+    : `<h2>${x.name}</h2><p>${x.bet}</p>${x.good.length ? `<h3>Works well</h3><ul>${x.good.map(g => `<li>${g}</li>`).join("")}</ul>` : ""}
+       ${x.weak.length ? `<h3>Decide or watch for</h3><ul class="weak">${x.weak.map(g => `<li>${g}</li>`).join("")}</ul>` : ""}<p class="meta">${x.key}.liquid · ${FIXTURES[f][0]}.json</p>`;
+  try { localStorage.setItem("wtw-state-4", JSON.stringify({ v, f, all })); } catch {}
+}
+document.addEventListener("keydown", e => {
+  if (e.target.closest("input, textarea, [contenteditable]")) return;
+  if (e.key === "ArrowRight") { v = (v + 1) % VARIANTS.length; all = false; }
+  else if (e.key === "ArrowLeft") { v = (v + VARIANTS.length - 1) % VARIANTS.length; all = false; }
+  else if (e.key === "ArrowDown") f = (f + 1) % FIXTURES.length;
+  else if (e.key === "ArrowUp") f = (f + FIXTURES.length - 1) % FIXTURES.length;
+  else if (e.key === "c") all = !all;
+  else return;
+  e.preventDefault(); render();
+});
+render();
+</script>
