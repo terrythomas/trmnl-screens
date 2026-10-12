@@ -1,0 +1,9 @@
+#!/bin/sh
+# Load fixture data into a running `trmnlp serve` the way LaraPaper's webhook receives it.
+#   scripts/preview-data <screen> [fixture.json]   (default: sample.json; port 4567, or $PORT)
+set -eu
+screen=${1:?usage: scripts/preview-data <screen> [fixture.json]}
+fixture="screens/$screen/fixtures/${2:-sample.json}"
+python3 -c 'import json,sys; json.dump({"merge_variables": json.load(open(sys.argv[1]))}, sys.stdout)' "$fixture" |
+  curl -sf -X POST -H 'Content-Type: application/json' --data-binary @- "http://localhost:${PORT:-4567}/webhook" >/dev/null
+echo "loaded $fixture"

@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""Deploy a screen's template to LaraPaper, then push fresh data to it.
+
+    scripts/deploy <screen>
+
+Uploads screens/<screen>/src/* to LaraPaper's archive API
+(docs/research/larapaper-deploy.md). An upload clears the plugin's webhook
+data, so the screen's collector runs once afterwards.
+
+Needs LARAPAPER_URL and LARAPAPER_API_TOKEN, plus <SCREEN>_PLUGIN_ID once the
+plugin exists. Without a plugin ID, the plugin is created and its ID printed.
+"""
+
+import io
+import os
+import subprocess
+import sys
+import zipfile
+from pathlib import Path
+
+import httpx
+from dotenv import load_dotenv
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def main(screen: str) -> int:
+    src = ROOT / "screens" / screen / "src"
+    if not src.is_dir():
+        sys.exit(f"no such screen: {src.relative_to(ROOT)}")
+
+    load_dotenv(ROOT / ".env")
+    base = os.environ["LARAPAPER_URL"].rstrip("/")
+    api = httpx.Client(
+        base_url=f"{base}/api",
+        headers={"Authorization": f"Bearer {os.environ['LARAPAPER_API_TOKEN']}", "Accept": "application/json"},
+        timeout=60,
+    )
+    id_key = f"{screen.upper()}_PLUGIN_ID"
+    plugin_id = os.environ.get(id_key)
+    created = not plugin_id
+    if created:
+        plugin_id = api.post("/plugin_settings").raise_for_status().json()["data"]["id"]
+
+    api.post(
+        f"/plugin_settings/{plugin_id}/archive",
+        files={"file": ("plugin.zip", _zip(src), "application/zip")},
+    ).raise_for_status()
+    print(f"deployed {screen}")
+
+    webhook_key = f"{screen.upper()}_WEBHOOK_UUID"
+    if created or not os.environ.get(webhook_key):
+        print(
+            f"\nFirst deploy. Add to .env:\n  {id_key}={plugin_id}\n"
+            f"Then copy the webhook UUID from the plugin's page in LaraPaper into {webhook_key},\n"
+            "add the plugin to a device playlist, and deploy again."
+        )
+        return 0
+
+    # The upload wiped the stored data; refill it now rather than at the next tick.
+    return subprocess.call([sys.executable, "-m", "collector", "--once", "--screen", screen], cwd=ROOT)
+
+
+def _zip(src: Path) -> bytes:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for path in sorted(src.iterdir()):
+            if path.is_file():
+                zf.write(path, path.name)  # flat: LaraPaper expects files at the zip root
+    return buf.getvalue()
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        sys.exit(__doc__)
+    sys.exit(main(sys.argv[1]))
