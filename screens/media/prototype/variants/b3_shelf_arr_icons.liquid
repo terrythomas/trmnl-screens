@@ -66,11 +66,11 @@ icon_style: "generic" (TV / film) or "arr" (Sonarr / Radarr style marks).
   <div style="min-width:0">
     <div class="wtw-poster">
       {% if i.poster %}<img src="{{ i.poster }}" alt="">{% else %}<div class="wtw-fallback"><span class="title title--small">{{ i.title }}</span></div>{% endif %}
-      {% if i.progress %}
+      {% if i.state == "in_progress" and i.progress %}
         <div class="wtw-progress"><div class="fill" style="width:{{ i.progress }}%"></div>
           <div class="txt">{% if i.remaining_min >= 60 %}{{ i.remaining_min | divided_by: 60 }}h {{ i.remaining_min | modulo: 60 }}m{% else %}{{ i.remaining_min }}m{% endif %} left</div></div>
-      {% elsif i.last_viewed %}<span class="wtw-tag">NEXT</span>
-      {% else %}<span class="wtw-tag">NEW</span>{% endif %}
+      {% elsif i.state == "new" %}<span class="wtw-tag">NEW</span>
+      {% else %}<span class="wtw-tag">NEXT</span>{% endif %}
     </div>
     <div class="wtw-cap">
       <span class="wtw-name" style="font-size:{{ fs }}px">{% if i.kind == "movie" %}{{ icon_film }}{% else %}{{ icon_tv }}{% endif %}<span>{{ i.title }}</span></span>

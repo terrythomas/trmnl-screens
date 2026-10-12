@@ -14,29 +14,41 @@ def poster(n, size):
 
 
 NOW = "2026-10-12T19:30:00-04:00"
-CW = [  # neglect order: least recently watched first; the first item has never been touched
-    ("episode", "The Lighthouse Keepers", (4, 1, "Low Tide"), None, None, 52),
-    ("movie", "A Quiet Orbit", None, 42, "2026-05-02", 118),
-    ("episode", "Copper Valley", (2, 6, "The Long Way Round"), 12, "2026-06-29", 44),
-    ("episode", "Night Market", (1, 4, "Paper Lanterns"), None, "2026-07-18", 30),
-    ("movie", "Salt and Iron", None, 77, "2026-08-14", 131),
-    ("episode", "Field Notes", (3, 2, "Migration"), None, "2026-09-03", 58),
-    ("episode", "The Understudy", (1, 9, "Second Act"), 55, "2026-09-30", 26),
-    ("episode", "Harbour Lights", (5, 11, "Fog Warning"), None, "2026-10-09", 47),
-    ("movie", "Low Orbit Lullaby", None, None, None, 96),
-    ("episode", "Tin Roof", (2, 2, "Downpour"), 30, "2026-10-10", 22),
+# kind, title, (season, number, episode title), progress, last_viewed, duration, state
+# state is decided by the collector: "new" (unstarted episode 1, first appearance of a show, or unstarted movie),
+# "in_progress" (has a view offset), "next" (next unwatched episode mid-season).
+CW = [
+    ("episode", "The Lighthouse Keepers", (4, 1, "Low Tide"), None, None, 52, "new"),
+    ("movie", "A Quiet Orbit", None, 42, "2026-05-02", 118, "in_progress"),
+    ("episode", "Copper Valley", (2, 6, "The Long Way Round"), 12, "2026-06-29", 44, "in_progress"),
+    ("episode", "Night Market", (1, 4, "Paper Lanterns"), None, "2026-07-18", 30, "next"),
+    ("movie", "Salt and Iron", None, 77, "2026-08-14", 131, "in_progress"),
+    ("episode", "Field Notes", (3, 2, "Migration"), None, "2026-09-03", 58, "next"),
+    ("episode", "The Understudy", (1, 9, "Second Act"), 55, "2026-09-30", 26, "in_progress"),
+    ("episode", "Harbour Lights", (5, 11, "Fog Warning"), None, "2026-10-09", 47, "next"),
+    ("movie", "Low Orbit Lullaby", None, None, None, 96, "new"),
+    ("episode", "Tin Roof", (2, 2, "Downpour"), None, "2026-10-10", 22, "next"),
+    ("episode", "Quiz Night", (26, 1, "Opening Round"), None, None, 47, "new"),
+    ("episode", "Glasshouse", (1, 5, "Panes"), None, "2026-10-11", 41, "next"),
 ]
+STATE_ORDER = {"new": 0, "in_progress": 1, "next": 2}
 
 
-def cw_item(i, kind, title, ep, progress, last, duration):
+def cw_item(i, kind, title, ep, progress, last, duration, state):
     return {
-        "kind": kind, "title": title,
+        "kind": kind, "title": title, "state": state,
         "episode": {"season": ep[0], "number": ep[1], "title": ep[2]} if ep else None,
         "progress": progress, "last_viewed": last,
         "duration_min": duration,
         "remaining_min": round(duration * (100 - progress) / 100) if progress else None,
         "poster": poster(i, "thumb"),
     }
+
+
+def cw_items(n):
+    # NEW, then in progress, then NEXT; neglect order (least recently watched first) within each group.
+    picked = [cw_item(i, *CW[i]) for i in range(n)]
+    return sorted(picked, key=lambda it: (STATE_ORDER[it["state"]], it["last_viewed"] or ""))
 
 
 AIRING = [  # series, season, number, number_end, title, air_time, aired, grabbed, runtime
@@ -61,8 +73,7 @@ def full(cw_count=6, total=6, airing=AIRING):
     return {
         "updated_at": NOW,
         "errors": [],
-        "continue_watching": {"stale": False, "total": total,
-                              "items": [cw_item(i, *CW[i]) for i in range(min(cw_count, len(CW)))]},
+        "continue_watching": {"stale": False, "total": total, "items": cw_items(min(cw_count, len(CW)))},
         "airing": {"stale": False, "items": [dict(zip(AIR_KEYS, a)) for a in airing]},
         "releasing_today": {"stale": False, "items": [
             {"title": t, "year": y, "kind": k, "grabbed": g, "runtime_min": r, "poster": poster(10 + i, "thumb")}
@@ -89,6 +100,8 @@ def variants():
     d["releasing_today"]["items"][0]["title"] = "Paper Boats and the Impossible Voyage Across the Northern Sea"
     v["long-titles"] = d
     v["cw-one"] = full(cw_count=1, total=1)
-    v["cw-many"] = full(cw_count=10, total=14)
+    v["cw-many"] = full(cw_count=12, total=14)
+    for n in (4, 6, 8, 10, 12):
+        v[f"cw-{n:02d}"] = full(cw_count=n, total=n)
     v["airing-many"] = full(airing=sorted(AIRING + AIRING_EXTRA, key=lambda a: a[5]))
     return v
