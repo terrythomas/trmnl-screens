@@ -51,22 +51,24 @@ def cw_items(n):
     return sorted(picked, key=lambda it: (STATE_ORDER[it["state"]], it["last_viewed"] or ""))
 
 
-AIRING = [  # series, season, number, number_end, title, air_time, aired, grabbed, runtime
-    ("Night Market", 2, 7, None, "Lanterns", "2026-10-12T09:00:00-04:00", True, True, 30),
-    ("Field Notes", 1, 3, None, "Into the Marsh", "2026-10-12T13:00:00-04:00", True, False, 58),
-    ("Copper Valley", 3, 1, None, "Homecoming", "2026-10-12T21:00:00-04:00", False, False, 44),
-    ("The Understudy", 2, 4, None, "Opening Night", "2026-10-12T22:30:00-04:00", False, False, 26),
+# series, season, number, number_end, title, air_time, aired, grabbed, runtime, milestone
+# milestone (from the collector): series_premiere | season_premiere | midseason_finale | season_finale | series_finale | None
+AIRING = [
+    ("Night Market", 2, 7, None, "Lanterns", "2026-10-12T09:00:00-04:00", True, True, 30, "season_finale"),
+    ("Field Notes", 1, 3, None, "Into the Marsh", "2026-10-12T13:00:00-04:00", True, False, 58, None),
+    ("Copper Valley", 3, 1, None, "Homecoming", "2026-10-12T21:00:00-04:00", False, False, 44, "season_premiere"),
+    ("The Understudy", 2, 4, None, "Opening Night", "2026-10-12T22:30:00-04:00", False, False, 26, None),
 ]
 AIRING_EXTRA = [  # pushes Airing past four rows, including a whole-season drop
-    ("Glasshouse", 1, 1, 10, "Full season", "2026-10-12T03:00:00-04:00", True, True, 41),
-    ("Harbour Lights", 6, 2, None, "Slack Water", "2026-10-12T20:00:00-04:00", False, False, 47),
-    ("Tin Roof", 3, 5, None, "Gutters", "2026-10-12T23:00:00-04:00", False, False, 22),
+    ("Glasshouse", 1, 1, 10, "Full season", "2026-10-12T03:00:00-04:00", True, True, 41, "series_premiere"),
+    ("Harbour Lights", 6, 2, None, "Slack Water", "2026-10-12T20:00:00-04:00", False, False, 47, None),
+    ("Tin Roof", 3, 5, None, "Gutters", "2026-10-12T23:00:00-04:00", False, False, 22, "series_finale"),
 ]
 RELEASING = [  # title, year, kind, grabbed, runtime
     ("Paper Boats", 2026, "theatrical", False, 112),
     ("The Glass Orchard", 2025, "digital", False, 97),
 ]
-AIR_KEYS = ["series", "season", "number", "number_end", "title", "air_time", "aired", "grabbed", "runtime_min"]
+AIR_KEYS = ["series", "season", "number", "number_end", "title", "air_time", "aired", "grabbed", "runtime_min", "milestone"]
 
 
 def full(cw_count=6, total=6, airing=AIRING):
