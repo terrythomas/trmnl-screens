@@ -15,49 +15,58 @@ def poster(n, size):
 
 NOW = "2026-10-12T19:30:00-04:00"
 CW = [  # neglect order: least recently watched first; the first item has never been touched
-    ("episode", "The Lighthouse Keepers", (4, 1, "Low Tide"), None, None),
-    ("movie", "A Quiet Orbit", None, 42, "2026-05-02"),
-    ("episode", "Copper Valley", (2, 6, "The Long Way Round"), 12, "2026-06-29"),
-    ("episode", "Night Market", (1, 4, "Paper Lanterns"), None, "2026-07-18"),
-    ("movie", "Salt and Iron", None, 77, "2026-08-14"),
-    ("episode", "Field Notes", (3, 2, "Migration"), None, "2026-09-03"),
-    ("episode", "The Understudy", (1, 9, "Second Act"), 55, "2026-09-30"),
-    ("episode", "Harbour Lights", (5, 11, "Fog Warning"), None, "2026-10-09"),
+    ("episode", "The Lighthouse Keepers", (4, 1, "Low Tide"), None, None, 52),
+    ("movie", "A Quiet Orbit", None, 42, "2026-05-02", 118),
+    ("episode", "Copper Valley", (2, 6, "The Long Way Round"), 12, "2026-06-29", 44),
+    ("episode", "Night Market", (1, 4, "Paper Lanterns"), None, "2026-07-18", 30),
+    ("movie", "Salt and Iron", None, 77, "2026-08-14", 131),
+    ("episode", "Field Notes", (3, 2, "Migration"), None, "2026-09-03", 58),
+    ("episode", "The Understudy", (1, 9, "Second Act"), 55, "2026-09-30", 26),
+    ("episode", "Harbour Lights", (5, 11, "Fog Warning"), None, "2026-10-09", 47),
+    ("movie", "Low Orbit Lullaby", None, None, None, 96),
+    ("episode", "Tin Roof", (2, 2, "Downpour"), 30, "2026-10-10", 22),
 ]
 
 
-def cw_item(i, kind, title, ep, progress, last):
+def cw_item(i, kind, title, ep, progress, last, duration):
     return {
         "kind": kind, "title": title,
         "episode": {"season": ep[0], "number": ep[1], "title": ep[2]} if ep else None,
         "progress": progress, "last_viewed": last,
-        "poster": poster(i, "hero" if i == 0 else "thumb"),
+        "duration_min": duration,
+        "remaining_min": round(duration * (100 - progress) / 100) if progress else None,
+        "poster": poster(i, "thumb"),
     }
 
 
-AIRING = [
-    ("Night Market", 2, 7, "Lanterns", "2026-10-12T09:00:00-04:00", True, True),
-    ("Field Notes", 1, 3, "Into the Marsh", "2026-10-12T13:00:00-04:00", True, False),
-    ("Copper Valley", 3, 1, "Homecoming", "2026-10-12T21:00:00-04:00", False, False),
-    ("The Understudy", 2, 4, "Opening Night", "2026-10-12T22:30:00-04:00", False, False),
+AIRING = [  # series, season, number, number_end, title, air_time, aired, grabbed, runtime
+    ("Night Market", 2, 7, None, "Lanterns", "2026-10-12T09:00:00-04:00", True, True, 30),
+    ("Field Notes", 1, 3, None, "Into the Marsh", "2026-10-12T13:00:00-04:00", True, False, 58),
+    ("Copper Valley", 3, 1, None, "Homecoming", "2026-10-12T21:00:00-04:00", False, False, 44),
+    ("The Understudy", 2, 4, None, "Opening Night", "2026-10-12T22:30:00-04:00", False, False, 26),
 ]
-RELEASING = [
-    ("Paper Boats", 2026, "theatrical", False),
-    ("The Glass Orchard", 2025, "digital", False),
+AIRING_EXTRA = [  # pushes Airing past four rows, including a whole-season drop
+    ("Glasshouse", 1, 1, 10, "Full season", "2026-10-12T03:00:00-04:00", True, True, 41),
+    ("Harbour Lights", 6, 2, None, "Slack Water", "2026-10-12T20:00:00-04:00", False, False, 47),
+    ("Tin Roof", 3, 5, None, "Gutters", "2026-10-12T23:00:00-04:00", False, False, 22),
 ]
+RELEASING = [  # title, year, kind, grabbed, runtime
+    ("Paper Boats", 2026, "theatrical", False, 112),
+    ("The Glass Orchard", 2025, "digital", False, 97),
+]
+AIR_KEYS = ["series", "season", "number", "number_end", "title", "air_time", "aired", "grabbed", "runtime_min"]
 
 
-def full(cw_count=8, total=8):
+def full(cw_count=6, total=6, airing=AIRING):
     return {
         "updated_at": NOW,
         "errors": [],
         "continue_watching": {"stale": False, "total": total,
                               "items": [cw_item(i, *CW[i]) for i in range(min(cw_count, len(CW)))]},
-        "airing": {"stale": False, "items": [
-            dict(zip(["series", "season", "number", "title", "air_time", "aired", "grabbed"], a)) for a in AIRING]},
+        "airing": {"stale": False, "items": [dict(zip(AIR_KEYS, a)) for a in airing]},
         "releasing_today": {"stale": False, "items": [
-            {"title": t, "year": y, "kind": k, "grabbed": g, "poster": poster(10 + i, "thumb")}
-            for i, (t, y, k, g) in enumerate(RELEASING)]},
+            {"title": t, "year": y, "kind": k, "grabbed": g, "runtime_min": r, "poster": poster(10 + i, "thumb")}
+            for i, (t, y, k, g, r) in enumerate(RELEASING)]},
     }
 
 
@@ -80,5 +89,6 @@ def variants():
     d["releasing_today"]["items"][0]["title"] = "Paper Boats and the Impossible Voyage Across the Northern Sea"
     v["long-titles"] = d
     v["cw-one"] = full(cw_count=1, total=1)
-    v["cw-many"] = full(cw_count=8, total=14)
+    v["cw-many"] = full(cw_count=10, total=14)
+    v["airing-many"] = full(airing=sorted(AIRING + AIRING_EXTRA, key=lambda a: a[5]))
     return v
