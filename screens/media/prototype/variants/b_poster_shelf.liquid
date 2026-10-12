@@ -1,0 +1,72 @@
+{%- comment -%} PROTOTYPE variant B: Continue Watching as a poster shelf on top; Airing and Releasing Today side by side below. {%- endcomment -%}
+{% assign now_s = updated_at | date: "%s" | plus: 0 %}
+{% assign cw = continue_watching.items %}{% assign cw_n = cw | size %}
+{% assign air = airing.items %}{% assign air_n = air | size %}
+{% assign rel = releasing_today.items %}{% assign rel_n = rel | size %}
+{% assign err_n = errors | size %}
+<div class="view view--full">
+<div class="layout layout--col" style="align-items:stretch;justify-content:flex-start;gap:20px">
+
+{% if err_n > 0 %}
+<div style="display:flex;gap:12px">{% for e in errors %}<span class="label label--inverted" style="font-size:1.1em">⚠ {{ e.source | capitalize }} down since {{ e.since | date: "%-I:%M %p" }}</span>{% endfor %}</div>
+{% endif %}
+
+{% if cw_n == 0 and air_n == 0 and rel_n == 0 %}
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+  <span class="value value--xxlarge">Nothing waiting</span>
+  <span class="description description--large">Your shelf is empty and nothing airs or releases today.</span>
+</div>
+{% else %}
+
+{% if cw_n > 0 %}
+<div style="display:flex;gap:18px;align-items:flex-end;{% if air_n == 0 and rel_n == 0 %}flex:1{% endif %}">
+  {% for i in cw limit:5 %}
+  {% if forloop.first %}{% assign w = 230 %}{% else %}{% assign w = 140 %}{% endif %}
+  <div style="width:{{ w }}px;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
+    {% if i.poster %}<img src="{{ i.poster }}" style="width:{{ w }}px;height:{{ w | times: 3 | divided_by: 2 }}px;object-fit:cover;border-radius:8px;border:3px solid #000">
+    {% else %}<div style="width:{{ w }}px;height:{{ w | times: 3 | divided_by: 2 }}px;border-radius:8px;border:3px solid #000;display:flex;align-items:center;justify-content:center;padding:8px"><span class="title title--small" style="text-align:center">{{ i.title }}</span></div>{% endif %}
+    <span class="{% if forloop.first %}title{% else %}title title--small{% endif %}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.title }}</span>
+    <span class="label label--small">{% if i.episode %}S{{ i.episode.season }}E{{ i.episode.number }} · {% endif %}{% if i.last_viewed %}{% assign d = i.last_viewed | date: "%s" | plus: 0 %}{{ now_s | minus: d | divided_by: 86400 }}d{% else %}new{% endif %}</span>
+  </div>
+  {% endfor %}
+  {% assign more = continue_watching.total | minus: 5 %}
+  {% if more > 0 %}<div style="width:110px;height:210px;border:3px dashed #000;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:58px"><span class="value value--small">+{{ more }}</span></div>{% endif %}
+</div>
+{% endif %}
+
+{% if air_n > 0 or rel_n > 0 %}
+<div style="display:flex;gap:32px;flex:1;min-height:0;border-top:4px solid #000;padding-top:14px">
+  {% if air_n > 0 %}
+  <div style="flex:3;min-width:0">
+    <span class="title">Airing{% if airing.stale %} <span class="label label--outline">stale</span>{% endif %}</span>
+    <table class="table table--condensed" style="margin-top:6px"><tbody>
+    {% for a in air limit:4 %}
+      <tr>
+        <td style="width:34px"><span style="display:inline-block;width:22px;height:22px;border-radius:50%;border:3px solid #000;{% if a.grabbed %}background:#000{% endif %}"></span></td>
+        <td><span class="title title--small">{{ a.series | truncate: 26 }}</span> <span class="label label--small">S{{ a.season }}E{{ a.number }}</span></td>
+        <td style="text-align:right;white-space:nowrap"><span class="label">{% if a.aired %}{% assign t = a.air_time | date: "%s" | plus: 0 %}{{ now_s | minus: t | divided_by: 3600 }}h ago{% else %}{{ a.air_time | date: "%-I:%M %p" }}{% endif %}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody></table>
+  </div>
+  {% endif %}
+  {% if rel_n > 0 %}
+  <div style="flex:2;min-width:0">
+    <span class="title">Releasing today{% if releasing_today.stale %} <span class="label label--outline">stale</span>{% endif %}</span>
+    {% for r in rel limit:3 %}
+    <div style="margin-top:10px">
+      <span class="title title--small" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.title }}</span>
+      <span class="label label--small">{% if r.kind == "theatrical" %}in theaters{% else %}digital{% endif %} · {{ r.year }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endif %}
+</div>
+<div class="title_bar">
+  <span class="title">What to Watch</span>
+  <span class="instance">updated {{ updated_at | date: "%-I:%M %p" }}</span>
+</div>
+</div>
