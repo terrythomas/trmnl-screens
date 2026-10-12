@@ -39,14 +39,9 @@ Past six items, the rest are listed as text in up to three columns (12 items at 
   .wtw-more + .wtw-band { border-top-width: 0; padding-top: 4px; }
   .wtw-head { display: inline-flex; gap: 10px; align-items: center; font-size: 22px; font-weight: 700; margin-bottom: 6px; background: #000; color: #fff; border-radius: 9px; padding: 3px 14px 4px 10px; }
   .wtw-head .label { background: #fff; color: #000; }
-  .wtw-air { display: grid; column-gap: 28px; }
-  .wtw-row { display: flex; gap: 12px; align-items: center; padding: 7px 0; font-size: 23px; border-bottom: 2px solid #bbb; min-width: 0; }
   /* Row posters replace the grabbed dots; a corner check marks items already downloaded. */
-  .wtw-rowposter { position: relative; flex-shrink: 0; width: 38px; aspect-ratio: 2 / 3; border: 3px solid #000; border-radius: 5px; overflow: hidden; }
   .wtw-rowposter img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .wtw-rowposter .ok { position: absolute; right: 0; bottom: 0; width: 20px; height: 20px; background: #000; color: #fff; border-top-left-radius: 6px; display: flex; align-items: center; justify-content: center; }
-  .wtw-row .t { font-weight: 700; flex: 1; min-width: 0; line-height: 1.15; }
-  .wtw-row .m { white-space: nowrap; font-size: 19px; text-align: right; line-height: 1.2; }
   .wtw-over { border-top: 3px solid #000; padding-top: 8px; display: flex; flex-direction: column; gap: 2px; }
   .wtw-over-item { display: flex; gap: 12px; min-width: 0; align-items: center; }
   .wtw-over-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -58,7 +53,6 @@ Past six items, the rest are listed as text in up to three columns (12 items at 
   /* 3-4 extra: two columns, small poster beside larger text */
   /* 3-6 extra: two columns; small poster, then title and details on one line, text about 3/4 of the poster's height */
   .wtw-over--thumbs .wtw-over-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 44px; padding: 0 12px; }
-  .wtw-over--thumbs .wtw-over-thumb { width: 32px; aspect-ratio: 2 / 3; object-fit: cover; border: 3px solid #000; border-radius: 4px; flex-shrink: 0; }
   .wtw-over--thumbs .wtw-over-txt { flex-direction: row; align-items: baseline; gap: 14px; min-width: 0; }
   .wtw-over--thumbs .wtw-name { font-size: 26px; white-space: nowrap; }
   .wtw-over--thumbs .wtw-sub { font-size: 21px; white-space: nowrap; }
@@ -67,13 +61,21 @@ Past six items, the rest are listed as text in up to three columns (12 items at 
   /* With the "Also waiting" list showing, crop posters a little shorter to leave room below. */
   .wtw-shelf--tight .wtw-poster { aspect-ratio: 3 / 4; }
   .wtw-shelf--tight .wtw-poster img { object-position: top; }
-  .wtw-row .m2 { display: block; font-family: var(--description-font-family); font-weight: 400; font-size: 19px; margin-top: 2px; }
   /* With "Also waiting" showing, tighten the lower band so it still fits. */
-  .wtw-band--tight .wtw-rowposter { width: 30px; }
-  .wtw-band--tight .wtw-row { padding: 4px 0; font-size: 21px; }
-  .wtw-band--tight .wtw-row .m, .wtw-band--tight .wtw-row .m2 { font-size: 17px; }
   .wtw-over--thumbs .wtw-over-grid { row-gap: 4px; }
   .wtw-milestone { display: table; margin-top: 3px; background: #000; color: #fff; font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 8px 2px; border-radius: 5px; }
+  .wtw-over-head { display: flex; align-items: center; gap: 14px; }
+  .wtw-over-head .wtw-head { margin-bottom: 0; }
+  /* Lower band: rows share whatever height is left, and each row sizes its poster and text from its own height. */
+  .wtw-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .wtw-list { flex: 1; min-height: 0; display: grid; column-gap: 28px; margin-top: 6px; }
+  .wtw-row { container-type: size; min-height: 0; min-width: 0; display: flex; gap: 12px; align-items: center; border-bottom: 2px solid #bbb; padding: 3px 0; }
+  .wtw-rowposter { position: relative; flex-shrink: 0; height: 88cqh; max-height: 120px; aspect-ratio: 2 / 3; border: 3px solid #000; border-radius: 5px; overflow: hidden; }
+  .wtw-row .t { font-weight: 700; flex: 1; min-width: 0; line-height: 1.12; font-size: clamp(17px, min(30cqh, 6.4cqw), 34px); overflow-wrap: anywhere; }
+  .wtw-row .t--long { font-size: clamp(15px, min(22cqh, 4.6cqw), 24px); }
+  .wtw-row .m { white-space: nowrap; text-align: right; line-height: 1.2; font-size: clamp(15px, min(21cqh, 4.4cqw), 24px); }
+  .wtw-row .m2 { display: block; font-family: var(--description-font-family); font-weight: 400; margin-top: 2px; font-size: clamp(15px, min(21cqh, 4.4cqw), 24px); }
+  .wtw-milestone { font-size: clamp(12px, min(15cqh, 3.2cqw), 17px) !important; white-space: nowrap; }
 </style>
 
 <div class="view view--full">
@@ -115,11 +117,10 @@ Past six items, the rest are listed as text in up to three columns (12 items at 
 {% assign extra = cw_n | minus: 6 %}{% assign rest = continue_watching.total | minus: cw_n %}
 {% if extra <= 2 %}{% assign omode = "row" %}{% else %}{% assign omode = "thumbs" %}{% endif %}
 <div class="wtw-over wtw-over--{{ omode }}">
-  <div><span class="wtw-head">{{ icon_queue }}<span>Also waiting</span></span>{% if rest > 0 %}<span class="wtw-sub" style="margin-left:12px">and {{ rest }} more not shown</span>{% endif %}</div>
+  <div class="wtw-over-head"><span class="wtw-head">{{ icon_queue }}<span>Also waiting</span></span>{% if rest > 0 %}<span class="wtw-sub">and {{ rest }} more not shown</span>{% endif %}</div>
   <div class="wtw-over-grid">
   {% for i in cw offset:6 limit:6 %}
     <div class="wtw-over-item">
-      {% if omode == "thumbs" and i.poster %}<img class="wtw-over-thumb" src="{{ i.poster }}" alt="">{% endif %}
       <div class="wtw-over-txt">
         <span class="wtw-name">{% if i.kind == "movie" %}{{ icon_film }}{% else %}{{ icon_tv }}{% endif %}<span>{{ i.title }}</span></span>
         <span class="wtw-sub">{% if i.episode %}S{{ i.episode.season }}E{{ i.episode.number }} · {% endif %}{% if i.state == "in_progress" and i.remaining_min %}{% if i.remaining_min >= 60 %}{{ i.remaining_min | divided_by: 60 }}h {{ i.remaining_min | modulo: 60 }}m{% else %}{{ i.remaining_min }}m{% endif %} left{% else %}{% assign m = i.duration_min %}{% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %} · {% if i.state == "new" %}new{% else %}next{% endif %}{% endif %}</span>
@@ -132,16 +133,21 @@ Past six items, the rest are listed as text in up to three columns (12 items at 
 {% endif %}
 
 {% if air_n > 0 or rel_n > 0 %}
-<div class="wtw-band{% if cw_n > 6 %} wtw-band--tight{% endif %}">
+{% assign air_cols = 1 %}{% if air_n > 4 or cw_n > 6 and air_n > 2 %}{% assign air_cols = 2 %}{% endif %}
+{% assign air_shown = air_n %}{% if air_shown > 8 %}{% assign air_shown = 8 %}{% endif %}
+{% assign air_rows = air_shown | plus: air_cols | minus: 1 | divided_by: air_cols %}
+{% assign rel_rows = rel_n %}{% if rel_rows > 3 %}{% assign rel_rows = 3 %}{% endif %}
+{% assign rows = air_rows %}{% if rel_rows > rows %}{% assign rows = rel_rows %}{% endif %}{% if rows < 2 %}{% assign rows = 2 %}{% endif %}
+<div class="wtw-band">
   {% if air_n > 0 %}
-  <div style="flex:{% if air_n > 4 or cw_n > 6 %}5{% else %}3{% endif %};min-width:0">
-    <div class="wtw-head">{{ icon_airing }}<span>Airing today</span>{% if airing.stale %}<span class="label label--outline">stale</span>{% endif %}</div>
-    <div class="wtw-air" style="grid-template-columns:{% if air_n > 4 or cw_n > 6 and air_n > 2 %}1fr 1fr{% else %}1fr{% endif %}">
+  <div class="wtw-col" style="flex:{% if air_cols == 2 %}5{% else %}3{% endif %}">
+    <div><span class="wtw-head">{{ icon_airing }}<span>Airing today</span>{% if airing.stale %}<span class="label label--outline">stale</span>{% endif %}</span></div>
+    <div class="wtw-list" style="grid-template-columns:repeat({{ air_cols }}, minmax(0, 1fr));grid-template-rows:repeat({{ rows }}, minmax(0, 1fr))">
     {% for a in air limit:8 %}
       <div class="wtw-row">
         <span class="wtw-rowposter">{% if a.poster %}<img src="{{ a.poster }}" alt="">{% endif %}{% if a.grabbed %}<span class="ok">{{ icon_check }}</span>{% endif %}</span>
         {% assign slen = a.series | size %}
-        <span class="t"{% if slen > 30 %} style="font-size:0.8em"{% endif %}>{{ a.series }}{% if a.milestone %}<span class="wtw-milestone">{{ a.milestone | replace: "_", " " }}</span>{% endif %}</span>
+        <span class="t{% if slen > 30 %} t--long{% endif %}">{{ a.series }}{% if a.milestone %}<span class="wtw-milestone">{{ a.milestone | replace: "_", " " }}</span>{% endif %}</span>
         <span class="m">S{{ a.season }}E{{ a.number }}{% if a.number_end %}–{{ a.number_end }}{% endif %} · {{ a.runtime_min }}m{% unless a.aired %}<br>airs {{ a.air_time | date: "%-I:%M %p" }}{% endunless %}</span>
       </div>
     {% endfor %}
@@ -149,15 +155,17 @@ Past six items, the rest are listed as text in up to three columns (12 items at 
   </div>
   {% endif %}
   {% if rel_n > 0 %}
-  <div style="flex:2;min-width:0">
-    <div class="wtw-head">{{ icon_releasing }}<span>Releasing today</span>{% if releasing_today.stale %}<span class="label label--outline">stale</span>{% endif %}</div>
+  <div class="wtw-col" style="flex:2">
+    <div><span class="wtw-head">{{ icon_releasing }}<span>Releasing today</span>{% if releasing_today.stale %}<span class="label label--outline">stale</span>{% endif %}</span></div>
+    <div class="wtw-list" style="grid-template-columns:minmax(0, 1fr);grid-template-rows:repeat({{ rows }}, minmax(0, 1fr))">
     {% for r in rel limit:3 %}
-    <div class="wtw-row">
-      <span class="wtw-rowposter">{% if r.poster %}<img src="{{ r.poster }}" alt="">{% endif %}{% if r.grabbed %}<span class="ok">{{ icon_check }}</span>{% endif %}</span>
-      {% assign rlen = r.title | size %}
-      <span class="t"{% if rlen > 30 %} style="font-size:0.8em"{% endif %}>{{ r.title }}<span class="m2">{% if r.kind == "theatrical" %}in theaters{% else %}digital{% endif %} · {% assign m = r.runtime_min %}{% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %}</span></span>
-    </div>
+      <div class="wtw-row">
+        <span class="wtw-rowposter">{% if r.poster %}<img src="{{ r.poster }}" alt="">{% endif %}{% if r.grabbed %}<span class="ok">{{ icon_check }}</span>{% endif %}</span>
+        {% assign rlen = r.title | size %}
+        <span class="t{% if rlen > 30 %} t--long{% endif %}">{{ r.title }}<span class="m2">{% if r.kind == "theatrical" %}in theaters{% else %}digital{% endif %} · {% assign m = r.runtime_min %}{% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %}</span></span>
+      </div>
     {% endfor %}
+    </div>
   </div>
   {% endif %}
 </div>
