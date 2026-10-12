@@ -76,6 +76,9 @@ Past six items, the rest are listed as text in up to three columns (12 items at 
   .wtw-row .m { white-space: nowrap; text-align: right; line-height: 1.2; font-size: clamp(15px, min(21cqh, 4.4cqw), 24px); }
   .wtw-row .m2 { display: block; font-family: var(--description-font-family); font-weight: 400; margin-top: 2px; font-size: clamp(15px, min(21cqh, 4.4cqw), 24px); }
   .wtw-milestone { font-size: clamp(12px, min(15cqh, 3.2cqw), 17px) !important; white-space: nowrap; }
+  /* Shelf captions: the one-line metadata sits directly under the poster so it aligns across all six; titles wrap below it. */
+  .wtw-meta { display: flex; gap: 7px; align-items: center; font-size: 18px; }
+  .wtw-cap .wtw-name { margin-top: 2px; }
 </style>
 
 <div class="view view--full">
@@ -96,7 +99,7 @@ Past six items, the rest are listed as text in up to three columns (12 items at 
 <div class="wtw-shelf{% if cw_n > 6 %} wtw-shelf--tight{% endif %}">
   {% for i in cw limit:6 %}
   {% assign tlen = i.title | size %}
-  {% if tlen > 28 %}{% assign fs = 15 %}{% elsif tlen > 18 %}{% assign fs = 17 %}{% else %}{% assign fs = 20 %}{% endif %}
+  {% if tlen > 50 %}{% assign fs = 15 %}{% elsif tlen > 36 %}{% assign fs = 17 %}{% else %}{% assign fs = 20 %}{% endif %}
   <div style="min-width:0">
     <div class="wtw-poster">
       {% if i.poster %}<img src="{{ i.poster }}" alt="">{% else %}<div class="wtw-fallback"><span class="title title--small">{{ i.title }}</span></div>{% endif %}
@@ -107,8 +110,8 @@ Past six items, the rest are listed as text in up to three columns (12 items at 
       {% else %}<span class="wtw-tag">NEXT</span>{% endif %}
     </div>
     <div class="wtw-cap">
-      <span class="wtw-name" style="font-size:{{ fs }}px">{% if i.kind == "movie" %}{{ icon_film }}{% else %}{{ icon_tv }}{% endif %}<span>{{ i.title }}</span></span>
-      <span class="wtw-sub">{% if i.episode %}S{{ i.episode.season }}E{{ i.episode.number }} · {% endif %}{% assign m = i.duration_min %}{% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %}</span>
+      <span class="wtw-sub wtw-meta">{% if i.kind == "movie" %}{{ icon_film }}{% else %}{{ icon_tv }}{% endif %}<span>{% if i.episode %}S{{ i.episode.season }}E{{ i.episode.number }} · {% endif %}{% assign m = i.duration_min %}{% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %}</span></span>
+      <span class="wtw-name" style="font-size:{{ fs }}px"><span>{{ i.title }}</span></span>
     </div>
   </div>
   {% endfor %}
