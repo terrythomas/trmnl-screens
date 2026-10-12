@@ -35,3 +35,8 @@ previews/
 .vscode/
 .idea/
 .DS_Store
+
+# Prototype artefacts: cached artwork and renders, never committed (see docs/adr/0003)
+screens/media/prototype/out/
+screens/media/prototype/poster-cache/
+screens/media/prototype/standin-posters/
