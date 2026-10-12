@@ -1,0 +1,30 @@
+title = "trmnl-screens"
+
+# Keep every built-in gitleaks rule (API keys, tokens, private keys, ...).
+[extend]
+useDefault = true
+
+# ADR-0003 also treats webhook UUIDs, LAN IPs and private hostnames as secrets.
+# The built-in rules don't catch those, so they need project rules here.
+
+[[rules]]
+id = "uuid"
+description = "Any UUID; LaraPaper webhook UUIDs grant write access to a screen"
+regex = '''(?i)\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b'''
+keywords = ["-"]
+
+[[rules.allowlists]]
+description = "Nil UUID used as a placeholder"
+regexes = ['''^0{8}-0{4}-0{4}-0{4}-0{12}$''']
+
+[[rules]]
+id = "private-ip"
+description = "Private IPv4 address (RFC 1918 or the CGNAT range Tailscale uses)"
+regex = '''\b(?:10\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])|192\.168|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7]))\.\d{1,3}\.\d{1,3}\b'''
+
+[[rules]]
+id = "private-hostname"
+description = "Hostname on a private DNS suffix (.local, .lan, .internal, .home.arpa, .ts.net)"
+# The trailing group stops matches inside file names such as settings.local.json.
+regex = '''(?i)\b(?:[a-z0-9-]+\.)+(?:local|lan|internal|home\.arpa|ts\.net)(?:[:/\s'"]|$)'''
+keywords = [".local", ".lan", ".internal", ".home.arpa", ".ts.net"]
