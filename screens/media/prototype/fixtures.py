@@ -1,13 +1,17 @@
 """PROTOTYPE: fixture variants for the Media screen layout (issue #5). Invented titles; posters from poster-cache/."""
 import base64
+import os
 import copy
 from pathlib import Path
 
-CACHE = Path(__file__).parent / "poster-cache"
+# PROTOTYPE_POSTERS=standin renders with generated stand-in art (safe to publish); default is the local Plex cache.
+CACHE = Path(__file__).parent / ("standin-posters" if os.environ.get("PROTOTYPE_POSTERS") == "standin" else "poster-cache")
 
 
 def poster(n, size):
     path = CACHE / f"{(n % 14) + 1:02d}-{size}.jpg"
+    if not path.exists():
+        path = path.with_suffix(".png")
     if not path.exists():
         return None
     return "data:image/jpeg;base64," + base64.b64encode(path.read_bytes()).decode()

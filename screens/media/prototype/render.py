@@ -7,6 +7,7 @@ saving anything: the What to Watch plugin is loaded, given the variant markup an
 fixture data in memory, and rendered. PNGs land in out/, plus out/index.html.
 """
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -14,7 +15,7 @@ from pathlib import Path
 import fixtures
 
 HERE = Path(__file__).parent
-OUT = HERE / "out"
+OUT = Path(os.environ.get("PROTOTYPE_OUT", HERE / "out"))
 CONTAINER = "larapaper"
 WORK = "/tmp/media-prototype"
 
