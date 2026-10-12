@@ -23,22 +23,27 @@ The primary **Device** is the TRMNL X. The OG renders the same template without 
 
 ### Continue Watching
 - Source: `GET /hubs/continueWatching/items` on the configured server, using the configured account's token.
-- Each item gets an item state: **In progress** when `viewOffset` is present; otherwise **New** for episode 1 of a season, a show with no watched episodes, or a movie; otherwise **Next**.
+- Each item gets an item state:
+  - **In progress** when `viewOffset` is present.
+  - Otherwise **New** for a movie, an episode of a show with no watched episodes, or episode 1 of a season when the show's own `lastViewedAt` is at least `NEW_AFTER_DAYS` (default 30) days ago.
+  - Otherwise **Next**. Binge-watching straight from one season into the next stays Next.
 - Sort by item state (New, In progress, Next), then ascending by `lastViewedAt` within each state. Items with no `lastViewedAt` sort first within their state, since they have never been touched.
-- Item fields: kind (episode/movie), show or movie title, season/episode number and episode title for episodes, in-progress percentage when `viewOffset` is present, last-watched date, poster.
+- Item fields: kind (episode/movie), item state, show or movie title, season/episode number and episode title for episodes, runtime in minutes (`duration`), and for In progress items the percentage watched and minutes left (from `viewOffset`), last-watched date, poster.
 - Poster: the show poster (`grandparentThumb`) for episodes and `thumb` for movies, fetched through Plex's `/photo/:/transcode` with `saturation=0`. All posters are the same size. Encoded as a `data:` URI.
 - The collector sends at most N items (configurable, default 12) plus the total count. The template shows up to six as posters, lists the rest as text, and renders "and N more" for anything not sent.
 
 ### Airing
 - Source: Sonarr `GET /api/v3/calendar` with `start=now-12h`, `end=now+12h`, `includeSeries=true`, filtered to monitored series and monitored episodes.
-- Item fields: series title, SxxEyy, episode title, air time as an absolute local time, past or upcoming, grabbed (`hasFile`).
-- The template shows "aired 3h ago" or "airs 9:00 PM", with filled or hollow markers for grabbed.
+- Item fields: series title, SxxEyy, episode title, air time as an absolute local time, past or upcoming, grabbed (`hasFile`), runtime in minutes, milestone, series poster (same grayscale pipeline as Continue Watching).
+- Several episodes of the same series and season airing at the same time (a whole season dropping at once) collapse into one row with an episode range, e.g. S1E1–10.
+- **Milestone**: `series_finale`, `season_finale` or `midseason_finale` from Sonarr's `finaleType`; otherwise `series_premiere` for S1E1 and `season_premiere` for any other episode 1; otherwise none.
+- The template shows "airs 9:00 PM" for upcoming episodes and no time for aired ones. Grabbed items get a check mark on their poster.
 - Sorted by air time ascending.
 
 ### Releasing Today
 - Source: Radarr `GET /api/v3/calendar` for the local calendar day (timezone from `TZ`).
 - Include a movie if `inCinemas` is today. Also include it if `digitalRelease` is today and `hasFile` is false. Ignore `physicalRelease`.
-- Item fields: title, year, release kind (`theatrical` | `digital`), grabbed, optional poster (from Radarr's images, run through the same grayscale pipeline).
+- Item fields: title, year, release kind (`theatrical` | `digital`), grabbed, runtime in minutes, poster (from Radarr's images, run through the same grayscale pipeline).
 - A movie that qualifies both ways appears once, as theatrical.
 
 ### Empty and failure behaviour
@@ -66,26 +71,34 @@ The single interface between the collector and the template. `fixtures/sample.js
     "total": 14,
     "items": [{
       "kind": "episode",
+      "state": "in_progress",
       "title": "Example Show",
       "episode": { "season": 4, "number": 1, "title": "…" },
-      "progress": null,
+      "duration_min": 52,
+      "progress": 42,
+      "remaining_min": 30,
       "last_viewed": "2026-06-29",
-      "poster": "data:image/png;base64,…"
+      "poster": "data:image/jpeg;base64,…"
     }]
   },
   "airing": {
     "stale": true,
     "items": [{
-      "series": "…", "season": 2, "number": 7, "title": "…",
-      "air_time": "2026-10-12T21:00:00-04:00", "aired": false, "grabbed": false
+      "series": "…", "season": 1, "number": 1, "number_end": 10, "title": "…",
+      "air_time": "2026-10-12T21:00:00-04:00", "aired": false, "grabbed": false,
+      "runtime_min": 44, "milestone": "series_premiere", "poster": "data:…"
     }]
   },
   "releasing_today": {
     "stale": false,
-    "items": [{ "title": "…", "year": 2026, "kind": "theatrical", "grabbed": false, "poster": "data:…" }]
+    "items": [{ "title": "…", "year": 2026, "kind": "theatrical", "grabbed": false, "runtime_min": 112, "poster": "data:…" }]
   }
 }
 ```
+
+- `state` is `new`, `in_progress` or `next`. `progress` and `remaining_min` are null unless the state is `in_progress`.
+- `number_end` is null unless the row covers several episodes. `milestone` is null or one of `series_premiere`, `season_premiere`, `midseason_finale`, `season_finale`, `series_finale`.
+- Posters may be JPEG or PNG `data:` URIs.
 
 Sections that are absent mean empty. The template must treat an absent key and an empty `items` list the same way.
 
@@ -114,16 +127,21 @@ Adding a screen means a new `screens/<name>/` folder plus one webhook entry in `
 
 ## Configuration (`.env`, never committed)
 
-`PLEX_URL`, `PLEX_TOKEN`, `SONARR_URL`, `SONARR_API_KEY`, `RADARR_URL`, `RADARR_API_KEY`, `LARAPAPER_URL`, `MEDIA_WEBHOOK_UUID`, `LARAPAPER_API_TOKEN` (deploy script only), `TZ`, `INTERVAL_MINUTES`.
+`PLEX_URL`, `PLEX_TOKEN`, `SONARR_URL`, `SONARR_API_KEY`, `RADARR_URL`, `RADARR_API_KEY`, `LARAPAPER_URL`, `MEDIA_WEBHOOK_UUID`, `LARAPAPER_API_TOKEN` (deploy script only), `TZ`, `INTERVAL_MINUTES`, `NEW_AFTER_DAYS`.
 
 `.env.example` lists every key with placeholder values. Per [ADR-0003](../adr/0003-public-repo-secrets-policy.md), no IPs, hostnames, tokens or UUIDs appear anywhere in tracked files, including tests, fixtures, docs and commit messages.
 
 ## Design (template)
 
-- **Hybrid poster and type layout** on the X (1040×780 CSS px, 4-bit), with Continue Watching first.
-- Grayscale e-ink constraints apply: high contrast, no thin hairlines or gradients, and legible from across a room.
+Approved in the layout prototype (#5). Screenshots and the prototype template are on the `prototype/media-layout` branch.
+
+- **Continue Watching:** up to six equal posters in one row. In progress items show a progress bar across the poster with the time left printed on it; New and Next items get a corner tag. Under each poster, the one-line details (TV or film icon, SxEy, runtime) come first so they line up across the row; the title wraps below.
+- **Also waiting:** items seven to twelve as text in two left-aligned columns, each with its icon, SxEy and either time left or new/next. Anything the collector did not send is counted as "and N more not shown". When this list shows, shelf posters crop a little shorter.
+- **Airing today** and **Releasing today:** side by side below. Each row has a small poster, the title, and details on the right; Airing rows can carry a milestone label. Airing switches to two columns past four rows, or past two when Also waiting is showing. Rows share the remaining height and size their poster and text to it (CSS container units), so fewer waiting items means larger rows.
+- **Section headers:** white text on a black rounded pill with a TV, film or stack-of-cards icon. Icons are inline SVG, never emoji.
+- Grayscale e-ink constraints apply: high contrast, no hairlines or gradients, legible from across a room. Posters reduce to 16 flat grays rather than dithering, and stay recognisable at shelf size; below roughly 40 CSS px wide they stop being recognisable.
+- **LaraPaper does not wrap the template in `<div class="view view--full">`** (trmnlp and TRMNL's cloud do), so the template must include that wrapper itself for the framework's layout rules to apply.
 - The OG (800×480, 1–2 bit) hides posters through the framework's `md:` and bit-depth classes and becomes a dense typographic list.
-- The layout gets decided in a prototype first. Template tickets depend on it.
 
 ## Testing
 
