@@ -74,7 +74,7 @@ def full(cw_count=6, total=6, airing=AIRING):
         "updated_at": NOW,
         "errors": [],
         "continue_watching": {"stale": False, "total": total, "items": cw_items(min(cw_count, len(CW)))},
-        "airing": {"stale": False, "items": [dict(zip(AIR_KEYS, a)) for a in airing]},
+        "airing": {"stale": False, "items": [dict(zip(AIR_KEYS, a), poster=poster(3 + i, "thumb")) for i, a in enumerate(airing)]},
         "releasing_today": {"stale": False, "items": [
             {"title": t, "year": y, "kind": k, "grabbed": g, "runtime_min": r, "poster": poster(10 + i, "thumb")}
             for i, (t, y, k, g, r) in enumerate(RELEASING)]},
