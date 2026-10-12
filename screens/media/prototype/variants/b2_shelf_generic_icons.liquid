@@ -118,7 +118,7 @@ Past six items, the rest are listed as text in up to three columns (12 items at 
 </div>
 {% if cw_n > 6 %}
 {% assign extra = cw_n | minus: 6 %}{% assign rest = continue_watching.total | minus: cw_n %}
-{% if extra <= 2 %}{% assign omode = "row" %}{% else %}{% assign omode = "thumbs" %}{% endif %}
+{% assign omode = "thumbs" %}
 <div class="wtw-over wtw-over--{{ omode }}">
   <div class="wtw-over-head"><span class="wtw-head">{{ icon_queue }}<span>Also waiting</span></span>{% if rest > 0 %}<span class="wtw-sub">and {{ rest }} more not shown</span>{% endif %}</div>
   <div class="wtw-over-grid">
