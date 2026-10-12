@@ -25,14 +25,26 @@ A physical TRMNL display. The **X** (large, 16 grays) is the primary target; the
 One of the three content groups on the Media screen: Continue Watching, Airing, Releasing Today. A section with no items is removed entirely.
 
 **Continue Watching**:
-The items Plex's home-screen "Continue Watching" row holds for the configured account on the configured Plex server: in-progress items, next-up episodes, and newly available season premieres. Shown as the hero section.
+The items Plex's home-screen "Continue Watching" row holds for the configured account on the configured Plex server: in-progress items, next-up episodes, and newly available season premieres. Shown first on the screen, grouped by item state.
 _Avoid_: On Deck, queue, playlist
 
-**Neglect order**:
-Continue Watching sorted by least-recently watched first, so the item left untouched the longest is the most prominent. Deliberately the reverse of Plex's own ordering.
+**Item state**:
+Where a Continue Watching item stands for the viewer. One of **New**, **In progress** or **Next**, shown in that order.
 
-**Hero**:
-The most visually prominent item on a screen; on the Media screen, the first Continue Watching item in neglect order.
+**New**:
+An unstarted item that opens something: the first episode of a season (a season premiere), the first appearance of a show the viewer has never watched, or an unstarted movie.
+_Avoid_: Unwatched, fresh
+
+**In progress**:
+An item the viewer has started and not finished. Shown with how much time is left.
+_Avoid_: Partially watched, resume
+
+**Next**:
+The next unstarted episode of a season the viewer is partway through.
+_Avoid_: Up next, on deck
+
+**Neglect order**:
+Least-recently watched first, so the item left untouched the longest comes first. Applied within each item state, not across the whole of Continue Watching.
 
 **Airing**:
 Episodes of monitored Sonarr series whose air time falls within the airing window.

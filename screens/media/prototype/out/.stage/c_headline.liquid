@@ -1,0 +1,80 @@
+{%- comment -%} PROTOTYPE variant C: neglect as the headline; one poster; three typographic columns below. {%- endcomment -%}
+{% assign now_s = updated_at | date: "%s" | plus: 0 %}
+{% assign cw = continue_watching.items %}{% assign cw_n = cw | size %}
+{% assign air = airing.items %}{% assign air_n = air | size %}
+{% assign rel = releasing_today.items %}{% assign rel_n = rel | size %}
+{% assign err_n = errors | size %}
+{% assign cols = 0 %}{% if cw_n > 1 %}{% assign cols = cols | plus: 1 %}{% endif %}{% if air_n > 0 %}{% assign cols = cols | plus: 1 %}{% endif %}{% if rel_n > 0 %}{% assign cols = cols | plus: 1 %}{% endif %}
+<div class="view view--full">
+<div class="layout layout--col" style="align-items:stretch;justify-content:flex-start;gap:18px">
+
+{% if cw_n == 0 and air_n == 0 and rel_n == 0 %}
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;padding-left:20px">
+  <span class="label">NOTHING WAITING</span>
+  <span class="value value--xxxlarge">All caught up.</span>
+</div>
+{% else %}
+
+{% if cw_n > 0 %}{% assign hero = cw[0] %}
+<div style="display:flex;gap:30px;align-items:stretch;{% if cols == 0 %}flex:1{% else %}height:330px{% endif %}">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0">
+    {% if hero.last_viewed %}{% assign d = hero.last_viewed | date: "%s" | plus: 0 %}{% assign days = now_s | minus: d | divided_by: 86400 %}
+      <span class="value value--xxxlarge" style="line-height:1;white-space:nowrap">{{ days }} days</span>
+      <span class="label">SINCE YOU LAST WATCHED</span>
+    {% else %}
+      <span class="value value--xlarge" style="line-height:1;white-space:nowrap">Not started yet</span>
+      <span class="label">WAITING IN YOUR QUEUE</span>
+    {% endif %}
+    <span class="title title--xlarge" style="margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ hero.title }}</span>
+    <span class="description description--large" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{% if hero.episode %}Season {{ hero.episode.season }}, episode {{ hero.episode.number }}: {{ hero.episode.title }}{% else %}Film{% endif %}{% if hero.progress %} · {{ hero.progress }}% in{% endif %}</span>
+  </div>
+  {% if hero.poster %}<img src="{{ hero.poster }}" style="height:100%;aspect-ratio:2/3;object-fit:cover;border-radius:8px;border:3px solid #000">{% endif %}
+</div>
+{% endif %}
+
+{% if err_n > 0 %}
+<div style="border:4px solid #000;border-radius:8px;padding:6px 14px">{% for e in errors %}<span class="title title--small">{{ e.source | capitalize }} hasn't answered since {{ e.since | date: "%-I:%M %p" }}.</span> <span class="description">Showing what it last said.</span>{% endfor %}</div>
+{% endif %}
+
+{% if cols > 0 %}
+<div style="display:grid;grid-template-columns:repeat({{ cols }},1fr);gap:28px;flex:1;min-height:0;border-top:4px solid #000;padding-top:12px">
+  {% if cw_n > 1 %}
+  <div style="min-width:0">
+    <span class="label label--filled">ALSO STALLED{% if continue_watching.stale %} · STALE{% endif %}</span>
+    {% for i in cw offset:1 limit:4 %}
+    <div style="margin-top:8px"><span class="title title--small" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.title }}</span>
+    <span class="description">{% if i.last_viewed %}{% assign d = i.last_viewed | date: "%s" | plus: 0 %}{{ now_s | minus: d | divided_by: 86400 }} days{% else %}never started{% endif %}</span></div>
+    {% endfor %}
+    {% assign more = continue_watching.total | minus: 5 %}{% if more > 0 %}<span class="label label--small" style="margin-top:6px;display:block">and {{ more }} more</span>{% endif %}
+  </div>
+  {% endif %}
+  {% if air_n > 0 %}
+  <div style="min-width:0">
+    <span class="label label--filled">AIRING{% if airing.stale %} · STALE{% endif %}</span>
+    {% for a in air limit:4 %}
+    <div style="margin-top:8px;display:flex;gap:10px;align-items:baseline">
+      <span style="flex-shrink:0;display:inline-block;width:18px;height:18px;border-radius:50%;border:3px solid #000;{% if a.grabbed %}background:#000{% endif %}"></span>
+      <div style="min-width:0"><span class="title title--small" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.series }}</span>
+      <span class="description">{% if a.aired %}{% assign t = a.air_time | date: "%s" | plus: 0 %}aired {{ now_s | minus: t | divided_by: 3600 }}h ago{% else %}airs {{ a.air_time | date: "%-I:%M %p" }}{% endif %}</span></div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if rel_n > 0 %}
+  <div style="min-width:0">
+    <span class="label label--filled">IN RELEASE TODAY{% if releasing_today.stale %} · STALE{% endif %}</span>
+    {% for r in rel limit:4 %}
+    <div style="margin-top:8px"><span class="title title--small" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.title }}</span>
+    <span class="description">{% if r.kind == "theatrical" %}in theaters{% else %}digital release{% endif %}</span></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endif %}
+</div>
+<div class="title_bar">
+  <span class="title">What to Watch</span>
+  <span class="instance">updated {{ updated_at | date: "%-I:%M %p" }}</span>
+</div>
+</div>
