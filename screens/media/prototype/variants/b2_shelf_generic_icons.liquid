@@ -2,7 +2,7 @@
 PROTOTYPE variant B2: poster shelf, refined from maintainer feedback on B.
 Six equal posters; progress bar with time left printed across it; NEW / NEXT tags for
 unstarted items; overflow as a text line; section icons; Airing in two columns past four.
-icon_style: "generic" (TV / film) or "arr" (Sonarr / Radarr style marks).
+Past six items, the rest are listed as text in up to three columns (12 items at most).
 {%- endcomment -%}
 {% assign icon_style = "generic" %}
 {% assign cw = continue_watching.items %}{% assign cw_n = cw | size %}
@@ -42,6 +42,11 @@ icon_style: "generic" (TV / film) or "arr" (Sonarr / Radarr style marks).
   .wtw-dot.on { background: #000; }
   .wtw-row .t { font-weight: 700; flex: 1; min-width: 0; line-height: 1.15; }
   .wtw-row .m { white-space: nowrap; font-size: 19px; text-align: right; line-height: 1.2; }
+  .wtw-over { border-top: 3px solid #000; padding-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .wtw-over-head { display: flex; gap: 12px; align-items: baseline; }
+  .wtw-over-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 26px; }
+  .wtw-over-item { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .wtw-over + .wtw-band { border-top-width: 4px; padding-top: 12px; }
 </style>
 
 <div class="view view--full">
@@ -79,10 +84,17 @@ icon_style: "generic" (TV / film) or "arr" (Sonarr / Radarr style marks).
   </div>
   {% endfor %}
 </div>
-{% if cw_n > 6 or continue_watching.total > 6 %}
-<div class="wtw-more">
-  <span class="label label--small">ALSO WAITING</span>
-  <span>{% for i in cw offset:6 %}{{ i.title }}{% if i.episode %} S{{ i.episode.season }}E{{ i.episode.number }}{% endif %}{% unless forloop.last %} · {% endunless %}{% endfor %}{% assign shown = cw_n %}{% assign rest = continue_watching.total | minus: shown %}{% if rest > 0 %} · and {{ rest }} more{% endif %}</span>
+{% if cw_n > 6 %}
+<div class="wtw-over">
+  <div class="wtw-over-head"><span class="label label--small">ALSO WAITING</span>{% assign rest = continue_watching.total | minus: cw_n %}{% if rest > 0 %}<span class="wtw-sub">and {{ rest }} more not shown</span>{% endif %}</div>
+  <div class="wtw-over-grid">
+  {% for i in cw offset:6 limit:6 %}
+    <div class="wtw-over-item">
+      <span class="wtw-name" style="font-size:19px">{% if i.kind == "movie" %}{{ icon_film }}{% else %}{{ icon_tv }}{% endif %}<span>{{ i.title }}</span></span>
+      <span class="wtw-sub">{% if i.episode %}S{{ i.episode.season }}E{{ i.episode.number }} · {% endif %}{% if i.state == "in_progress" and i.remaining_min %}{% if i.remaining_min >= 60 %}{{ i.remaining_min | divided_by: 60 }}h {{ i.remaining_min | modulo: 60 }}m{% else %}{{ i.remaining_min }}m{% endif %} left{% else %}{% assign m = i.duration_min %}{% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %} · {% if i.state == "new" %}new{% else %}next{% endif %}{% endif %}</span>
+    </div>
+  {% endfor %}
+  </div>
 </div>
 {% endif %}
 {% endif %}
@@ -90,9 +102,9 @@ icon_style: "generic" (TV / film) or "arr" (Sonarr / Radarr style marks).
 {% if air_n > 0 or rel_n > 0 %}
 <div class="wtw-band">
   {% if air_n > 0 %}
-  <div style="flex:{% if air_n > 4 %}5{% else %}3{% endif %};min-width:0">
+  <div style="flex:{% if air_n > 4 or cw_n > 6 %}5{% else %}3{% endif %};min-width:0">
     <div class="wtw-head">{{ icon_airing }}<span>Airing today</span>{% if airing.stale %}<span class="label label--outline">stale</span>{% endif %}</div>
-    <div class="wtw-air" style="grid-template-columns:{% if air_n > 4 %}1fr 1fr{% else %}1fr{% endif %}">
+    <div class="wtw-air" style="grid-template-columns:{% if air_n > 4 or cw_n > 6 and air_n > 2 %}1fr 1fr{% else %}1fr{% endif %}">
     {% for a in air limit:8 %}
       <div class="wtw-row">
         <span class="wtw-dot{% if a.grabbed %} on{% endif %}"></span>
