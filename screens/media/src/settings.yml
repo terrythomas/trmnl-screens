@@ -1,0 +1,9 @@
+---
+name: What to Watch
+description: Continue Watching, Airing and Releasing Today from Plex, Sonarr and Radarr
+strategy: webhook
+refresh_interval: 15
+no_screen_padding: 'no'
+dark_mode: 'no'
+static_data: ''
+framework_version: latest

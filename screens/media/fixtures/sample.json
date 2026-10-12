@@ -1,0 +1,89 @@
+{
+  "updated_at": "2026-10-12T14:30:00-04:00",
+  "errors": [
+    {
+      "source": "sonarr",
+      "since": "2026-10-12T13:45:00-04:00"
+    }
+  ],
+  "continue_watching": {
+    "stale": false,
+    "total": 14,
+    "items": [
+      {
+        "kind": "episode",
+        "title": "The Lighthouse Keepers",
+        "episode": {
+          "season": 4,
+          "number": 1,
+          "title": "Low Tide"
+        },
+        "progress": null,
+        "last_viewed": "2026-06-29",
+        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNISGAAIwAKKQJBD4VzQAAAAABJRU5ErkJggg=="
+      },
+      {
+        "kind": "movie",
+        "title": "A Quiet Orbit",
+        "episode": null,
+        "progress": 42,
+        "last_viewed": "2026-08-14",
+        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNYsIABjAAQ6QPBkkCNHgAAAABJRU5ErkJggg=="
+      },
+      {
+        "kind": "episode",
+        "title": "Copper Valley",
+        "episode": {
+          "season": 2,
+          "number": 6,
+          "title": "The Long Way Round"
+        },
+        "progress": 12,
+        "last_viewed": "2026-09-30",
+        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mO4cIEBjAAV+QThjhhm9AAAAABJRU5ErkJggg=="
+      }
+    ]
+  },
+  "airing": {
+    "stale": true,
+    "items": [
+      {
+        "series": "Night Market",
+        "season": 2,
+        "number": 7,
+        "title": "Lanterns",
+        "air_time": "2026-10-12T09:00:00-04:00",
+        "aired": true,
+        "grabbed": true
+      },
+      {
+        "series": "Field Notes",
+        "season": 1,
+        "number": 3,
+        "title": "Migration",
+        "air_time": "2026-10-12T21:00:00-04:00",
+        "aired": false,
+        "grabbed": false
+      }
+    ]
+  },
+  "releasing_today": {
+    "stale": false,
+    "items": [
+      {
+        "title": "Paper Boats",
+        "year": 2026,
+        "kind": "theatrical",
+        "grabbed": false,
+        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNoaGAAIwANiQMB6UHnOwAAAABJRU5ErkJggg=="
+      },
+      {
+        "title": "The Glass Orchard",
+        "year": 2025,
+        "kind": "digital",
+        "grabbed": false,
+        "poster": null
+      }
+    ]
+  }
+}
