@@ -141,7 +141,8 @@ Approved in the layout prototype (#5). Screenshots and the prototype template ar
 
 - **Continue Watching:** up to six equal posters in one row. In progress items show a progress bar across the poster with the time left printed on it; New and Next items get a corner tag. Under each poster, the one-line details (TV or film icon, SxEy, runtime) come first so they line up across the row; the title wraps below.
 - **Also waiting:** items seven to twelve as text in two left-aligned columns, each with its icon, SxEy and either time left or new/next. Anything the collector did not send is counted as "and N more not shown". When this list shows, shelf posters crop a little shorter.
-- **Airing today** and **Releasing today:** side by side below. Each row has a small poster, the title, and details on the right; Airing rows can carry a milestone label. Airing switches to two columns past four rows, or past two when Also waiting is showing. Rows share the remaining height and size their poster and text to it (CSS container units), so fewer waiting items means larger rows.
+- **Airing today** and **Releasing today:** side by side below. Each row has a small poster, the title, and details on the right; Airing rows can carry a milestone label. Upcoming episodes show "airs 9:00 PM" and aired ones "aired 3h ago", worked out from `updated_at`; a check on the poster marks an item already grabbed. Airing shows up to eight rows and Releasing up to three, with "and N more" beside the header past that. Airing switches to two columns past four rows, or past two when Also waiting is showing. Rows share the remaining height and size their poster and text to it (CSS container units), so fewer waiting items means larger rows.
+- **Error banner:** one black pill per failing source above everything else, "Sonarr down since 5:45 PM", adding "showing its last data" when that source's section is on screen stale. A stale section's header carries a STALE tag.
 - **Section headers:** white text on a black rounded pill with a TV, film or stack-of-cards icon. Icons are inline SVG, never emoji.
 - Grayscale e-ink constraints apply: high contrast, no hairlines or gradients, legible from across a room. Posters reduce to 16 flat grays rather than dithering, and stay recognisable at shelf size; below roughly 40 CSS px wide they stop being recognisable.
 - **LaraPaper does not wrap the template in `<div class="view view--full">`** (trmnlp and TRMNL's cloud do), so the template must include that wrapper itself for the framework's layout rules to apply.
@@ -157,7 +158,7 @@ Approved in the layout prototype (#5). Screenshots and the prototype template ar
   - an empty section being left out;
   - a stale section reusing last good data and adding an error entry.
 - **Runner:** test that one screen's failure doesn't block another, and that state survives a restart.
-- **Template:** checked by eye in `trmnlp serve` using `fixtures/sample.json` plus fixture variants: all sections full, each section empty, everything empty, an error banner, a long title. Check at both X and OG sizes.
+- **Template:** checked by eye in `trmnlp serve` using `fixtures/sample.json` plus the fixture variants that `python screens/media/fixtures/variants.py` writes to `fixtures/variants/` (load one with `scripts/preview-data media variants/full.json`): all sections full, each section absent or empty, everything empty, stale sections and error banners, long titles, 1–12 Continue Watching items and a crowded Airing. Titles are invented and posters are abstract stand-ins. Check at both X and OG sizes.
 - **Security:** gitleaks runs in pre-commit and in CI.
 
 ## Out of scope (v1)

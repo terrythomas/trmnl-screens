@@ -1,8 +1,184 @@
-<div class="layout layout--col layout--center">
-  <span class="value value--xxlarge">{{ updated_at | date: "%H:%M" }}</span>
-</div>
+{%- comment -%}
+What to Watch, TRMNL X (1872x1404, 4-bit). Payload contract: docs/specs/media-screen.md.
+An absent section and an empty items list render the same: both are left out.
+{%- endcomment -%}
+{% assign cw = continue_watching.items %}{% assign cw_n = cw | size %}
+{% assign air = airing.items %}{% assign air_n = air | size %}
+{% assign rel = releasing_today.items %}{% assign rel_n = rel | size %}
+{% assign err_n = errors | size %}
+{% assign now_s = updated_at | date: "%s" | plus: 0 %}
 
+{%- capture icon_tv -%}<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-0.15em"><path d="M8 2.5l4 4 4-4"/><rect x="2.5" y="6.5" width="19" height="14" rx="2.5"/></svg>{%- endcapture -%}
+{%- capture icon_film -%}<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-0.15em"><rect x="3" y="2.5" width="18" height="19" rx="2"/><path d="M7.5 2.5v19M16.5 2.5v19M3 8h4.5M3 16h4.5M16.5 8H21M16.5 16H21"/></svg>{%- endcapture -%}
+{%- capture icon_check -%}<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>{%- endcapture -%}
+{%- capture icon_queue -%}<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="flex-shrink:0;vertical-align:-0.15em"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M5.5 5.5h13M8 2.5h8"/></svg>{%- endcapture -%}
+{%- capture icon_alert -%}<svg viewBox="0 0 24 24" width="1.1em" height="1.1em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-0.18em"><path d="M12 3L2 20.5h20z"/><path d="M12 10v4.5M12 17.5v.5"/></svg>{%- endcapture -%}
+
+<style>
+  /* Use the framework's own faces so custom text matches the title bar and labels. */
+  .wtw-name, .wtw-row .t, .wtw-head, .wtw-progress .txt, .wtw-tag, .wtw-error { font-family: var(--title-font-family); }
+  .wtw-sub, .wtw-row .m { font-family: var(--description-font-family); }
+
+  /* Error banner: one black pill per failing source. */
+  .wtw-errors { display: flex; gap: 12px; flex-wrap: wrap; }
+  .wtw-error { display: inline-flex; gap: 10px; align-items: center; background: #000; color: #fff; font-size: 22px; font-weight: 700; border-radius: 9px; padding: 4px 16px 5px 12px; }
+  .wtw-error .why { font-family: var(--description-font-family); font-weight: 400; }
+
+  /* Continue Watching: six equal posters. */
+  .wtw-shelf { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; }
+  .wtw-poster { position: relative; aspect-ratio: 2 / 3; border: 3px solid #000; border-radius: 8px; overflow: hidden; background: #fff; }
+  .wtw-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .wtw-poster .wtw-fallback { height: 100%; display: flex; align-items: center; justify-content: center; padding: 10px; text-align: center; }
+  .wtw-tag { position: absolute; top: 0; left: 0; background: #000; color: #fff; font-weight: 700; font-size: 15px; letter-spacing: .06em; padding: 3px 9px 4px; border-bottom-right-radius: 7px; }
+  /* One element: the fill is the progress, the text is time left; difference blending keeps it legible on both halves. */
+  .wtw-progress { position: absolute; left: 6px; right: 6px; bottom: 6px; height: 30px; background: #fff; border: 3px solid #000; border-radius: 6px; overflow: hidden; }
+  .wtw-progress .fill { position: absolute; inset: 0 auto 0 0; background: #000; }
+  .wtw-progress .txt { position: relative; display: flex; height: 100%; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: #fff; mix-blend-mode: difference; white-space: nowrap; }
+  /* Captions: the one-line details sit directly under the poster so they align across all six; titles wrap below. */
+  .wtw-cap { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; min-width: 0; }
+  .wtw-name { font-weight: 700; line-height: 1.12; display: flex; gap: 6px; align-items: flex-start; overflow-wrap: anywhere; }
+  .wtw-cap .wtw-name { margin-top: 2px; }
+  .wtw-sub { font-size: 18px; line-height: 1.2; }
+  .wtw-meta { display: flex; gap: 7px; align-items: center; font-size: 18px; }
+  /* With "Also waiting" showing, crop posters a little shorter to leave room below. */
+  .wtw-shelf--tight .wtw-poster { aspect-ratio: 3 / 4; }
+  .wtw-shelf--tight .wtw-poster img { object-position: top; }
+
+  /* Also waiting: items 7-12 as text in two left-aligned columns. */
+  .wtw-over { border-top: 3px solid #000; padding-top: 8px; display: flex; flex-direction: column; gap: 2px; }
+  .wtw-over-head { display: flex; align-items: center; gap: 14px; }
+  .wtw-over-head .wtw-head { margin-bottom: 0; }
+  .wtw-over-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 44px; padding: 0 12px; }
+  .wtw-over-txt { display: flex; align-items: baseline; gap: 14px; min-width: 0; }
+  .wtw-over .wtw-name { font-size: 26px; white-space: nowrap; }
+  .wtw-over .wtw-sub { font-size: 21px; white-space: nowrap; }
+
+  /* Lower band: Airing today and Releasing today side by side. */
+  .wtw-band { display: flex; gap: 32px; flex: 1; min-height: 0; border-top: 4px solid #000; padding-top: 14px; }
+  .wtw-over + .wtw-band { padding-top: 12px; }
+  .wtw-head { display: inline-flex; gap: 10px; align-items: center; font-size: 22px; font-weight: 700; margin-bottom: 6px; background: #000; color: #fff; border-radius: 9px; padding: 3px 14px 4px 10px; }
+  .wtw-stale { background: #fff; color: #000; border-radius: 5px; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; padding: 1px 7px 2px; }
+  /* Rows share whatever height is left, and each row sizes its poster and text from its own height. */
+  .wtw-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .wtw-list { flex: 1; min-height: 0; display: grid; column-gap: 28px; margin-top: 6px; }
+  .wtw-row { container-type: size; min-height: 0; min-width: 0; display: flex; gap: 12px; align-items: center; border-bottom: 2px solid #bbb; padding: 3px 0; }
+  .wtw-rowposter { position: relative; flex-shrink: 0; height: 88cqh; max-height: 120px; aspect-ratio: 2 / 3; border: 3px solid #000; border-radius: 5px; overflow: hidden; }
+  .wtw-rowposter img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* A corner check marks items already downloaded. */
+  .wtw-rowposter .ok { position: absolute; right: 0; bottom: 0; width: 20px; height: 20px; background: #000; color: #fff; border-top-left-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .wtw-row .t { font-weight: 700; flex: 1; min-width: 0; line-height: 1.12; font-size: clamp(17px, min(30cqh, 6.4cqw), 34px); overflow-wrap: anywhere; }
+  .wtw-row .t--long { font-size: clamp(15px, min(22cqh, 4.6cqw), 24px); }
+  .wtw-row .m { white-space: nowrap; text-align: right; line-height: 1.2; font-size: clamp(15px, min(21cqh, 4.4cqw), 24px); }
+  .wtw-row .m2 { display: block; font-family: var(--description-font-family); font-weight: 400; margin-top: 2px; font-size: clamp(15px, min(21cqh, 4.4cqw), 24px); }
+  .wtw-milestone { display: table; margin-top: 3px; background: #000; color: #fff; font-size: clamp(12px, min(15cqh, 3.2cqw), 17px); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 8px 2px; border-radius: 5px; white-space: nowrap; }
+  .wtw-more { font-family: var(--description-font-family); font-size: 18px; padding-top: 6px; }
+</style>
+
+<div class="view view--full">
+<div class="layout layout--col" style="align-items:stretch;justify-content:flex-start;gap:14px">
+
+{% if err_n > 0 %}
+<div class="wtw-errors">
+  {% for e in errors %}
+  {% case e.source %}{% when "plex" %}{% assign shown = cw_n %}{% when "sonarr" %}{% assign shown = air_n %}{% when "radarr" %}{% assign shown = rel_n %}{% else %}{% assign shown = 0 %}{% endcase %}
+  <span class="wtw-error">{{ icon_alert }}<span>{{ e.source | capitalize }} down since {{ e.since | date: "%-I:%M %p" }}</span>{% if shown > 0 %}<span class="why">· showing its last data</span>{% endif %}</span>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if cw_n == 0 and air_n == 0 and rel_n == 0 %}
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+  <span class="value value--xxlarge">Nothing waiting</span>
+  <span class="description description--large">No shows in progress, nothing airing, nothing releasing today.</span>
+</div>
+{% else %}
+
+{% if cw_n > 0 %}
+<div class="wtw-shelf{% if cw_n > 6 %} wtw-shelf--tight{% endif %}">
+  {% for i in cw limit:6 %}
+  {% assign tlen = i.title | size %}
+  {% if tlen > 50 %}{% assign fs = 15 %}{% elsif tlen > 36 %}{% assign fs = 17 %}{% else %}{% assign fs = 20 %}{% endif %}
+  <div style="min-width:0">
+    <div class="wtw-poster">
+      {% if i.poster %}<img src="{{ i.poster }}" alt="">{% else %}<div class="wtw-fallback"><span class="title title--small">{{ i.title }}</span></div>{% endif %}
+      {% if i.state == "in_progress" %}
+        {% assign left = i.remaining_min %}
+        <div class="wtw-progress"><div class="fill" style="width:{{ i.progress }}%"></div>
+          <div class="txt">{% if left >= 60 %}{{ left | divided_by: 60 }}h {{ left | modulo: 60 }}m{% else %}{{ left }}m{% endif %} left</div></div>
+      {% elsif i.state == "new" %}<span class="wtw-tag">NEW</span>
+      {% else %}<span class="wtw-tag">NEXT</span>{% endif %}
+    </div>
+    <div class="wtw-cap">
+      <span class="wtw-sub wtw-meta">{% if i.kind == "movie" %}{{ icon_film }}{% else %}{{ icon_tv }}{% endif %}<span>{% if i.episode %}S{{ i.episode.season }}E{{ i.episode.number }} · {% endif %}{% assign m = i.duration_min %}{% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %}</span></span>
+      <span class="wtw-name" style="font-size:{{ fs }}px"><span>{{ i.title }}</span></span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% assign rest = continue_watching.total | minus: cw_n %}
+{% if cw_n > 6 %}
+<div class="wtw-over">
+  <div class="wtw-over-head"><span class="wtw-head">{{ icon_queue }}<span>Also waiting</span></span>{% if rest > 0 %}<span class="wtw-sub">and {{ rest }} more not shown</span>{% endif %}</div>
+  <div class="wtw-over-grid">
+  {% for i in cw offset:6 limit:6 %}
+    <div class="wtw-over-txt">
+      <span class="wtw-name">{% if i.kind == "movie" %}{{ icon_film }}{% else %}{{ icon_tv }}{% endif %}<span>{{ i.title }}</span></span>
+      <span class="wtw-sub">{% if i.episode %}S{{ i.episode.season }}E{{ i.episode.number }} · {% endif %}{% if i.state == "in_progress" %}{% assign left = i.remaining_min %}{% if left >= 60 %}{{ left | divided_by: 60 }}h {{ left | modulo: 60 }}m{% else %}{{ left }}m{% endif %} left{% else %}{% assign m = i.duration_min %}{% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %} · {% if i.state == "new" %}new{% else %}next{% endif %}{% endif %}</span>
+    </div>
+  {% endfor %}
+  </div>
+</div>
+{% elsif rest > 0 %}
+<div class="wtw-more">and {{ rest }} more not shown</div>
+{% endif %}
+{% endif %}
+
+{% if air_n > 0 or rel_n > 0 %}
+{% assign air_cols = 1 %}{% if air_n > 4 or cw_n > 6 and air_n > 2 %}{% assign air_cols = 2 %}{% endif %}
+{% assign air_shown = air_n %}{% if air_shown > 8 %}{% assign air_shown = 8 %}{% endif %}
+{% assign air_rows = air_shown | plus: air_cols | minus: 1 | divided_by: air_cols %}
+{% assign rel_rows = rel_n %}{% if rel_rows > 3 %}{% assign rel_rows = 3 %}{% endif %}
+{% assign rows = air_rows %}{% if rel_rows > rows %}{% assign rows = rel_rows %}{% endif %}{% if rows < 2 %}{% assign rows = 2 %}{% endif %}
+<div class="wtw-band">
+  {% if air_n > 0 %}
+  <div class="wtw-col" style="flex:{% if air_cols == 2 %}5{% else %}3{% endif %}">
+    <div><span class="wtw-head">{{ icon_tv }}<span>Airing today</span>{% if airing.stale %}<span class="wtw-stale">stale</span>{% endif %}</span>{% if air_n > 8 %}<span class="wtw-sub"> and {{ air_n | minus: 8 }} more</span>{% endif %}</div>
+    <div class="wtw-list" style="grid-template-columns:repeat({{ air_cols }}, minmax(0, 1fr));grid-template-rows:repeat({{ rows }}, minmax(0, 1fr))">
+    {% for a in air limit:8 %}
+      <div class="wtw-row">
+        <span class="wtw-rowposter">{% if a.poster %}<img src="{{ a.poster }}" alt="">{% endif %}{% if a.grabbed %}<span class="ok">{{ icon_check }}</span>{% endif %}</span>
+        {% assign slen = a.series | size %}
+        <span class="t{% if slen > 30 %} t--long{% endif %}">{{ a.series }}{% if a.milestone %}<span class="wtw-milestone">{{ a.milestone | replace: "_", " " }}</span>{% endif %}</span>
+        <span class="m">S{{ a.season }}E{{ a.number }}{% if a.number_end %}–{{ a.number_end }}{% endif %}{% if a.runtime_min %} · {{ a.runtime_min }}m{% endif %}<br>
+          {%- if a.aired -%}
+            {%- assign ago = a.air_time | date: "%s" | plus: 0 | minus: now_s | times: -1 | divided_by: 60 -%}
+            {%- if ago < 60 %}aired {{ ago }}m ago{% else %}aired {{ ago | divided_by: 60 }}h ago{% endif -%}
+          {%- else %}airs {{ a.air_time | date: "%-I:%M %p" }}{% endif %}</span>
+      </div>
+    {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% if rel_n > 0 %}
+  <div class="wtw-col" style="flex:2">
+    <div><span class="wtw-head">{{ icon_film }}<span>Releasing today</span>{% if releasing_today.stale %}<span class="wtw-stale">stale</span>{% endif %}</span>{% if rel_n > 3 %}<span class="wtw-sub"> and {{ rel_n | minus: 3 }} more</span>{% endif %}</div>
+    <div class="wtw-list" style="grid-template-columns:minmax(0, 1fr);grid-template-rows:repeat({{ rows }}, minmax(0, 1fr))">
+    {% for r in rel limit:3 %}
+      <div class="wtw-row">
+        <span class="wtw-rowposter">{% if r.poster %}<img src="{{ r.poster }}" alt="">{% endif %}{% if r.grabbed %}<span class="ok">{{ icon_check }}</span>{% endif %}</span>
+        {% assign rlen = r.title | size %}
+        <span class="t{% if rlen > 30 %} t--long{% endif %}">{{ r.title }}<span class="m2">{% if r.kind == "theatrical" %}in theaters{% else %}digital{% endif %}{% assign m = r.runtime_min %}{% if m %} · {% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %}{% endif %}</span></span>
+      </div>
+    {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endif %}
+</div>
 <div class="title_bar">
   <span class="title">What to Watch</span>
-  <span class="instance">updated {{ updated_at | date: "%H:%M" }}</span>
+  <span class="instance">updated {{ updated_at | date: "%-I:%M %p" }}</span>
+</div>
 </div>
