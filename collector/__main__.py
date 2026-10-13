@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from collector.config import Config
 from collector.discovery import discover_screens
 from collector.push import push
-from collector.runner import run_forever, run_tick
+from collector.runner import enabled_screens, run_forever, run_tick
 
 
 def main() -> int:
@@ -22,9 +22,14 @@ def main() -> int:
     logging.getLogger("httpx").setLevel(logging.WARNING)
     load_dotenv()  # a local .env, if present; real environment variables win
     config = Config.from_env()
-    screens = discover_screens()
+    screens = enabled_screens(discover_screens(), config)
     if args.screen:
+        if args.screen not in screens:
+            parser.error(f"screen {args.screen} is not enabled or does not exist")
         screens = {args.screen: screens[args.screen]}
+    if not screens:
+        # Fail loudly: a collector that runs but pushes nothing is easy to miss.
+        parser.error("no screens enabled: set at least one <SCREEN>_WEBHOOK_UUID")
 
     def tick():
         return run_tick(screens, config, push)
