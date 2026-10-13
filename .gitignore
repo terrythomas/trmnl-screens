@@ -40,3 +40,6 @@ previews/
 screens/media/prototype/out/
 screens/media/prototype/poster-cache/
 screens/media/prototype/standin-posters/
+
+# Runner state (last good data per screen)
+/state/

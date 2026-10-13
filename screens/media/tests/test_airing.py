@@ -10,6 +10,7 @@ from collector.discovery import discover_screens
 discover_screens()  # registers the screen packages so their submodules can be imported
 section = importlib.import_module("trmnl_screens.media.collector.airing")
 sonarr = importlib.import_module("trmnl_screens.media.collector.sources.sonarr")
+plex = importlib.import_module("trmnl_screens.media.collector.sources.plex")
 
 EASTERN = timezone(timedelta(hours=-4))
 NOW = datetime(2026, 10, 12, 14, 30, tzinfo=EASTERN)
@@ -161,3 +162,13 @@ def with_finale(episodes, finale):
 def test_milestone(episodes, expected):
     [row] = build(episodes)["items"]
     assert row["milestone"] == expected
+
+
+class DownPosters:
+    def poster(self, path, width, height):
+        raise plex.PlexError("Plex request failed: ConnectError")
+
+
+def test_rows_lose_their_posters_when_plex_is_down():
+    result = section.airing(FakeSonarr([episode("Copper Valley")]), DownPosters(), NOW)
+    assert [(r["series"], r["poster"]) for r in result["items"]] == [("Copper Valley", None)]

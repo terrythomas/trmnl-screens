@@ -53,6 +53,8 @@ The primary **Device** is the TRMNL X. The OG renders the same template without 
 - If every section is empty, the template renders a single designed fallback state.
 - When a **Source** fails (timeout, non-2xx, parse error), the runner reuses that section's last good data and marks it **stale**. It also adds an **Error banner** entry `{source, since}` to the payload. No other alerting channel exists.
 - Last good data persists in a small local state file (a volume in Docker), so a container restart doesn't wipe it.
+- `since` is the time of the first consecutive failure; it resets when the source recovers. A section that became empty is not brought back by a later failure.
+- Posters come from Plex for every section. When Plex can't make one, the row is shown without a poster; Airing and Releasing Today don't go stale for it.
 - The payload always includes `updated_at`, which the template shows as the "updated HH:MM" footer.
 - A failed webhook push is logged and retried on the next tick. Nothing is surfaced on screen, because the screen can't be reached in that case anyway.
 
@@ -102,7 +104,7 @@ The single interface between the collector and the template. `fixtures/sample.js
 - `number_end` is null unless the row covers several episodes. `runtime_min` is null when Sonarr or Radarr doesn't know it yet, which is common for a new series. `milestone` is null or one of `series_premiere`, `season_premiere`, `midseason_finale`, `season_finale`, `series_finale`, `entire_season`.
 - Posters may be JPEG or PNG `data:` URIs.
 
-Sections that are absent mean empty. The template must treat an absent key and an empty `items` list the same way.
+`errors` is always present, as an empty list when every source is healthy. Sections that are absent mean empty. The template must treat an absent key and an empty `items` list the same way.
 
 ## Repo structure
 
@@ -129,7 +131,7 @@ Adding a screen means a new `screens/<name>/` folder plus one webhook entry in `
 
 ## Configuration (`.env`, never committed)
 
-`PLEX_URL`, `PLEX_TOKEN`, `SONARR_URL`, `SONARR_API_KEY`, `RADARR_URL`, `RADARR_API_KEY`, `LARAPAPER_URL`, `MEDIA_WEBHOOK_UUID`, `LARAPAPER_API_TOKEN` (deploy script only), `TZ`, `INTERVAL_MINUTES`, `NEW_AFTER_DAYS`.
+`PLEX_URL`, `PLEX_TOKEN`, `SONARR_URL`, `SONARR_API_KEY`, `RADARR_URL`, `RADARR_API_KEY`, `LARAPAPER_URL`, `MEDIA_WEBHOOK_UUID`, `LARAPAPER_API_TOKEN` (deploy script only), `TZ`, `INTERVAL_MINUTES`, `NEW_AFTER_DAYS`, `STATE_DIR`.
 
 `.env.example` lists every key with placeholder values. Per [ADR-0003](../adr/0003-public-repo-secrets-policy.md), no IPs, hostnames, tokens or UUIDs appear anywhere in tracked files, including tests, fixtures, docs and commit messages.
 
