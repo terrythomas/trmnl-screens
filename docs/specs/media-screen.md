@@ -35,9 +35,9 @@ The primary **Device** is the TRMNL X. The OG renders the same template without 
 
 ### Airing
 - Source: Sonarr `GET /api/v3/calendar` with `start=now-12h`, `end=now+12h`, `includeSeries=true`, filtered to monitored series and monitored episodes.
-- Item fields: series title, SxxEyy, episode title, air time as an absolute local time, past or upcoming, grabbed (`hasFile`), runtime in minutes, milestone, series poster (same grayscale pipeline as Continue Watching).
-- Several episodes of the same series and season airing at the same time (a whole season dropping at once) collapse into one row with an episode range, e.g. S1E1–10.
-- **Milestone**: `series_finale`, `season_finale` or `midseason_finale` from Sonarr's `finaleType`; otherwise `series_premiere` for S1E1 and `season_premiere` for any other episode 1; otherwise none.
+- Item fields: series title, SxxEyy, episode title, air time as an absolute local time, past or upcoming, grabbed (`hasFile`), runtime in minutes, milestone, series poster (Sonarr's public poster URL, made grayscale by the same Plex transcoder as Continue Watching).
+- Several episodes of the same series and season airing at the same time (a whole season dropping at once) collapse into one row with an episode range, e.g. S1E1–10. The row has no episode title, uses the first episode's runtime, and counts as grabbed only when every episode in it is.
+- **Milestone**: `entire_season` for a collapsed row that starts at episode 1 and contains a finale. Otherwise `series_finale`, `season_finale` or `midseason_finale` from Sonarr's `finaleType` of any episode in the row; otherwise `series_premiere` for a row starting at S1E1 and `season_premiere` for a row starting at any other episode 1; otherwise none.
 - The template shows "airs 9:00 PM" for upcoming episodes and no time for aired ones. Grabbed items get a check mark on their poster.
 - Sorted by air time ascending.
 
@@ -98,7 +98,7 @@ The single interface between the collector and the template. `fixtures/sample.js
 ```
 
 - `state` is `new`, `in_progress` or `next`. `progress` and `remaining_min` are null unless the state is `in_progress`.
-- `number_end` is null unless the row covers several episodes. `milestone` is null or one of `series_premiere`, `season_premiere`, `midseason_finale`, `season_finale`, `series_finale`.
+- `number_end` is null unless the row covers several episodes. `runtime_min` is null when Sonarr doesn't know it yet, which is common for a new series. `milestone` is null or one of `series_premiere`, `season_premiere`, `midseason_finale`, `season_finale`, `series_finale`, `entire_season`.
 - Posters may be JPEG or PNG `data:` URIs.
 
 Sections that are absent mean empty. The template must treat an absent key and an empty `items` list the same way.

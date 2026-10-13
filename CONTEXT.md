@@ -57,7 +57,7 @@ The 24-hour span from 12 hours before to 12 hours after the moment the collector
 The Continue Watching items beyond the first six, listed as text below the posters.
 
 **Milestone**:
-An Airing episode that opens or closes something: a series premiere, season premiere, midseason finale, season finale or series finale.
+An Airing row that opens or closes something: a series premiere, season premiere, midseason finale, season finale or series finale. A row that delivers a whole season at once, from its first episode to its finale, is an **entire season** instead.
 _Avoid_: Special, event
 
 **Grabbed**:

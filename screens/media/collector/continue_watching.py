@@ -1,15 +1,12 @@
 """Continue Watching section: item state, order, cap and payload mapping (spec: Continue Watching)."""
 
-import base64
 from datetime import datetime, timedelta
 from typing import Any, Protocol
 
+from .posters import poster_uri
 from .sources.plex import PlexItem, ShowHistory
 
 STATE_ORDER = {"new": 0, "in_progress": 1, "next": 2}
-
-# Device pixels for the shelf posters approved in the layout prototype (#5).
-POSTER_SIZE = (234, 351)
 
 
 class Source(Protocol):
@@ -77,5 +74,5 @@ def _payload(item: PlexItem, state: str, source: Source, now: datetime) -> dict[
         "progress": round(100 * item.view_offset_ms / item.duration_ms) if in_progress else None,
         "remaining_min": round((item.duration_ms - item.view_offset_ms) / 60_000) if in_progress else None,
         "last_viewed": item.last_viewed_at.astimezone(now.tzinfo).date().isoformat() if item.last_viewed_at else None,
-        "poster": "data:image/jpeg;base64," + base64.b64encode(source.poster(item.poster_path, *POSTER_SIZE)).decode(),
+        "poster": poster_uri(source, item.poster_path),
     }
