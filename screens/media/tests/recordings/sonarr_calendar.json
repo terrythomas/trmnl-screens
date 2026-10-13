@@ -1,0 +1,615 @@
+[
+  {
+    "seriesId": 100,
+    "tvdbId": 900000,
+    "episodeFileId": 0,
+    "seasonNumber": 2,
+    "episodeNumber": 1,
+    "title": "Pilot",
+    "airDate": "2026-10-12",
+    "airDateUtc": "2026-10-12T18:00:00Z",
+    "runtime": 44,
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "absoluteEpisodeNumber": 10,
+    "unverifiedSceneNumbering": false,
+    "id": 8000,
+    "series": {
+      "id": 100,
+      "title": "Night Market",
+      "sortTitle": "night market",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/100-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/100-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/100-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800100,
+      "seriesType": "standard",
+      "path": "/tv/Night Market"
+    }
+  },
+  {
+    "seriesId": 100,
+    "tvdbId": 900001,
+    "episodeFileId": 0,
+    "seasonNumber": 2,
+    "episodeNumber": 2,
+    "title": "Lanterns",
+    "airDate": "2026-10-12",
+    "airDateUtc": "2026-10-12T18:00:00Z",
+    "runtime": 30,
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "absoluteEpisodeNumber": 11,
+    "unverifiedSceneNumbering": false,
+    "id": 8001,
+    "series": {
+      "id": 100,
+      "title": "Night Market",
+      "sortTitle": "night market",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/100-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/100-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/100-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800100,
+      "seriesType": "standard",
+      "path": "/tv/Night Market"
+    }
+  },
+  {
+    "seriesId": 100,
+    "tvdbId": 900002,
+    "episodeFileId": 0,
+    "seasonNumber": 2,
+    "episodeNumber": 3,
+    "title": "Undertow",
+    "airDate": "2026-10-12",
+    "airDateUtc": "2026-10-12T18:00:00Z",
+    "runtime": 52,
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "absoluteEpisodeNumber": 12,
+    "unverifiedSceneNumbering": false,
+    "id": 8002,
+    "series": {
+      "id": 100,
+      "title": "Night Market",
+      "sortTitle": "night market",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/100-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/100-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/100-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800100,
+      "seriesType": "standard",
+      "path": "/tv/Night Market"
+    }
+  },
+  {
+    "seriesId": 100,
+    "tvdbId": 900003,
+    "episodeFileId": 0,
+    "seasonNumber": 2,
+    "episodeNumber": 4,
+    "title": "Cold Open",
+    "airDate": "2026-10-12",
+    "airDateUtc": "2026-10-12T18:00:00Z",
+    "runtime": 26,
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "absoluteEpisodeNumber": 13,
+    "unverifiedSceneNumbering": false,
+    "id": 8003,
+    "series": {
+      "id": 100,
+      "title": "Night Market",
+      "sortTitle": "night market",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/100-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/100-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/100-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800100,
+      "seriesType": "standard",
+      "path": "/tv/Night Market"
+    }
+  },
+  {
+    "seriesId": 100,
+    "tvdbId": 900004,
+    "episodeFileId": 0,
+    "seasonNumber": 2,
+    "episodeNumber": 5,
+    "title": "Second Wind",
+    "airDate": "2026-10-12",
+    "airDateUtc": "2026-10-12T18:00:00Z",
+    "runtime": 44,
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "absoluteEpisodeNumber": 14,
+    "unverifiedSceneNumbering": false,
+    "id": 8004,
+    "series": {
+      "id": 100,
+      "title": "Night Market",
+      "sortTitle": "night market",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/100-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/100-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/100-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800100,
+      "seriesType": "standard",
+      "path": "/tv/Night Market"
+    }
+  },
+  {
+    "seriesId": 100,
+    "tvdbId": 900005,
+    "episodeFileId": 0,
+    "seasonNumber": 2,
+    "episodeNumber": 6,
+    "title": "Low Tide",
+    "airDate": "2026-10-12",
+    "airDateUtc": "2026-10-12T18:00:00Z",
+    "runtime": 30,
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "absoluteEpisodeNumber": 15,
+    "unverifiedSceneNumbering": false,
+    "id": 8005,
+    "series": {
+      "id": 100,
+      "title": "Night Market",
+      "sortTitle": "night market",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/100-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/100-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/100-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800100,
+      "seriesType": "standard",
+      "path": "/tv/Night Market"
+    }
+  },
+  {
+    "seriesId": 100,
+    "tvdbId": 900006,
+    "episodeFileId": 0,
+    "seasonNumber": 2,
+    "episodeNumber": 7,
+    "title": "Migration",
+    "airDate": "2026-10-12",
+    "airDateUtc": "2026-10-12T18:00:00Z",
+    "runtime": 52,
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "absoluteEpisodeNumber": 16,
+    "unverifiedSceneNumbering": false,
+    "id": 8006,
+    "series": {
+      "id": 100,
+      "title": "Night Market",
+      "sortTitle": "night market",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/100-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/100-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/100-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800100,
+      "seriesType": "standard",
+      "path": "/tv/Night Market"
+    }
+  },
+  {
+    "seriesId": 100,
+    "tvdbId": 900007,
+    "episodeFileId": 0,
+    "seasonNumber": 2,
+    "episodeNumber": 8,
+    "title": "Homecoming",
+    "airDate": "2026-10-12",
+    "airDateUtc": "2026-10-12T18:00:00Z",
+    "runtime": 26,
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "absoluteEpisodeNumber": 17,
+    "unverifiedSceneNumbering": false,
+    "finaleType": "season",
+    "id": 8007,
+    "series": {
+      "id": 100,
+      "title": "Night Market",
+      "sortTitle": "night market",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/100-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/100-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/100-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800100,
+      "seriesType": "standard",
+      "path": "/tv/Night Market"
+    }
+  },
+  {
+    "seriesId": 101,
+    "tvdbId": 900008,
+    "episodeFileId": 0,
+    "seasonNumber": 5,
+    "episodeNumber": 11,
+    "title": "Into the Marsh",
+    "airDate": "2026-10-12",
+    "airDateUtc": "2026-10-12T21:00:00Z",
+    "runtime": 44,
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "absoluteEpisodeNumber": 18,
+    "unverifiedSceneNumbering": false,
+    "finaleType": "season",
+    "id": 8008,
+    "series": {
+      "id": 101,
+      "title": "Field Notes",
+      "sortTitle": "field notes",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/101-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/101-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/101-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800101,
+      "seriesType": "standard",
+      "path": "/tv/Field Notes"
+    }
+  },
+  {
+    "seriesId": 102,
+    "tvdbId": 900009,
+    "episodeFileId": 0,
+    "seasonNumber": 4,
+    "episodeNumber": 12,
+    "title": "Opening Night",
+    "airDate": "2026-10-13",
+    "airDateUtc": "2026-10-13T00:00:00Z",
+    "runtime": 30,
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "absoluteEpisodeNumber": 19,
+    "unverifiedSceneNumbering": false,
+    "id": 8009,
+    "series": {
+      "id": 102,
+      "title": "Copper Valley",
+      "sortTitle": "copper valley",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/102-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/102-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/102-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800102,
+      "seriesType": "standard",
+      "path": "/tv/Copper Valley"
+    }
+  },
+  {
+    "seriesId": 103,
+    "tvdbId": 900010,
+    "episodeFileId": 0,
+    "seasonNumber": 3,
+    "episodeNumber": 13,
+    "title": "Paper Lanterns",
+    "airDate": "2026-10-13",
+    "airDateUtc": "2026-10-13T03:00:00Z",
+    "runtime": 52,
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "absoluteEpisodeNumber": 20,
+    "unverifiedSceneNumbering": false,
+    "id": 8010,
+    "series": {
+      "id": 103,
+      "title": "The Understudy",
+      "sortTitle": "the understudy",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/103-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/103-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/103-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800103,
+      "seriesType": "standard",
+      "path": "/tv/The Understudy"
+    }
+  },
+  {
+    "seriesId": 104,
+    "tvdbId": 900011,
+    "episodeFileId": 0,
+    "seasonNumber": 5,
+    "episodeNumber": 14,
+    "title": "The Long Way Round",
+    "airDate": "2026-10-13",
+    "airDateUtc": "2026-10-13T06:00:00Z",
+    "runtime": 26,
+    "overview": "",
+    "hasFile": false,
+    "monitored": true,
+    "absoluteEpisodeNumber": 21,
+    "unverifiedSceneNumbering": false,
+    "id": 8011,
+    "series": {
+      "id": 104,
+      "title": "Harbor Lights",
+      "sortTitle": "harbor lights",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/104-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/104-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/104-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800104,
+      "seriesType": "standard",
+      "path": "/tv/Harbor Lights"
+    }
+  },
+  {
+    "seriesId": 105,
+    "tvdbId": 900012,
+    "episodeFileId": 7012,
+    "seasonNumber": 2,
+    "episodeNumber": 15,
+    "title": "Last Light",
+    "airDate": "2026-10-13",
+    "airDateUtc": "2026-10-13T09:00:00Z",
+    "runtime": 44,
+    "overview": "",
+    "hasFile": true,
+    "monitored": true,
+    "absoluteEpisodeNumber": 22,
+    "unverifiedSceneNumbering": false,
+    "id": 8012,
+    "series": {
+      "id": 105,
+      "title": "Signal Fires",
+      "sortTitle": "signal fires",
+      "status": "continuing",
+      "ended": false,
+      "overview": "",
+      "network": "Example Network",
+      "airTime": "21:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.example/banners/banners/105-1.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.example/banners/posters/105-1.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.example/banners/fanarts/105-1.jpg"
+        }
+      ],
+      "seasonFolder": true,
+      "monitored": true,
+      "runtime": 44,
+      "tvdbId": 800105,
+      "seriesType": "standard",
+      "path": "/tv/Signal Fires"
+    }
+  }
+]

@@ -21,20 +21,29 @@ class EmptyPlex:
         return []
 
 
+class EmptySonarr:
+    def __init__(self, url, api_key):
+        pass
+
+    def calendar(self, start, end):
+        return []
+
+
 @pytest.fixture
-def empty_plex(monkeypatch):
-    monkeypatch.setenv("PLEX_URL", "http://plex.example:32400")
-    monkeypatch.setenv("PLEX_TOKEN", "secret-plex-token")
+def empty_sources(monkeypatch):
+    for key in ("PLEX_URL", "PLEX_TOKEN", "SONARR_URL", "SONARR_API_KEY"):
+        monkeypatch.setenv(key, "placeholder")
     monkeypatch.setattr(media, "PlexSource", EmptyPlex)
+    monkeypatch.setattr(media, "SonarrSource", EmptySonarr)
 
 
-def test_updated_at_is_local_time_with_offset(empty_plex):
+def test_updated_at_is_local_time_with_offset(empty_sources):
     updated_at = datetime.fromisoformat(collect()["updated_at"])
     assert updated_at.utcoffset() is not None
 
 
-def test_empty_continue_watching_is_left_out(empty_plex):
-    assert "continue_watching" not in collect()
+def test_empty_sections_are_left_out(empty_sources):
+    assert set(collect()) == {"updated_at"}
 
 
 def test_sample_fixture_covers_every_payload_key():
