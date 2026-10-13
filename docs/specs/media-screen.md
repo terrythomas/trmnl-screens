@@ -27,6 +27,7 @@ The primary **Device** is the TRMNL X. The OG renders the same template without 
   - **In progress** when `viewOffset` is present.
   - Otherwise **New** for a movie, an episode of a show with no watched episodes, or episode 1 of a season when the show's own `lastViewedAt` is at least `NEW_AFTER_DAYS` (default 30) days ago.
   - Otherwise **Next**. Binge-watching straight from one season into the next stays Next.
+  - The show's history comes from one extra lookup per show (`/library/metadata/{grandparentRatingKey}`). A show counts as never watched when it has no `lastViewedAt`. Plex's `viewedLeafCount` only counts episodes still in the library, so it reads 0 for a long-watched show whose watched episodes were deleted.
 - Sort by item state (New, In progress, Next), then ascending by `lastViewedAt` within each state. Items with no `lastViewedAt` sort first within their state, since they have never been touched.
 - Item fields: kind (episode/movie), item state, show or movie title, season/episode number and episode title for episodes, runtime in minutes (`duration`), and for In progress items the percentage watched and minutes left (from `viewOffset`), last-watched date, poster.
 - Poster: the show poster (`grandparentThumb`) for episodes and `thumb` for movies, fetched through Plex's `/photo/:/transcode` with `saturation=0`. All posters are the same size. Encoded as a `data:` URI.
@@ -145,7 +146,7 @@ Approved in the layout prototype (#5). Screenshots and the prototype template ar
 
 ## Testing
 
-- **Source adapters:** pytest against recorded JSON responses with real titles kept but every secret, IP and hostname scrubbed.
+- **Source adapters:** pytest against recorded JSON responses that keep the real response shape, with titles and other library details replaced by invented values and every secret, IP and hostname scrubbed.
 - **Screen collector:** pytest with fake adapters, covering:
   - neglect-order sort, including items with no `lastViewedAt`;
   - the airing-window boundaries at exactly ±12 h;

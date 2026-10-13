@@ -1,0 +1,19 @@
+{
+  "MediaContainer": {
+    "size": 1,
+    "Metadata": [
+      {
+        "ratingKey": "4000",
+        "key": "/library/metadata/4000/children",
+        "type": "show",
+        "title": "The Lighthouse Keepers",
+        "summary": "",
+        "thumb": "/library/metadata/4000/thumb/1791000000",
+        "childCount": 2,
+        "leafCount": 18,
+        "viewedLeafCount": 6,
+        "lastViewedAt": 1790740800
+      }
+    ]
+  }
+}

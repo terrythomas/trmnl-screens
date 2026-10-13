@@ -2,6 +2,7 @@
 
 import importlib.util
 import sys
+import types
 from pathlib import Path
 from typing import Any, Callable
 
@@ -22,6 +23,11 @@ def discover_screens(screens_dir: Path = SCREENS_DIR) -> dict[str, Collect]:
 def _load(name: str, init: Path):
     # Every screen's package is called "collector", so give each a unique module name.
     module_name = f"trmnl_screens.{name}.collector"
+    # Relative imports inside the package resolve through these parents, so they must exist.
+    for parent in ("trmnl_screens", f"trmnl_screens.{name}"):
+        if parent not in sys.modules:
+            sys.modules[parent] = types.ModuleType(parent)
+            sys.modules[parent].__path__ = []
     spec = importlib.util.spec_from_file_location(
         module_name, init, submodule_search_locations=[str(init.parent)]
     )
