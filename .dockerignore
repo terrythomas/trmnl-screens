@@ -1,0 +1,9 @@
+# Allowlist: only what the runner and scripts/deploy need.
+*
+!pyproject.toml
+!uv.lock
+!collector/**
+!screens/*/collector/**
+!screens/*/src/**
+!scripts/deploy
+**/__pycache__

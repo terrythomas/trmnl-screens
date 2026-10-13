@@ -175,6 +175,6 @@ Approved in the layout prototype (#5). Screenshots and the prototype template ar
 ## Open items to verify early
 
 1. Whether LaraPaper's `POST /api/plugin_settings/{id}/archive` (or `trmnlp push` with a custom server) accepts a trmnlp zip end to end. If not, deploy falls back to uploading the zip in the UI, documented in the README.
-2. Whether the collector container can reach LaraPaper and every source on the deployment's network, and which Docker networking mode the example compose file should recommend.
+2. Whether the collector container can reach LaraPaper and every source on the deployment's network, and which Docker networking mode the example compose file should recommend. **Resolved in #12:** the default bridge network reaches sources on other machines by LAN address; services in Docker on the same host are reached by joining their network and using container names. The README covers both.
 3. Whether LaraPaper's Liquid renderer, the default PHP keepsuit one, supports the filters the template needs (`date`, `size`, `slice`). If not, use `preferred_renderer: trmnl-liquid` or move the formatting into the collector.
 

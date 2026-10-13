@@ -1,0 +1,13 @@
+#!/bin/sh
+# Fail if an image holds files that must never ship: .env, tests, fixtures or recordings.
+#   scripts/check-image <image>
+set -eu
+image=${1:?usage: scripts/check-image <image>}
+found=$(docker run --rm --entrypoint find "$image" /app \
+  \( -name '.env*' -o -name tests -o -name fixtures -o -name recordings -o -name prototype -o -name '*.json' \) -print)
+if [ -n "$found" ]; then
+  echo "image $image holds files that must not ship:" >&2
+  echo "$found" >&2
+  exit 1
+fi
+echo "image $image: clean"

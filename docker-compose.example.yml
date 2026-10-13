@@ -1,0 +1,23 @@
+# Copy to docker-compose.yml next to your .env, then: docker compose up -d
+services:
+  collector:
+    image: ghcr.io/terrythomas/trmnl-screens:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      STATE_DIR: /state  # overrides .env: in the container, state lives on the volume
+    volumes:
+      - state:/state
+    # The collector must reach LaraPaper, Plex, Sonarr and Radarr at the URLs in .env.
+    # If those run in Docker on this host, the simplest way is to join their network
+    # and use container names in .env (e.g. LARAPAPER_URL=http://larapaper:8080):
+    # networks:
+    #   - services
+
+volumes:
+  state:
+
+# networks:
+#   services:
+#     external: true
+#     name: your-existing-network
