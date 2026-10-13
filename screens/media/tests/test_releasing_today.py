@@ -9,6 +9,7 @@ from collector.discovery import discover_screens
 discover_screens()  # registers the screen packages so their submodules can be imported
 section = importlib.import_module("trmnl_screens.media.collector.releasing_today")
 radarr = importlib.import_module("trmnl_screens.media.collector.sources.radarr")
+plex = importlib.import_module("trmnl_screens.media.collector.sources.plex")
 
 EASTERN = timezone(timedelta(hours=-4))
 NOW = datetime(2026, 10, 12, 14, 30, tzinfo=EASTERN)
@@ -127,3 +128,13 @@ def test_today_is_the_local_calendar_day(now, today):
     result = section.releasing_today(calendar, FakePosters(), now)
     assert calendar.asked == [today]
     assert titles(result) == ["Opens today" if today == TODAY else "Opens tomorrow"]
+
+
+class DownPosters:
+    def poster(self, path, width, height):
+        raise plex.PlexError("Plex request failed: ConnectError")
+
+
+def test_movies_lose_their_posters_when_plex_is_down():
+    result = section.releasing_today(FakeRadarr([movie("Harbor Lights", cinemas=TODAY)]), DownPosters(), NOW)
+    assert [(i["title"], i["poster"]) for i in result["items"]] == [("Harbor Lights", None)]
