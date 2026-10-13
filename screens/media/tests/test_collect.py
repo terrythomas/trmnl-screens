@@ -29,12 +29,21 @@ class EmptySonarr:
         return []
 
 
+class EmptyRadarr:
+    def __init__(self, url, api_key):
+        pass
+
+    def calendar(self, day):
+        return []
+
+
 @pytest.fixture
 def empty_sources(monkeypatch):
-    for key in ("PLEX_URL", "PLEX_TOKEN", "SONARR_URL", "SONARR_API_KEY"):
+    for key in ("PLEX_URL", "PLEX_TOKEN", "SONARR_URL", "SONARR_API_KEY", "RADARR_URL", "RADARR_API_KEY"):
         monkeypatch.setenv(key, "placeholder")
     monkeypatch.setattr(media, "PlexSource", EmptyPlex)
     monkeypatch.setattr(media, "SonarrSource", EmptySonarr)
+    monkeypatch.setattr(media, "RadarrSource", EmptyRadarr)
 
 
 def test_updated_at_is_local_time_with_offset(empty_sources):

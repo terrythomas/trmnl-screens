@@ -42,10 +42,11 @@ The primary **Device** is the TRMNL X. The OG renders the same template without 
 - Sorted by air time ascending.
 
 ### Releasing Today
-- Source: Radarr `GET /api/v3/calendar` for the local calendar day (timezone from `TZ`).
+- Source: Radarr `GET /api/v3/calendar` for the local calendar day (timezone from `TZ`). Only monitored movies count.
+- Radarr stores release dates as midnight UTC, so they are read as plain calendar dates, never converted to local time (which would move them to the evening before).
 - Include a movie if `inCinemas` is today. Also include it if `digitalRelease` is today and `hasFile` is false. Ignore `physicalRelease`.
-- Item fields: title, year, release kind (`theatrical` | `digital`), grabbed, runtime in minutes, poster (from Radarr's images, run through the same grayscale pipeline).
-- A movie that qualifies both ways appears once, as theatrical.
+- Item fields: title, year, release kind (`theatrical` | `digital`), grabbed, runtime in minutes, poster (Radarr's public poster URL, made grayscale by Plex's transcoder like Airing's).
+- A movie that qualifies both ways appears once, as theatrical. Theatrical releases come first, then digital, each by title.
 
 ### Empty and failure behaviour
 - A Section with zero items is left out of the payload, and the template removes it so the remaining sections reflow.
@@ -98,7 +99,7 @@ The single interface between the collector and the template. `fixtures/sample.js
 ```
 
 - `state` is `new`, `in_progress` or `next`. `progress` and `remaining_min` are null unless the state is `in_progress`.
-- `number_end` is null unless the row covers several episodes. `runtime_min` is null when Sonarr doesn't know it yet, which is common for a new series. `milestone` is null or one of `series_premiere`, `season_premiere`, `midseason_finale`, `season_finale`, `series_finale`, `entire_season`.
+- `number_end` is null unless the row covers several episodes. `runtime_min` is null when Sonarr or Radarr doesn't know it yet, which is common for a new series. `milestone` is null or one of `series_premiere`, `season_premiere`, `midseason_finale`, `season_finale`, `series_finale`, `entire_season`.
 - Posters may be JPEG or PNG `data:` URIs.
 
 Sections that are absent mean empty. The template must treat an absent key and an empty `items` list the same way.
