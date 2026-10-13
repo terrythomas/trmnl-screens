@@ -1,5 +1,5 @@
 from collector.config import Config
-from collector.runner import run_forever, run_tick
+from collector.runner import enabled_screens, run_forever, run_tick
 
 CONFIG = Config(
     larapaper_url="http://larapaper.example",
@@ -48,6 +48,23 @@ def test_screen_without_webhook_is_skipped():
     results = run_tick({"unknown": lambda: {}}, CONFIG, push)
     assert results == {"unknown": False}
     assert push.calls == []
+
+
+def test_only_screens_with_a_webhook_are_enabled():
+    def media():
+        return {}
+
+    screens = enabled_screens({"media": media, "unknown": lambda: {}}, CONFIG)
+    assert screens == {"media": media}
+
+
+def test_a_screen_without_a_webhook_is_logged_once_as_off(caplog):
+    caplog.set_level("INFO")
+    enabled_screens({"unknown": lambda: {}}, CONFIG)
+    assert [r.getMessage() for r in caplog.records] == [
+        "screen unknown: off (set UNKNOWN_WEBHOOK_UUID to enable it)"
+    ]
+    assert caplog.records[0].levelname == "INFO"
 
 
 class StopLoop(Exception):

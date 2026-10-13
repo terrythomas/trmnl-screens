@@ -88,6 +88,8 @@ docker compose logs -f
 
 Every 15 minutes the log shows `screen media: pushed`. The logs never include URLs, tokens or UUIDs.
 
+Each screen is opt-in: the collector runs only the screens that have a `<SCREEN>_WEBHOOK_UUID` in `.env`. At startup it logs every other screen once as `off`, so you can run just the screens you want.
+
 If a source is down, the screen keeps showing that section's last good data, marks it stale, and shows an error banner. That data lives in the `state` volume, so it survives restarts. If you bind-mount a folder there instead, make it writable by user ID 10001: the container does not run as root.
 
 ### Updating

@@ -11,6 +11,17 @@ from collector.push import Push
 log = logging.getLogger(__name__)
 
 
+def enabled_screens(screens: dict[str, Collect], config: Config) -> dict[str, Collect]:
+    """Keep the screens that have a webhook. A screen is opt-in: no webhook UUID means off."""
+    enabled = {}
+    for name, collect in screens.items():
+        if config.webhook_url(name) is None:
+            log.info("screen %s: off (set %s_WEBHOOK_UUID to enable it)", name, name.upper())
+        else:
+            enabled[name] = collect
+    return enabled
+
+
 def run_tick(screens: dict[str, Collect], config: Config, push: Push) -> dict[str, bool]:
     """Run each screen once. A failing screen is logged and never blocks the others."""
     results = {}
