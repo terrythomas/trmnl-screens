@@ -11,9 +11,10 @@ from collector.discovery import Screen
 def run(monkeypatch):
     """Run main() with the given args and webhook env, against one fake screen."""
 
-    def _run(args, env):
+    def _run(args, env, load=lambda name, init: Screen(lambda: {})):
         monkeypatch.setattr(entry, "load_dotenv", lambda: None)
-        monkeypatch.setattr(entry, "discover_screens", lambda: {"media": Screen(lambda: {})})
+        monkeypatch.setattr(entry, "find_screens", lambda: {"media": "media/collector/__init__.py"})
+        monkeypatch.setattr(entry, "load_screen", load)
         monkeypatch.setattr(entry, "push", lambda url, payload: None)
         for key in list(os.environ):
             if key.endswith(("_WEBHOOK_UUID", "INTERVAL_MINUTES")):
@@ -42,3 +43,35 @@ def test_exits_with_an_error_when_the_named_screen_is_off(run, capsys):
 
 def test_runs_an_enabled_screen_once(run):
     assert run(["--once"], {"MEDIA_WEBHOOK_UUID": "media-uuid"}) == 0
+
+
+def test_exits_with_an_error_naming_a_screens_missing_module(run, capsys):
+    def load(name, init):
+        raise ModuleNotFoundError("No module named 'feedparser'", name="feedparser")
+
+    with pytest.raises(SystemExit) as exit:
+        run(["--once"], {"MEDIA_WEBHOOK_UUID": "media-uuid"}, load=load)
+    assert exit.value.code == 2
+    err = capsys.readouterr().err
+    assert "screen media needs feedparser" in err
+    assert "pip install '.[media]'" in err
+
+
+def test_a_disabled_screen_is_never_imported(run):
+    loaded = []
+
+    def load(name, init):
+        loaded.append(name)
+        return Screen(lambda: {})
+
+    with pytest.raises(SystemExit):
+        run(["--once"], {}, load=load)
+    assert loaded == []
+
+
+def test_a_missing_module_of_the_screens_own_is_not_blamed_on_an_extra(run):
+    def load(name, init):
+        raise ModuleNotFoundError(name="trmnl_screens.media.collector.typo")
+
+    with pytest.raises(ModuleNotFoundError):
+        run(["--once"], {"MEDIA_WEBHOOK_UUID": "media-uuid"}, load=load)
