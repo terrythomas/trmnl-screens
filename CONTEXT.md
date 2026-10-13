@@ -65,7 +65,7 @@ Whether the file for an episode or movie is already on the server.
 _Avoid_: Downloaded, available, hasFile
 
 **Releasing Today**:
-Movies in Radarr with a theatrical release today (always shown) or a digital release today (shown only when not yet grabbed). Physical releases are ignored.
+Monitored movies in Radarr with a theatrical release today (always shown) or a digital release today (shown only when not yet grabbed). Physical releases are ignored.
 _Avoid_: Upcoming movies, this week's movies
 
 ## Health

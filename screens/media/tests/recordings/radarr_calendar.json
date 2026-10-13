@@ -1,0 +1,127 @@
+[
+  {
+    "id": 1,
+    "tmdbId": 700001,
+    "title": "Harbor Lights",
+    "sortTitle": "harbor lights",
+    "year": 2026,
+    "status": "released",
+    "overview": "",
+    "hasFile": false,
+    "monitored": true,
+    "runtime": 112,
+    "images": [
+      {
+        "coverType": "poster",
+        "url": "/MediaCover/1/poster.jpg",
+        "remoteUrl": "https://images.example/t/p/original/1-poster.jpg"
+      },
+      {
+        "coverType": "fanart",
+        "remoteUrl": "https://images.example/t/p/original/1-fanart.jpg"
+      }
+    ],
+    "path": "/movies/Harbor Lights (2026)",
+    "inCinemas": "2026-10-12T00:00:00Z"
+  },
+  {
+    "id": 2,
+    "tmdbId": 700002,
+    "title": "The Long Field",
+    "sortTitle": "the long field",
+    "year": 2026,
+    "status": "released",
+    "overview": "",
+    "hasFile": false,
+    "monitored": true,
+    "runtime": 0,
+    "images": [
+      {
+        "coverType": "fanart",
+        "remoteUrl": "https://images.example/t/p/original/2-fanart.jpg"
+      }
+    ],
+    "path": "/movies/The Long Field (2026)",
+    "inCinemas": "2026-08-01T00:00:00Z",
+    "digitalRelease": "2026-10-12T00:00:00Z",
+    "physicalRelease": "2026-11-20T00:00:00Z"
+  },
+  {
+    "id": 3,
+    "tmdbId": 700003,
+    "title": "Paper Moons",
+    "sortTitle": "paper moons",
+    "year": 2026,
+    "status": "released",
+    "overview": "",
+    "hasFile": true,
+    "monitored": true,
+    "runtime": 98,
+    "images": [
+      {
+        "coverType": "poster",
+        "url": "/MediaCover/3/poster.jpg",
+        "remoteUrl": "https://images.example/t/p/original/3-poster.jpg"
+      },
+      {
+        "coverType": "fanart",
+        "remoteUrl": "https://images.example/t/p/original/3-fanart.jpg"
+      }
+    ],
+    "path": "/movies/Paper Moons (2026)",
+    "inCinemas": "2026-07-10T00:00:00Z",
+    "digitalRelease": "2026-10-12T00:00:00Z"
+  },
+  {
+    "id": 4,
+    "tmdbId": 700004,
+    "title": "Quiet Hours",
+    "sortTitle": "quiet hours",
+    "year": 2026,
+    "status": "released",
+    "overview": "",
+    "hasFile": false,
+    "monitored": false,
+    "runtime": 104,
+    "images": [
+      {
+        "coverType": "poster",
+        "url": "/MediaCover/4/poster.jpg",
+        "remoteUrl": "https://images.example/t/p/original/4-poster.jpg"
+      },
+      {
+        "coverType": "fanart",
+        "remoteUrl": "https://images.example/t/p/original/4-fanart.jpg"
+      }
+    ],
+    "path": "/movies/Quiet Hours (2026)",
+    "inCinemas": "2026-10-12T00:00:00Z"
+  },
+  {
+    "id": 5,
+    "tmdbId": 700005,
+    "title": "Cold Open",
+    "sortTitle": "cold open",
+    "year": 2025,
+    "status": "released",
+    "overview": "",
+    "hasFile": true,
+    "monitored": true,
+    "runtime": 121,
+    "images": [
+      {
+        "coverType": "poster",
+        "url": "/MediaCover/5/poster.jpg",
+        "remoteUrl": "https://images.example/t/p/original/5-poster.jpg"
+      },
+      {
+        "coverType": "fanart",
+        "remoteUrl": "https://images.example/t/p/original/5-fanart.jpg"
+      }
+    ],
+    "path": "/movies/Cold Open (2025)",
+    "inCinemas": "2025-12-05T00:00:00Z",
+    "digitalRelease": "2026-02-10T00:00:00Z",
+    "physicalRelease": "2026-10-12T00:00:00Z"
+  }
+]
