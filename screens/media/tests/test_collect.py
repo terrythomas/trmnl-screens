@@ -1,21 +1,40 @@
-import importlib.util
+import importlib
 import json
 from datetime import datetime
 from pathlib import Path
 
+import pytest
+
+from collector.discovery import discover_screens
+
 SCREEN = Path(__file__).resolve().parent.parent
 
-
-def load_collector():
-    spec = importlib.util.spec_from_file_location("media_collector", SCREEN / "collector" / "__init__.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+collect = discover_screens()["media"]
+media = importlib.import_module("trmnl_screens.media.collector")
 
 
-def test_updated_at_is_local_time_with_offset():
-    updated_at = datetime.fromisoformat(load_collector().collect()["updated_at"])
+class EmptyPlex:
+    def __init__(self, url, token):
+        pass
+
+    def continue_watching(self):
+        return []
+
+
+@pytest.fixture
+def empty_plex(monkeypatch):
+    monkeypatch.setenv("PLEX_URL", "http://plex.example:32400")
+    monkeypatch.setenv("PLEX_TOKEN", "secret-plex-token")
+    monkeypatch.setattr(media, "PlexSource", EmptyPlex)
+
+
+def test_updated_at_is_local_time_with_offset(empty_plex):
+    updated_at = datetime.fromisoformat(collect()["updated_at"])
     assert updated_at.utcoffset() is not None
+
+
+def test_empty_continue_watching_is_left_out(empty_plex):
+    assert "continue_watching" not in collect()
 
 
 def test_sample_fixture_covers_every_payload_key():
