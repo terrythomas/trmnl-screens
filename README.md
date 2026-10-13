@@ -2,7 +2,7 @@
 
 Custom e-ink dashboard screens for [TRMNL](https://usetrmnl.com) devices, served by a self-hosted [LaraPaper](https://github.com/usetrmnl/larapaper) instance. Each screen pairs a Liquid template with a Python collector that gathers data from home services and pushes it to a LaraPaper webhook.
 
-The first screen is the **Media screen**: what to keep watching from Plex, what is airing in Sonarr, and what is releasing today in Radarr. It is laid out for the TRMNL X, and the OG gets a text-only version of the same screen.
+The first screen is the **Media screen**: what to keep watching from Plex, what is airing in Sonarr, and which Radarr movies are in theaters or just out on streaming. Theatrical dates for your country come from TMDB's public release pages; no TMDB account is needed. It is laid out for the TRMNL X, and the OG gets a text-only version of the same screen.
 
 ## Setup
 
@@ -52,6 +52,8 @@ Open `.env` and replace the placeholder values:
 | `MEDIA_PLUGIN_ID`, `MEDIA_WEBHOOK_UUID` | Leave these for now. Step 6 fills them in. |
 
 `INTERVAL_MINUTES` (default 15) and `NEW_AFTER_DAYS` (default 30) can stay as they are. In Docker, `STATE_DIR` is set by the compose file, so its value in `.env` is ignored.
+
+`RELEASE_COUNTRY` in `docker-compose.yml` (default `US`) is the two-letter country code whose theatrical dates **In Theaters** uses.
 
 ### 5. Check the network
 

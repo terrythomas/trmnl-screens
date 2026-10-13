@@ -1,108 +1,111 @@
 {
-  "updated_at": "2026-10-12T14:30:00-04:00",
-  "errors": [
-    {
-      "source": "sonarr",
-      "since": "2026-10-12T13:45:00-04:00"
-    }
-  ],
-  "continue_watching": {
-    "stale": false,
-    "total": 14,
-    "items": [
-      {
-        "kind": "episode",
-        "title": "The Lighthouse Keepers",
-        "episode": {
-          "season": 4,
-          "number": 1,
-          "title": "Low Tide"
-        },
-        "last_viewed": "2026-06-29",
-        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNISGAAIwAKKQJBD4VzQAAAAABJRU5ErkJggg==",
-        "state": "new",
-        "duration_min": 52,
-        "remaining_min": null,
-        "progress": null
-      },
-      {
-        "kind": "movie",
-        "title": "A Quiet Orbit",
-        "episode": null,
-        "last_viewed": "2026-08-14",
-        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNYsIABjAAQ6QPBkkCNHgAAAABJRU5ErkJggg==",
-        "state": "in_progress",
-        "duration_min": 118,
-        "remaining_min": 68,
-        "progress": 42
-      },
-      {
-        "kind": "episode",
-        "title": "Copper Valley",
-        "episode": {
-          "season": 2,
-          "number": 6,
-          "title": "The Long Way Round"
-        },
-        "last_viewed": "2026-09-30",
-        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mO4cIEBjAAV+QThjhhm9AAAAABJRU5ErkJggg==",
-        "state": "in_progress",
-        "duration_min": 44,
-        "remaining_min": 39,
-        "progress": 12
-      }
-    ]
-  },
-  "airing": {
-    "stale": true,
-    "items": [
-      {
-        "series": "Night Market",
-        "season": 2,
-        "number": 7,
-        "title": "Lanterns",
-        "air_time": "2026-10-12T09:00:00-04:00",
-        "aired": true,
-        "grabbed": true,
-        "number_end": null,
-        "runtime_min": 30,
-        "milestone": "season_finale",
-        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNISGAAIwAKKQJBD4VzQAAAAABJRU5ErkJggg=="
-      },
-      {
-        "series": "Field Notes",
-        "season": 1,
-        "number": 3,
-        "title": "Migration",
-        "air_time": "2026-10-12T21:00:00-04:00",
-        "aired": false,
-        "grabbed": false,
-        "number_end": null,
-        "runtime_min": 58,
-        "milestone": null,
-        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNYsIABjAAQ6QPBkkCNHgAAAABJRU5ErkJggg=="
-      }
-    ]
-  },
-  "releasing_today": {
-    "stale": false,
-    "items": [
-      {
-        "title": "Paper Boats",
-        "year": 2026,
-        "kind": "theatrical",
-        "grabbed": false,
-        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNoaGAAIwANiQMB6UHnOwAAAABJRU5ErkJggg==",
-        "runtime_min": 112
-      },
-      {
-        "title": "The Glass Orchard",
-        "year": 2025,
-        "kind": "digital",
-        "grabbed": false,
-        "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mO4cIEBjAAV+QThjhhm9AAAAABJRU5ErkJggg==",
-        "runtime_min": 97
-      }
-    ]
+ "updated_at": "2026-10-12T14:30:00-04:00",
+ "errors": [
+  {
+   "source": "sonarr",
+   "since": "2026-10-12T13:45:00-04:00"
   }
+ ],
+ "continue_watching": {
+  "stale": false,
+  "total": 14,
+  "items": [
+   {
+    "kind": "episode",
+    "title": "The Lighthouse Keepers",
+    "episode": {
+     "season": 4,
+     "number": 1,
+     "title": "Low Tide"
+    },
+    "last_viewed": "2026-06-29",
+    "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNISGAAIwAKKQJBD4VzQAAAAABJRU5ErkJggg==",
+    "state": "new",
+    "duration_min": 52,
+    "remaining_min": null,
+    "progress": null
+   },
+   {
+    "kind": "movie",
+    "title": "A Quiet Orbit",
+    "episode": null,
+    "last_viewed": "2026-08-14",
+    "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNYsIABjAAQ6QPBkkCNHgAAAABJRU5ErkJggg==",
+    "state": "in_progress",
+    "duration_min": 118,
+    "remaining_min": 68,
+    "progress": 42
+   },
+   {
+    "kind": "episode",
+    "title": "Copper Valley",
+    "episode": {
+     "season": 2,
+     "number": 6,
+     "title": "The Long Way Round"
+    },
+    "last_viewed": "2026-09-30",
+    "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mO4cIEBjAAV+QThjhhm9AAAAABJRU5ErkJggg==",
+    "state": "in_progress",
+    "duration_min": 44,
+    "remaining_min": 39,
+    "progress": 12
+   }
+  ]
+ },
+ "airing": {
+  "stale": true,
+  "items": [
+   {
+    "series": "Night Market",
+    "season": 2,
+    "number": 7,
+    "title": "Lanterns",
+    "air_time": "2026-10-12T09:00:00-04:00",
+    "aired": true,
+    "grabbed": true,
+    "number_end": null,
+    "runtime_min": 30,
+    "milestone": "season_finale",
+    "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNISGAAIwAKKQJBD4VzQAAAAABJRU5ErkJggg=="
+   },
+   {
+    "series": "Field Notes",
+    "season": 1,
+    "number": 3,
+    "title": "Migration",
+    "air_time": "2026-10-12T21:00:00-04:00",
+    "aired": false,
+    "grabbed": false,
+    "number_end": null,
+    "runtime_min": 58,
+    "milestone": null,
+    "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNYsIABjAAQ6QPBkkCNHgAAAABJRU5ErkJggg=="
+   }
+  ]
+ },
+ "in_theaters": {
+  "stale": false,
+  "items": [
+   {
+    "title": "Paper Boats",
+    "stage": "wide",
+    "note": null,
+    "since": "2026-10-12",
+    "days_ago": 0,
+    "runtime_min": 112,
+    "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mNoaGAAIwANiQMB6UHnOwAAAABJRU5ErkJggg=="
+   }
+  ]
+ },
+ "streaming": {
+  "stale": false,
+  "items": [
+   {
+    "title": "The Glass Orchard",
+    "runtime_min": 97,
+    "poster": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAAAAACcgYFdAAAADUlEQVR42mO4cIEBjAAV+QThjhhm9AAAAABJRU5ErkJggg=="
+   }
+  ]
+ }
 }

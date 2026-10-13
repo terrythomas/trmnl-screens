@@ -1,6 +1,6 @@
 import importlib
 import json
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import httpx
@@ -14,6 +14,8 @@ radarr = importlib.import_module("trmnl_screens.media.collector.sources.radarr")
 RECORDING = Path(__file__).parent / "recordings" / "radarr_calendar.json"
 API_KEY = "secret-radarr-key"
 DAY = date(2026, 10, 12)
+NEXT_DAY = DAY + timedelta(days=1)
+TMDB_ID = 700001
 
 
 def source(handler):
@@ -24,27 +26,31 @@ def replay(request):
     return httpx.Response(200, json=json.loads(RECORDING.read_text()))
 
 
-def test_calendar_asks_for_the_day():
+def test_calendar_asks_for_the_range():
     requested = []
 
     def handler(request):
         requested.append(request)
         return replay(request)
 
-    source(handler).calendar(DAY)
+    source(handler).calendar(DAY, NEXT_DAY)
 
-    [request] = requested
+    request = requested[0]
     assert request.url.path == "/api/v3/calendar"
     # Explicit UTC: Radarr reads a bare date in its own zone, which misses midnight-UTC releases.
     assert dict(request.url.params) == {"start": "2026-10-12T00:00:00Z", "end": "2026-10-13T00:00:00Z"}
+
+    source(handler).calendar(DAY - timedelta(days=90), NEXT_DAY)
+    assert dict(requested[-1].url.params)["start"] == "2026-07-14T00:00:00Z"
     assert request.headers["X-Api-Key"] == API_KEY
 
 
 def test_calendar_maps_movies():
-    movies = source(replay).calendar(DAY)
+    movies = source(replay).calendar(DAY, NEXT_DAY)
 
     assert [m.title for m in movies] == ["Harbor Lights", "The Long Field", "Paper Moons", "Quiet Hours", "Cold Open"]
     assert movies[0] == radarr.RadarrMovie(
+        tmdb_id=TMDB_ID,
         title="Harbor Lights",
         year=2026,
         in_cinemas=date(2026, 10, 12),
@@ -63,13 +69,13 @@ def test_release_dates_are_calendar_dates_not_moments():
     # would land on the evening before, so it must be read as a plain date.
     [movie] = source(lambda request: httpx.Response(200, json=[
         {**json.loads(RECORDING.read_text())[0], "inCinemas": "2026-10-14T00:00:00Z"},
-    ])).calendar(DAY)
+    ])).calendar(DAY, NEXT_DAY)
 
     assert movie.in_cinemas == date(2026, 10, 14)
 
 
 def test_unknown_runtime_and_missing_poster():
-    long_field = source(replay).calendar(DAY)[1]
+    long_field = source(replay).calendar(DAY, NEXT_DAY)[1]
 
     assert (long_field.runtime_min, long_field.poster_url) == (None, None)
 
@@ -90,7 +96,7 @@ def fails_with(response=None, error=None):
 ])
 def test_failures_raise_radarr_error_without_the_key(handler):
     with pytest.raises(radarr.RadarrError) as raised:
-        source(handler).calendar(DAY)
+        source(handler).calendar(DAY, NEXT_DAY)
 
     error = raised.value
     assert API_KEY not in str(error) and "radarr.example" not in str(error)

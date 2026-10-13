@@ -6,6 +6,7 @@ services:
     env_file: .env
     environment:
       STATE_DIR: /state  # overrides .env: in the container, state lives on the volume
+      RELEASE_COUNTRY: US  # two-letter country code whose theatrical dates In Theaters uses
     volumes:
       - state:/state
     # The collector must reach LaraPaper, Plex, Sonarr and Radarr at the URLs in .env.

@@ -78,11 +78,16 @@ AIRING_EXTRA = [  # pushes Airing past four rows, including a whole-season drop
 AIR_KEYS = ["series", "season", "number", "number_end", "title", "air_time", "aired", "grabbed", "runtime_min",
             "milestone"]
 
-# title, year, kind, grabbed, runtime
-RELEASING = [
-    ("Paper Boats", 2026, "theatrical", False, 112),
-    ("The Glass Orchard", 2025, "digital", False, None),
+# title, stage, note, since, days ago, runtime
+THEATERS = [
+    ("Paper Boats", "wide", None, "2026-10-12", 0, 112),
+    ("Harbour Wall", "limited", "IMAX", "2026-10-10", 2, 131),
 ]
+THEATERS_EXTRA = [("Signal Fires", "wide", None, "2026-10-09", 3, 104)]
+THEATERS_MORE = [("Northern Line", "wide", None, "2026-10-09", 3, 95)]
+# title, runtime
+STREAMING = [("The Glass Orchard", None)]
+STREAMING_EXTRA = [("Lantern Season", 99), ("Small Hours", 88)]
 
 
 def cw_item(n, kind, title, episode, progress, last_viewed, runtime, state):
@@ -97,7 +102,7 @@ def cw_item(n, kind, title, episode, progress, last_viewed, runtime, state):
     }
 
 
-def full(cw_count=6, total=None, airing=AIRING):
+def full(cw_count=6, total=None, airing=AIRING, theaters=THEATERS, streaming=STREAMING):
     items = [cw_item(n, *row) for n, row in enumerate(CW[:cw_count])]
     return {
         "updated_at": NOW,
@@ -105,15 +110,18 @@ def full(cw_count=6, total=None, airing=AIRING):
         "continue_watching": {"stale": False, "total": total or cw_count, "items": items},
         "airing": {"stale": False, "items": [
             dict(zip(AIR_KEYS, row), poster=poster(3 + n)) for n, row in enumerate(airing)]},
-        "releasing_today": {"stale": False, "items": [
-            {"title": t, "year": y, "kind": k, "grabbed": g, "runtime_min": r, "poster": poster(10 + n)}
-            for n, (t, y, k, g, r) in enumerate(RELEASING)]},
+        "in_theaters": {"stale": False, "items": [
+            {"title": t, "stage": st, "note": note, "since": since, "days_ago": ago, "runtime_min": r,
+             "poster": poster(10 + n)}
+            for n, (t, st, note, since, ago, r) in enumerate(theaters)]},
+        "streaming": {"stale": False, "items": [
+            {"title": t, "runtime_min": r, "poster": poster(14 + n)} for n, (t, r) in enumerate(streaming)]},
     }
 
 
 def variants() -> dict[str, dict]:
     v = {"full": full()}
-    for section in ("continue_watching", "airing", "releasing_today"):
+    for section in ("continue_watching", "airing", "in_theaters", "streaming"):
         absent, emptied = full(), full()
         del absent[section]
         emptied[section]["items"] = []  # must render exactly like the absent key
@@ -130,7 +138,7 @@ def variants() -> dict[str, dict]:
     d["errors"] = [{"source": "plex", "since": "2026-10-12T18:15:00-04:00"}]
     v["stale-plex"] = d
     d = full()
-    del d["releasing_today"]  # failed before it ever had data
+    del d["in_theaters"], d["streaming"]  # failed before they ever had data
     d["errors"] = [{"source": "radarr", "since": "2026-10-12T19:15:00-04:00"},
                    {"source": "sonarr", "since": "2026-10-12T17:45:00-04:00"}]
     d["airing"]["stale"] = True
@@ -141,7 +149,7 @@ def variants() -> dict[str, dict]:
     cw[0]["title"] = "The Extraordinarily Long-Running Chronicles of the Lighthouse Keepers"
     cw[3]["title"] = "Copper Valley: The Untold Story of Everyone Who Ever Lived There"
     d["airing"]["items"][0]["series"] = "Night Market Confidential: Behind the Stalls"
-    d["releasing_today"]["items"][0]["title"] = "Paper Boats and the Impossible Voyage Across the Northern Sea"
+    d["in_theaters"]["items"][0]["title"] = "Paper Boats and the Impossible Voyage Across the Northern Sea"
     v["long-titles"] = d
 
     v["cw-one"] = full(cw_count=1)
@@ -149,6 +157,13 @@ def variants() -> dict[str, dict]:
         v[f"cw-{n:02d}"] = full(cw_count=n)
     v["cw-many"] = full(cw_count=12, total=14)
     v["airing-many"] = full(airing=sorted(AIRING + AIRING_EXTRA, key=lambda a: a[5]))
+    d = full()
+    d["in_theaters"]["stale"] = True
+    d["errors"] = [{"source": "tmdb", "since": "2026-10-12T06:00:00-04:00"}]
+    v["stale-tmdb"] = d
+    v["theaters-many"] = full(theaters=THEATERS + THEATERS_EXTRA, streaming=STREAMING + STREAMING_EXTRA)
+    v["theaters-only-many"] = full(theaters=THEATERS + THEATERS_EXTRA + THEATERS_MORE, streaming=[])
+    v["streaming-only"] = full(theaters=[], streaming=STREAMING + STREAMING_EXTRA)
     return copy.deepcopy(v)
 
 

@@ -13,7 +13,7 @@ The process that gathers a screen's data from its sources and pushes it to LaraP
 _Avoid_: Fetcher, poller, backend
 
 **Source**:
-A service a collector reads from (Plex, Sonarr, Radarr).
+A service a collector reads from (Plex, Sonarr, Radarr, TMDB).
 _Avoid_: Integration, provider
 
 **Device**:
@@ -22,7 +22,7 @@ A physical TRMNL display. The **X** (large, 16 grays) is the primary target; the
 ## Media screen
 
 **Section**:
-One of the three content groups on the Media screen: Continue Watching, Airing, Releasing Today. A section with no items is removed entirely.
+One of the content groups on the Media screen: Continue Watching, Airing, In Theaters, Streaming. A section with no items is removed entirely.
 
 **Continue Watching**:
 The items Plex's home-screen "Continue Watching" row holds for the configured account on the configured Plex server: in-progress items, next-up episodes, and newly available season premieres. Shown first on the screen, grouped by item state.
@@ -64,9 +64,27 @@ _Avoid_: Special, event
 Whether the file for an episode or movie is already on the server.
 _Avoid_: Downloaded, available, hasFile
 
-**Releasing Today**:
-Monitored movies in Radarr with a theatrical release today (always shown) or a digital release today (shown only when not yet grabbed). Physical releases are ignored.
-_Avoid_: Upcoming movies, this week's movies
+**In Theaters**:
+Monitored, not-grabbed Radarr movies that are in their **theater run** in the **release country**.
+_Avoid_: Releasing today, upcoming movies, now playing
+
+**Release country**:
+The country whose release dates count for In Theaters (`RELEASE_COUNTRY`, default `US`). Radarr's own theatrical date is the earliest in any country, so the release country's dates come from TMDB.
+
+**Wide release**:
+The release country's "Theatrical" date on TMDB. Shown without a badge.
+_Avoid_: Theatrical release, opening
+
+**Limited release**:
+A "Theatrical (limited)" date that comes before the wide release by at most 7 days, such as an early IMAX run. Other limited dates (re-releases, one-off screenings) are ignored. Shown with a "limited" badge and TMDB's note, until the wide release.
+
+**Theater run**:
+From the limited release (or the wide release when there is none) through the end of the Sunday on or after the wide release, in local time. A movie with no wide release in the release country has no run.
+_Avoid_: Opening weekend, window
+
+**Streaming**:
+Monitored Radarr movies with a digital release today that aren't grabbed yet. Shown for that day only. Physical releases are ignored.
+_Avoid_: Digital, releasing today, VOD
 
 ## Health
 

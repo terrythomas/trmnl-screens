@@ -1,13 +1,14 @@
-"""Radarr source adapter for Releasing Today."""
+"""Radarr source adapter for In Theaters and Streaming."""
 
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 import httpx
 
 
 @dataclass(frozen=True)
 class RadarrMovie:
+    tmdb_id: int
     title: str
     year: int
     in_cinemas: date | None
@@ -31,13 +32,13 @@ class RadarrSource:
             transport=transport,
         )
 
-    def calendar(self, day: date) -> list[RadarrMovie]:
-        """Movies with any release date on day (Radarr may also return neighbours)."""
+    def calendar(self, start: date, end: date) -> list[RadarrMovie]:
+        """Movies with any release date from start up to, not including, end (Radarr may also return neighbours)."""
         try:
             # Explicit UTC midnights: Radarr reads a bare date in the server's own zone, which
             # would start the range after the midnight-UTC release dates and miss them.
             response = self._client.get("/api/v3/calendar", params={
-                "start": f"{day.isoformat()}T00:00:00Z", "end": f"{(day + timedelta(days=1)).isoformat()}T00:00:00Z",
+                "start": f"{start.isoformat()}T00:00:00Z", "end": f"{end.isoformat()}T00:00:00Z",
             })
             response.raise_for_status()
             return [_movie(m) for m in response.json()]
@@ -52,6 +53,7 @@ class RadarrSource:
 
 def _movie(m: dict) -> RadarrMovie:
     return RadarrMovie(
+        tmdb_id=m["tmdbId"],
         title=m["title"],
         year=m["year"],
         in_cinemas=_date(m.get("inCinemas")),
