@@ -6,7 +6,7 @@ The first screen is the **Media screen**: what to keep watching from Plex, what 
 
 ## Setup
 
-The collector ships as a Docker image, `ghcr.io/terrythomas/trmnl-screens`. Every 15 minutes it collects each screen's data and pushes it to that screen's LaraPaper plugin. The same image also uploads the screen's template to LaraPaper, so you don't need Python or a clone of this repo.
+The collector ships as a Docker image, `ghcr.io/terrythomas/trmnl-screens`. On each screen's schedule (every 15 minutes for Media) it collects that screen's data and pushes it to that screen's LaraPaper plugin. The same image also uploads the screen's template to LaraPaper, so you don't need Python or a clone of this repo.
 
 ### 1. Prerequisites
 
@@ -51,7 +51,7 @@ Open `.env` and replace the placeholder values:
 | `TZ` | Your time zone, e.g. `America/New_York`. It decides what "today" means. |
 | `MEDIA_PLUGIN_ID`, `MEDIA_WEBHOOK_UUID` | Leave these for now. Step 6 fills them in. |
 
-`INTERVAL_MINUTES` (default 15) and `NEW_AFTER_DAYS` (default 30) can stay as they are. In Docker, `STATE_DIR` is set by the compose file, so its value in `.env` is ignored.
+`NEW_AFTER_DAYS` (default 30) can stay as it is. Each screen collects on its own default schedule (Media: every 15 minutes); set `<SCREEN>_INTERVAL_MINUTES`, e.g. `MEDIA_INTERVAL_MINUTES=30`, to change one screen, or `INTERVAL_MINUTES` to change every screen. An `INTERVAL_MINUTES` line left over from an older `.env` overrides every screen's default, so delete it unless you want that. In Docker, `STATE_DIR` is set by the compose file, so its value in `.env` is ignored.
 
 `RELEASE_COUNTRY` in `docker-compose.yml` (default `US`) is the two-letter country code whose theatrical dates **In Theaters** uses.
 
@@ -86,7 +86,7 @@ docker compose up -d
 docker compose logs -f
 ```
 
-Every 15 minutes the log shows `screen media: pushed`. The logs never include URLs, tokens or UUIDs.
+At startup the log shows each screen's schedule, e.g. `screen media: every 15 minutes`, and after each run `screen media: pushed`. The logs never include URLs, tokens or UUIDs.
 
 Each screen is opt-in: the collector runs only the screens that have a `<SCREEN>_WEBHOOK_UUID` in `.env`. At startup it logs every other screen once as `off`, so you can run just the screens you want.
 

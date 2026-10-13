@@ -4,6 +4,7 @@ import sys
 import pytest
 
 import collector.__main__ as entry
+from collector.discovery import Screen
 
 
 @pytest.fixture
@@ -12,10 +13,10 @@ def run(monkeypatch):
 
     def _run(args, env):
         monkeypatch.setattr(entry, "load_dotenv", lambda: None)
-        monkeypatch.setattr(entry, "discover_screens", lambda: {"media": lambda: {}})
+        monkeypatch.setattr(entry, "discover_screens", lambda: {"media": Screen(lambda: {})})
         monkeypatch.setattr(entry, "push", lambda url, payload: None)
         for key in list(os.environ):
-            if key.endswith("_WEBHOOK_UUID"):
+            if key.endswith(("_WEBHOOK_UUID", "INTERVAL_MINUTES")):
                 monkeypatch.delenv(key)
         for key, value in {"LARAPAPER_URL": "http://larapaper.example", **env}.items():
             monkeypatch.setenv(key, value)

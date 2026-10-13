@@ -9,7 +9,7 @@ from collector.discovery import discover_screens
 
 SCREEN = Path(__file__).resolve().parent.parent
 
-collect = discover_screens()["media"]
+collect = discover_screens()["media"].collect
 media = importlib.import_module("trmnl_screens.media.collector")
 sonarr = importlib.import_module("trmnl_screens.media.collector.sources.sonarr")
 

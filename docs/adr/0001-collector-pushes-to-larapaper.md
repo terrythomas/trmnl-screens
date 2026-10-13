@@ -1,6 +1,6 @@
 # Collectors push to LaraPaper webhooks instead of LaraPaper polling sources
 
-LaraPaper could poll the home services directly, but each screen needs several sources fetched in parallel, image processing, and API keys that we don't want stored in LaraPaper. A collector in this repo pulls every source on a 15-minute schedule and pushes a single payload to the screen's LaraPaper webhook over the local Docker network. LaraPaper's 10-second polling timeout and its role as a pure renderer were the deciding factors.
+LaraPaper could poll the home services directly, but each screen needs several sources fetched in parallel, image processing, and API keys that we don't want stored in LaraPaper. A collector in this repo pulls every source on a schedule (15 minutes for the Media screen; each screen sets its own) and pushes a single payload to the screen's LaraPaper webhook over the local Docker network. LaraPaper's 10-second polling timeout and its role as a pure renderer were the deciding factors.
 
 ## Considered Options
 
