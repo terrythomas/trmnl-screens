@@ -3,6 +3,7 @@
 import importlib.util
 import sys
 import types
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
@@ -11,12 +12,20 @@ Collect = Callable[[], dict[str, Any]]
 SCREENS_DIR = Path(__file__).resolve().parent.parent / "screens"
 
 
-def discover_screens(screens_dir: Path = SCREENS_DIR) -> dict[str, Collect]:
-    """Map each screen name to its collector's collect() function."""
+@dataclass(frozen=True)
+class Screen:
+    collect: Collect
+    # The screen's own default, from INTERVAL_MINUTES in its collector package.
+    interval_minutes: int | None = None
+
+
+def discover_screens(screens_dir: Path = SCREENS_DIR) -> dict[str, Screen]:
+    """Map each screen name to its collector."""
     screens = {}
     for init in sorted(screens_dir.glob("*/collector/__init__.py")):
         name = init.parent.parent.name
-        screens[name] = _load(name, init).collect
+        module = _load(name, init)
+        screens[name] = Screen(module.collect, getattr(module, "INTERVAL_MINUTES", None))
     return screens
 
 

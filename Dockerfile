@@ -1,4 +1,4 @@
-# The collector runner: every screen's collector, run every INTERVAL_MINUTES.
+# The collector runner: every enabled screen's collector, each on its own interval.
 # .dockerignore is an allowlist, so tests, fixtures and recordings never reach the image.
 FROM python:3.12-slim
 

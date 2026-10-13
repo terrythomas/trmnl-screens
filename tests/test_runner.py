@@ -71,27 +71,58 @@ class StopLoop(Exception):
     pass
 
 
-def test_run_forever_ticks_immediately_then_after_each_interval():
-    events = []
+class FakeClock:
+    """A monotonic clock that only moves when the loop sleeps or a run takes time."""
 
-    def sleep(seconds):
-        events.append(("sleep", seconds))
-        if len(events) >= 4:
+    def __init__(self, stop_after):
+        self.now = 0.0
+        self.stop_after = stop_after
+
+    def __call__(self):
+        return self.now
+
+    def sleep(self, seconds):
+        self.now += seconds
+        if self.now > self.stop_after:
             raise StopLoop
 
+
+def run_schedule(intervals, stop_after, run_seconds=0.0):
+    clock = FakeClock(stop_after)
+    runs = []
+
+    def run(names):
+        runs.append((clock.now, names))
+        clock.now += run_seconds
+
     try:
-        run_forever(lambda: events.append("tick"), 900, sleep=sleep)
+        run_forever(intervals, run, clock=clock, sleep=clock.sleep)
     except StopLoop:
         pass
-    assert events == ["tick", ("sleep", 900), "tick", ("sleep", 900)]
+    return runs
+
+
+def test_every_screen_runs_at_startup_then_on_its_own_interval():
+    runs = run_schedule({"fast": 60, "slow": 180}, stop_after=180)
+    assert runs == [
+        (0, ["fast", "slow"]),
+        (60, ["fast"]),
+        (120, ["fast"]),
+        (180, ["fast", "slow"]),
+    ]
+
+
+def test_each_interval_starts_when_the_run_ends():
+    runs = run_schedule({"media": 900}, stop_after=1900, run_seconds=10)
+    assert [at for at, _ in runs] == [0, 910, 1820]
 
 
 def test_run_forever_lets_unexpected_errors_escape():
-    def tick():
+    def run(names):
         raise RuntimeError("bug")
 
     try:
-        run_forever(tick, 900, sleep=lambda s: None)
+        run_forever({"media": 900}, run, sleep=lambda s: None)
     except RuntimeError as e:
         assert str(e) == "bug"
     else:

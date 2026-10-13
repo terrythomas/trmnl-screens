@@ -11,7 +11,8 @@ def test_discovers_every_screen_with_a_collector(tmp_path):
     screens = discover_screens(tmp_path)
 
     assert sorted(screens) == ["alpha", "beta"]
-    assert screens["beta"]() == {"value": 2}
+    assert screens["beta"].collect() == {"value": 2}
+    assert screens["beta"].interval_minutes is None
 
 
 def test_discovers_the_media_screen():
@@ -26,4 +27,12 @@ def test_a_collector_can_split_into_nested_submodules(tmp_path):
     (pkg / "logic.py").write_text("from .sources.feed import VALUE\n")
     (pkg / "__init__.py").write_text("from .logic import VALUE\n\ndef collect():\n    return {'value': VALUE}\n")
 
-    assert discover_screens(tmp_path)["gamma"]() == {"value": 3}
+    assert discover_screens(tmp_path)["gamma"].collect() == {"value": 3}
+
+
+def test_a_screen_can_declare_its_default_interval(tmp_path):
+    pkg = tmp_path / "slow" / "collector"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text("INTERVAL_MINUTES = 60\n\ndef collect():\n    return {}\n")
+
+    assert discover_screens(tmp_path)["slow"].interval_minutes == 60

@@ -16,6 +16,9 @@ from .sources.sonarr import SonarrSource
 from .sources.tmdb import TmdbSource
 from .streaming import streaming
 
+# Default minutes between runs; MEDIA_INTERVAL_MINUTES or INTERVAL_MINUTES override it.
+INTERVAL_MINUTES = 15
+
 
 def collect() -> dict[str, Any]:
     # Local time with offset; the template formats it as-is (LaraPaper can't convert zones).

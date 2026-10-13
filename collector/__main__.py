@@ -31,12 +31,17 @@ def main() -> int:
         # Fail loudly: a collector that runs but pushes nothing is easy to miss.
         parser.error("no screens enabled: set at least one <SCREEN>_WEBHOOK_UUID")
 
-    def tick():
-        return run_tick(screens, config, push)
+    def tick(names):
+        return run_tick({name: screens[name].collect for name in names}, config, push)
 
     if args.once:
-        return 0 if all(tick().values()) else 1
-    run_forever(tick, config.interval_minutes * 60)
+        return 0 if all(tick(list(screens)).values()) else 1
+    intervals = {}
+    for name, screen in screens.items():
+        minutes = config.interval_minutes_for(name, screen.interval_minutes)
+        logging.info("screen %s: every %d minutes", name, minutes)
+        intervals[name] = minutes * 60
+    run_forever(intervals, tick)
     return 0
 
 
