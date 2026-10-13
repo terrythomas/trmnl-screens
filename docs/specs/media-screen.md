@@ -146,7 +146,10 @@ Approved in the layout prototype (#5). Screenshots and the prototype template ar
 - **Section headers:** white text on a black rounded pill with a TV, film or stack-of-cards icon. Icons are inline SVG, never emoji.
 - Grayscale e-ink constraints apply: high contrast, no hairlines or gradients, legible from across a room. Posters reduce to 16 flat grays rather than dithering, and stay recognisable at shelf size; below roughly 40 CSS px wide they stop being recognisable.
 - **LaraPaper does not wrap the template in `<div class="view view--full">`** (trmnlp and TRMNL's cloud do), so the template must include that wrapper itself for the framework's layout rules to apply.
-- The OG (800×480, 1–2 bit) hides posters through the framework's `md:` and bit-depth classes and becomes a dense typographic list.
+- **The OG** (800×480, 1–2 bit) drops posters, which turn to mud at that depth, and gets a denser layout from the same template:
+  - Continue Watching becomes a list in two columns under its own header: icon, title, SxEy and either time left or new/next. It shows eight items, or twelve when Airing and Releasing are both missing, with "and N more" beside the header.
+  - Airing and Releasing keep their rows without posters, one column each. Airing shows four rows, or seven when Continue Watching is missing; Releasing shows three.
+  - The switch is the `screen--1bit` / `screen--2bit` class on `.screen`. It is the one device signal that LaraPaper, trmnlp and TRMNL's cloud all set: LaraPaper sets no size class, so the framework's `sm:`/`md:`/`lg:` classes never match there. X-only markup carries `.wtw-x`, OG-only markup `.wtw-og`.
 
 ## Testing
 
@@ -158,7 +161,7 @@ Approved in the layout prototype (#5). Screenshots and the prototype template ar
   - an empty section being left out;
   - a stale section reusing last good data and adding an error entry.
 - **Runner:** test that one screen's failure doesn't block another, and that state survives a restart.
-- **Template:** checked by eye in `trmnlp serve` using `fixtures/sample.json` plus the fixture variants that `python screens/media/fixtures/variants.py` writes to `fixtures/variants/` (load one with `scripts/preview-data media variants/full.json`): all sections full, each section absent or empty, everything empty, stale sections and error banners, long titles, 1–12 Continue Watching items and a crowded Airing. Titles are invented and posters are abstract stand-ins. Check at both X and OG sizes.
+- **Template:** checked by eye in `trmnlp serve` using `fixtures/sample.json` plus the fixture variants that `python screens/media/fixtures/variants.py` writes to `fixtures/variants/` (load one with `scripts/preview-data media variants/full.json`): all sections full, each section absent or empty, everything empty, stale sections and error banners, long titles, 1–12 Continue Watching items and a crowded Airing. Titles are invented and posters are abstract stand-ins. Check every variant on the X and on the OG at 1-bit and 2-bit; a change for one device must leave the other's renders byte-identical.
 - **Security:** gitleaks runs in pre-commit and in CI.
 
 ## Out of scope (v1)
