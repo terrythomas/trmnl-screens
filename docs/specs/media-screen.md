@@ -14,7 +14,7 @@ A public monorepo with one folder per **Screen**. Each screen has a trmnlp-forma
 The first screen is the **Media screen**, with three **Sections**:
 
 1. **Continue Watching**: from the configured Plex server, grouped by **item state** (New, In progress, Next) with **neglect order** inside each group ([ADR-0004](../adr/0004-continue-watching-neglect-order.md)), with grayscale posters inlined in the payload ([ADR-0002](../adr/0002-posters-inlined-as-data-uris.md)).
-2. **Airing**: monitored Sonarr episodes within the **airing window** (now ±12 h), each marked **grabbed** or not.
+2. **Airing**: monitored Sonarr episodes within the **airing window** (now ±12 h).
 3. **Releasing Today**: Radarr movies with a theatrical release today (always shown) or a digital release today (only if not grabbed).
 
 The primary **Device** is the TRMNL X. The OG renders the same template without posters ([ADR-0005](../adr/0005-one-template-per-screen-across-devices.md)).
@@ -38,7 +38,7 @@ The primary **Device** is the TRMNL X. The OG renders the same template without 
 - Item fields: series title, SxxEyy, episode title, air time as an absolute local time, past or upcoming, grabbed (`hasFile`), runtime in minutes, milestone, series poster (Sonarr's public poster URL, made grayscale by the same Plex transcoder as Continue Watching).
 - Several episodes of the same series and season airing at the same time (a whole season dropping at once) collapse into one row with an episode range, e.g. S1E1–10. The row has no episode title, uses the first episode's runtime, and counts as grabbed only when every episode in it is.
 - **Milestone**: `entire_season` for a collapsed row that starts at episode 1 and contains a finale. Otherwise `series_finale`, `season_finale` or `midseason_finale` from Sonarr's `finaleType` of any episode in the row; otherwise `series_premiere` for a row starting at S1E1 and `season_premiere` for a row starting at any other episode 1; otherwise none.
-- The template shows "airs 9:00 PM" for upcoming episodes and no time for aired ones. Grabbed items get a check mark on their poster.
+- The template shows "airs 9:00 PM" for upcoming episodes and "aired 3h ago" for aired ones.
 - Sorted by air time ascending.
 
 ### Releasing Today
@@ -141,7 +141,8 @@ Approved in the layout prototype (#5). Screenshots and the prototype template ar
 
 - **Continue Watching:** up to six equal posters in one row. In progress items show a progress bar across the poster with the time left printed on it; New and Next items get a corner tag. Under each poster, the one-line details (TV or film icon, SxEy, runtime) come first so they line up across the row; the title wraps below.
 - **Also waiting:** items seven to twelve as text in two left-aligned columns, each with its icon, SxEy and either time left or new/next. Anything the collector did not send is counted as "and N more not shown". When this list shows, shelf posters crop a little shorter.
-- **Airing today** and **Releasing today:** side by side below. Each row has a small poster, the title, and details on the right; Airing rows can carry a milestone label. Airing switches to two columns past four rows, or past two when Also waiting is showing. Rows share the remaining height and size their poster and text to it (CSS container units), so fewer waiting items means larger rows.
+- **Airing today** and **Releasing today:** side by side below. Each row has a small poster, the title, and details on the right; Airing rows can carry a milestone label. Upcoming episodes show "airs 9:00 PM" and aired ones "aired 3h ago", worked out from `updated_at`. The screen does not mark whether an item is grabbed; `grabbed` stays in the payload for a later feature. Airing shows up to eight rows and Releasing up to three, with "and N more" beside the header past that. Airing switches to two columns past four rows, or past two when Also waiting is showing. Rows share the remaining height and size their poster and text to it (CSS container units), so fewer waiting items means larger rows.
+- **Error banner:** one black pill per failing source above everything else, "Sonarr down since 5:45 PM", adding "showing its last data" when that source's section is on screen stale. A stale section's header carries a STALE tag.
 - **Section headers:** white text on a black rounded pill with a TV, film or stack-of-cards icon. Icons are inline SVG, never emoji.
 - Grayscale e-ink constraints apply: high contrast, no hairlines or gradients, legible from across a room. Posters reduce to 16 flat grays rather than dithering, and stay recognisable at shelf size; below roughly 40 CSS px wide they stop being recognisable.
 - **LaraPaper does not wrap the template in `<div class="view view--full">`** (trmnlp and TRMNL's cloud do), so the template must include that wrapper itself for the framework's layout rules to apply.
@@ -157,7 +158,7 @@ Approved in the layout prototype (#5). Screenshots and the prototype template ar
   - an empty section being left out;
   - a stale section reusing last good data and adding an error entry.
 - **Runner:** test that one screen's failure doesn't block another, and that state survives a restart.
-- **Template:** checked by eye in `trmnlp serve` using `fixtures/sample.json` plus fixture variants: all sections full, each section empty, everything empty, an error banner, a long title. Check at both X and OG sizes.
+- **Template:** checked by eye in `trmnlp serve` using `fixtures/sample.json` plus the fixture variants that `python screens/media/fixtures/variants.py` writes to `fixtures/variants/` (load one with `scripts/preview-data media variants/full.json`): all sections full, each section absent or empty, everything empty, stale sections and error banners, long titles, 1–12 Continue Watching items and a crowded Airing. Titles are invented and posters are abstract stand-ins. Check at both X and OG sizes.
 - **Security:** gitleaks runs in pre-commit and in CI.
 
 ## Out of scope (v1)

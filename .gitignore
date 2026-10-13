@@ -43,3 +43,6 @@ screens/media/prototype/standin-posters/
 
 # Runner state (last good data per screen)
 /state/
+
+# Generated fixture variants (python screens/media/fixtures/variants.py)
+/screens/media/fixtures/variants/
