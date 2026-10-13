@@ -1,5 +1,7 @@
 {%- comment -%}
-What to Watch, TRMNL X (1872x1404, 4-bit). Payload contract: docs/specs/media-screen.md.
+What to Watch. Payload contract: docs/specs/media-screen.md.
+The TRMNL X (1872x1404, 4-bit) gets posters. The OG (800x480, 1-2 bit) gets the .wtw-og
+markup instead and drops everything marked .wtw-x; see the OG rules at the end of <style>.
 An absent section and an empty items list render the same: both are left out.
 {%- endcomment -%}
 {% assign cw = continue_watching.items %}{% assign cw_n = cw | size %}
@@ -7,6 +9,9 @@ An absent section and an empty items list render the same: both are left out.
 {% assign rel = releasing_today.items %}{% assign rel_n = rel | size %}
 {% assign err_n = errors | size %}
 {% assign now_s = updated_at | date: "%s" | plus: 0 %}
+{%- comment -%} How many items the OG shows, at most the X's own limits (Airing 8, Releasing 3); a section gets more room when the others are missing. {%- endcomment -%}
+{% if air_n > 0 or rel_n > 0 %}{% assign og_cw = 8 %}{% else %}{% assign og_cw = 12 %}{% endif %}
+{% if cw_n > 0 %}{% assign og_air = 4 %}{% else %}{% assign og_air = 7 %}{% endif %}{% assign og_rel = 3 %}
 
 {%- capture icon_tv -%}<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-0.15em"><path d="M8 2.5l4 4 4-4"/><rect x="2.5" y="6.5" width="19" height="14" rx="2.5"/></svg>{%- endcapture -%}
 {%- capture icon_film -%}<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-0.15em"><rect x="3" y="2.5" width="18" height="19" rx="2"/><path d="M7.5 2.5v19M16.5 2.5v19M3 8h4.5M3 16h4.5M16.5 8H21M16.5 16H21"/></svg>{%- endcapture -%}
@@ -54,7 +59,7 @@ An absent section and an empty items list render the same: both are left out.
 
   /* Lower band: Airing today and Releasing today side by side. */
   .wtw-band { display: flex; gap: 32px; flex: 1; min-height: 0; border-top: 4px solid #000; padding-top: 14px; }
-  .wtw-over + .wtw-band { padding-top: 12px; }
+  .wtw-over ~ .wtw-band { padding-top: 12px; }
   .wtw-head { display: inline-flex; gap: 10px; align-items: center; font-size: 22px; font-weight: 700; margin-bottom: 6px; background: #000; color: #fff; border-radius: 9px; padding: 3px 14px 4px 10px; }
   .wtw-stale { background: #fff; color: #000; border-radius: 5px; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; padding: 1px 7px 2px; }
   /* Rows share whatever height is left, and each row sizes its poster and text from its own height. */
@@ -69,10 +74,39 @@ An absent section and an empty items list render the same: both are left out.
   .wtw-row .m2 { display: block; font-family: var(--description-font-family); font-weight: 400; margin-top: 2px; font-size: clamp(15px, min(21cqh, 4.4cqw), 24px); }
   .wtw-milestone { display: table; margin-top: 3px; background: #000; color: #fff; font-size: clamp(12px, min(15cqh, 3.2cqw), 17px); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 8px 2px; border-radius: 5px; white-space: nowrap; }
   .wtw-more { font-family: var(--description-font-family); font-size: 18px; padding-top: 6px; }
+
+  /* TRMNL OG: posters turn to mud at 1-2 bit and 800x480, so it gets text only and fewer items.
+     Bit depth is the one device signal that LaraPaper, trmnlp and TRMNL's cloud all put on .screen. */
+  .wtw-og { display: none; }
+  :is(.screen--1bit, .screen--2bit) .wtw-x { display: none; }
+  :is(.screen--1bit, .screen--2bit) .wtw-og { display: revert; }
+  :is(.screen--1bit, .screen--2bit) .wtw-layout { gap: 8px !important; }
+  :is(.screen--1bit, .screen--2bit) .wtw-errors { gap: 6px; }
+  :is(.screen--1bit, .screen--2bit) .wtw-error { font-size: 14px; gap: 6px; border-radius: 6px; padding: 2px 10px 3px 8px; }
+  :is(.screen--1bit, .screen--2bit) .wtw-head { font-size: 15px; gap: 7px; margin-bottom: 0; border-radius: 6px; padding: 2px 10px 3px 7px; }
+  :is(.screen--1bit, .screen--2bit) .wtw-stale { font-size: 11px; border-radius: 3px; padding: 0 5px 1px; }
+  :is(.screen--1bit, .screen--2bit) .wtw-sub { font-size: 14px; }
+  /* Continue Watching as a dense list in two columns. */
+  .wtw-ogcw-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px 24px; margin-top: 4px; }
+  .wtw-ogcw-item { display: flex; align-items: baseline; gap: 8px; min-width: 0; border-bottom: 1px solid #000; padding: 2px 0 3px; }
+  .wtw-ogcw-item .wtw-name { flex: 1; min-width: 0; font-size: 17px; gap: 5px; align-items: baseline; }
+  .wtw-ogcw-item .wtw-name > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wtw-ogcw-item .wtw-sub { white-space: nowrap; }
+  /* Airing and Releasing keep their rows, without posters, in one column each. */
+  :is(.screen--1bit, .screen--2bit) .wtw-band { gap: 20px; border-top-width: 3px; padding-top: 8px; }
+  :is(.screen--1bit, .screen--2bit) .wtw-col--air { flex: 3 !important; }
+  :is(.screen--1bit, .screen--2bit) .wtw-col--rel { flex: 2 !important; }
+  :is(.screen--1bit, .screen--2bit) .wtw-list { display: flex; flex-direction: column; margin-top: 4px; }
+  :is(.screen--1bit, .screen--2bit) .wtw-row { container-type: normal; flex: 1 1 0; max-height: 54px; gap: 8px; border-bottom: 1px solid #000; padding: 2px 0; }
+  :is(.screen--1bit, .screen--2bit) .wtw-rowposter { display: none; }
+  :is(.screen--1bit, .screen--2bit) .wtw-row .t { font-size: 17px; }
+  :is(.screen--1bit, .screen--2bit) .wtw-row .t--long { font-size: 15px; }
+  :is(.screen--1bit, .screen--2bit) .wtw-row .m, :is(.screen--1bit, .screen--2bit) .wtw-row .m2 { font-size: 14px; }
+  :is(.screen--1bit, .screen--2bit) .wtw-milestone { font-size: 10px; margin-top: 2px; padding: 0 5px 1px; border-radius: 3px; }
 </style>
 
 <div class="view view--full">
-<div class="layout layout--col" style="align-items:stretch;justify-content:flex-start;gap:14px">
+<div class="layout layout--col wtw-layout" style="align-items:stretch;justify-content:flex-start;gap:14px">
 
 {% if err_n > 0 %}
 <div class="wtw-errors">
@@ -91,7 +125,7 @@ An absent section and an empty items list render the same: both are left out.
 {% else %}
 
 {% if cw_n > 0 %}
-<div class="wtw-shelf{% if cw_n > 6 %} wtw-shelf--tight{% endif %}">
+<div class="wtw-x wtw-shelf{% if cw_n > 6 %} wtw-shelf--tight{% endif %}">
   {% for i in cw limit:6 %}
   {% assign tlen = i.title | size %}
   {% if tlen > 50 %}{% assign fs = 15 %}{% elsif tlen > 36 %}{% assign fs = 17 %}{% else %}{% assign fs = 20 %}{% endif %}
@@ -114,7 +148,7 @@ An absent section and an empty items list render the same: both are left out.
 </div>
 {% assign rest = continue_watching.total | minus: cw_n %}
 {% if cw_n > 6 %}
-<div class="wtw-over">
+<div class="wtw-x wtw-over">
   <div class="wtw-over-head"><span class="wtw-head">{{ icon_queue }}<span>Also waiting</span></span>{% if rest > 0 %}<span class="wtw-sub">and {{ rest }} more not shown</span>{% endif %}</div>
   <div class="wtw-over-grid">
   {% for i in cw offset:6 limit:6 %}
@@ -126,8 +160,21 @@ An absent section and an empty items list render the same: both are left out.
   </div>
 </div>
 {% elsif rest > 0 %}
-<div class="wtw-more">and {{ rest }} more not shown</div>
+<div class="wtw-x wtw-more">and {{ rest }} more not shown</div>
 {% endif %}
+{% assign og_shown = cw_n %}{% if og_shown > og_cw %}{% assign og_shown = og_cw %}{% endif %}
+{% assign og_rest = continue_watching.total | minus: og_shown %}
+<div class="wtw-og">
+  <div><span class="wtw-head">{{ icon_queue }}<span>Continue watching</span>{% if continue_watching.stale %}<span class="wtw-stale">stale</span>{% endif %}</span>{% if og_rest > 0 %}<span class="wtw-sub"> and {{ og_rest }} more</span>{% endif %}</div>
+  <div class="wtw-ogcw-list">
+  {% for i in cw limit: og_cw %}
+    <div class="wtw-ogcw-item">
+      <span class="wtw-name">{% if i.kind == "movie" %}{{ icon_film }}{% else %}{{ icon_tv }}{% endif %}<span>{{ i.title }}</span></span>
+      <span class="wtw-sub">{% if i.episode %}S{{ i.episode.season }}E{{ i.episode.number }} · {% endif %}{% if i.state == "in_progress" %}{% assign left = i.remaining_min %}{% if left >= 60 %}{{ left | divided_by: 60 }}h {{ left | modulo: 60 }}m{% else %}{{ left }}m{% endif %} left{% elsif i.state == "new" %}new{% else %}next{% endif %}</span>
+    </div>
+  {% endfor %}
+  </div>
+</div>
 {% endif %}
 
 {% if air_n > 0 or rel_n > 0 %}
@@ -138,11 +185,11 @@ An absent section and an empty items list render the same: both are left out.
 {% assign rows = air_rows %}{% if rel_rows > rows %}{% assign rows = rel_rows %}{% endif %}{% if rows < 2 %}{% assign rows = 2 %}{% endif %}
 <div class="wtw-band">
   {% if air_n > 0 %}
-  <div class="wtw-col" style="flex:{% if air_cols == 2 %}5{% else %}3{% endif %}">
-    <div><span class="wtw-head">{{ icon_tv }}<span>Airing today</span>{% if airing.stale %}<span class="wtw-stale">stale</span>{% endif %}</span>{% if air_n > 8 %}<span class="wtw-sub"> and {{ air_n | minus: 8 }} more</span>{% endif %}</div>
+  <div class="wtw-col wtw-col--air" style="flex:{% if air_cols == 2 %}5{% else %}3{% endif %}">
+    <div><span class="wtw-head">{{ icon_tv }}<span>Airing today</span>{% if airing.stale %}<span class="wtw-stale">stale</span>{% endif %}</span>{% if air_n > 8 %}<span class="wtw-x wtw-sub"> and {{ air_n | minus: 8 }} more</span>{% endif %}{% if air_n > og_air %}<span class="wtw-og wtw-sub"> and {{ air_n | minus: og_air }} more</span>{% endif %}</div>
     <div class="wtw-list" style="grid-template-columns:repeat({{ air_cols }}, minmax(0, 1fr));grid-template-rows:repeat({{ rows }}, minmax(0, 1fr))">
     {% for a in air limit:8 %}
-      <div class="wtw-row">
+      <div class="wtw-row{% if forloop.index > og_air %} wtw-x{% endif %}">
         <span class="wtw-rowposter">{% if a.poster %}<img src="{{ a.poster }}" alt="">{% endif %}</span>
         {% assign slen = a.series | size %}
         <span class="t{% if slen > 30 %} t--long{% endif %}">{{ a.series }}{% if a.milestone %}<span class="wtw-milestone">{{ a.milestone | replace: "_", " " }}</span>{% endif %}</span>
@@ -157,11 +204,11 @@ An absent section and an empty items list render the same: both are left out.
   </div>
   {% endif %}
   {% if rel_n > 0 %}
-  <div class="wtw-col" style="flex:2">
-    <div><span class="wtw-head">{{ icon_film }}<span>Releasing today</span>{% if releasing_today.stale %}<span class="wtw-stale">stale</span>{% endif %}</span>{% if rel_n > 3 %}<span class="wtw-sub"> and {{ rel_n | minus: 3 }} more</span>{% endif %}</div>
+  <div class="wtw-col wtw-col--rel" style="flex:2">
+    <div><span class="wtw-head">{{ icon_film }}<span>Releasing today</span>{% if releasing_today.stale %}<span class="wtw-stale">stale</span>{% endif %}</span>{% if rel_n > 3 %}<span class="wtw-x wtw-sub"> and {{ rel_n | minus: 3 }} more</span>{% endif %}{% if rel_n > og_rel %}<span class="wtw-og wtw-sub"> and {{ rel_n | minus: og_rel }} more</span>{% endif %}</div>
     <div class="wtw-list" style="grid-template-columns:minmax(0, 1fr);grid-template-rows:repeat({{ rows }}, minmax(0, 1fr))">
     {% for r in rel limit:3 %}
-      <div class="wtw-row">
+      <div class="wtw-row{% if forloop.index > og_rel %} wtw-x{% endif %}">
         <span class="wtw-rowposter">{% if r.poster %}<img src="{{ r.poster }}" alt="">{% endif %}</span>
         {% assign rlen = r.title | size %}
         <span class="t{% if rlen > 30 %} t--long{% endif %}">{{ r.title }}<span class="m2">{% if r.kind == "theatrical" %}in theaters{% else %}digital{% endif %}{% assign m = r.runtime_min %}{% if m %} · {% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %}{% endif %}</span></span>
