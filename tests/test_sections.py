@@ -70,11 +70,25 @@ def test_an_emptied_section_is_not_brought_back_by_a_later_failure(tmp_path):
 def test_one_failing_section_does_not_stop_the_others(tmp_path):
     sections = {
         "airing": Section(source="sonarr", build=down),
-        "releasing_today": Section(source="radarr", build=ok({"stale": False, "items": [1]})),
+        "streaming": Section(source="radarr", build=ok({"stale": False, "items": [1]})),
     }
     result = collect_sections(sections, tmp_path / "media.json", NOW)
-    assert result["releasing_today"] == {"stale": False, "items": [1]}
+    assert result["streaming"] == {"stale": False, "items": [1]}
     assert [e["source"] for e in result["errors"]] == ["sonarr"]
+
+
+class TmdbDown(Exception):
+    source = "tmdb"
+
+
+def test_an_error_can_name_its_own_source(tmp_path):
+    # A section built from two sources reports whichever one failed.
+    def tmdb_down():
+        raise TmdbDown("TMDB returned HTTP 503")
+
+    sections = {"in_theaters": Section(source="radarr", build=tmdb_down)}
+    result = collect_sections(sections, tmp_path / "media.json", NOW)
+    assert result["errors"] == [{"source": "tmdb", "since": NOW.isoformat()}]
 
 
 def test_state_lives_in_the_file_so_it_survives_a_restart(tmp_path):

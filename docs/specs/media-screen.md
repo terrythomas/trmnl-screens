@@ -5,17 +5,18 @@ Glossary: [CONTEXT.md](../../CONTEXT.md) · Decisions: [docs/adr/](../adr/)
 
 ## Problem
 
-A household running Plex, Sonarr and Radarr has no ambient, at-a-glance view of what to watch next. The useful signals are scattered across three apps: titles that were started and then stalled, episodes of monitored series that have just aired or are about to, and tracked movies releasing today. This project puts those signals on a TRMNL e-ink display served by a self-hosted LaraPaper instance on the local network. The repository is public and is intended to grow into a collection of screens, so it needs a reusable structure and a strict secrets posture from the first commit.
+A household running Plex, Sonarr and Radarr has no ambient, at-a-glance view of what to watch next. The useful signals are scattered across three apps: titles that were started and then stalled, episodes of monitored series that have just aired or are about to, and tracked movies that are in theaters or have just come out digitally. This project puts those signals on a TRMNL e-ink display served by a self-hosted LaraPaper instance on the local network. The repository is public and is intended to grow into a collection of screens, so it needs a reusable structure and a strict secrets posture from the first commit.
 
 ## Solution
 
 A public monorepo with one folder per **Screen**. Each screen has a trmnlp-format Liquid template and a **Collector** module. A shared Python runner calls every screen's collector every 15 minutes and pushes the result to that screen's LaraPaper webhook ([ADR-0001](../adr/0001-collector-pushes-to-larapaper.md)). The runner ships as a Docker image on GHCR.
 
-The first screen is the **Media screen**, with three **Sections**:
+The first screen is the **Media screen**, with four **Sections**:
 
 1. **Continue Watching**: from the configured Plex server, grouped by **item state** (New, In progress, Next) with **neglect order** inside each group ([ADR-0004](../adr/0004-continue-watching-neglect-order.md)), with grayscale posters inlined in the payload ([ADR-0002](../adr/0002-posters-inlined-as-data-uris.md)).
 2. **Airing**: monitored Sonarr episodes within the **airing window** (now ±12 h).
-3. **Releasing Today**: Radarr movies with a theatrical release today (always shown) or a digital release today (only if not grabbed).
+3. **In Theaters**: Radarr movies in their **theater run** in the **release country**, dated from TMDB's public release page, until they're grabbed.
+4. **Streaming**: Radarr movies with a digital release today, until they're grabbed.
 
 The primary **Device** is the TRMNL X. The OG renders the same template without posters ([ADR-0005](../adr/0005-one-template-per-screen-across-devices.md)).
 
@@ -41,12 +42,22 @@ The primary **Device** is the TRMNL X. The OG renders the same template without 
 - The template shows "airs 9:00 PM" for upcoming episodes and "aired 3h ago" for aired ones.
 - Sorted by air time ascending.
 
-### Releasing Today
-- Source: Radarr `GET /api/v3/calendar` for the local calendar day (timezone from `TZ`). Only monitored movies count.
-- Radarr stores release dates as midnight UTC, so they are read as plain calendar dates, never converted to local time (which would move them to the evening before).
-- Include a movie if `inCinemas` is today. Also include it if `digitalRelease` is today and `hasFile` is false. Ignore `physicalRelease`.
-- Item fields: title, year, release kind (`theatrical` | `digital`), grabbed, runtime in minutes, poster (Radarr's public poster URL, made grayscale by Plex's transcoder like Airing's).
-- A movie that qualifies both ways appears once, as theatrical. Theatrical releases come first, then digital, each by title.
+### In Theaters
+- Candidates: Radarr `GET /api/v3/calendar` from 90 days ago through today (timezone from `TZ`), keeping monitored, not-grabbed movies whose `inCinemas` falls in that range. `inCinemas` is the earliest theatrical date in any country, so the release country's dates can be weeks later.
+- Release dates: for each candidate, TMDB's public release page `https://www.themoviedb.org/movie/{tmdbId}/releases`, read for the **release country** (`RELEASE_COUNTRY`, default `US`) with `Accept-Language: en-US` ([ADR-0006](../adr/0006-release-dates-from-tmdbs-public-page.md)). Each movie's page is fetched at most once a day; the parsed dates are cached in the state directory.
+- **Theater run**: from the earliest "Theatrical" date (the **wide release**) through the end of the following Sunday, local time. A "Theatrical (limited)" date up to 7 days before the wide release starts the run early. Premieres, earlier limited dates and limited dates after the wide release are ignored. No "Theatrical" date means no run.
+- Item fields: title, `stage` (`limited` | `wide`), `note` (TMDB's note on the limited date, e.g. `IMAX`; null when wide), `since` (the date the current stage started), `days_ago` (whole days since `since`), runtime in minutes, poster (Radarr's public poster URL, made grayscale by Plex's transcoder like Airing's).
+- Sorted by `since`, newest first, then by title.
+- A TMDB failure (request error, non-2xx, or a page without release tables) reports the source `tmdb`; a Radarr failure reports `radarr`.
+
+### Streaming
+- Source: Radarr `GET /api/v3/calendar` for the local calendar day. Only monitored movies count.
+- Include a movie if `digitalRelease` is today and `hasFile` is false. Ignore `physicalRelease`.
+- Item fields: title, runtime in minutes, poster.
+- Sorted by title.
+
+### Radarr dates
+- Radarr stores release dates as midnight UTC, so they are read as plain calendar dates, never converted to local time (which would move them to the evening before). Radarr's `digitalRelease` matches the release country's first "Digital" date on TMDB.
 
 ### Empty and failure behaviour
 - A Section with zero items is left out of the payload, and the template removes it so the remaining sections reflow.
@@ -54,7 +65,7 @@ The primary **Device** is the TRMNL X. The OG renders the same template without 
 - When a **Source** fails (timeout, non-2xx, parse error), the runner reuses that section's last good data and marks it **stale**. It also adds an **Error banner** entry `{source, since}` to the payload. No other alerting channel exists.
 - Last good data persists in a small local state file (a volume in Docker), so a container restart doesn't wipe it.
 - `since` is the time of the first consecutive failure; it resets when the source recovers. A section that became empty is not brought back by a later failure.
-- Posters come from Plex for every section. When Plex can't make one, the row is shown without a poster; Airing and Releasing Today don't go stale for it.
+- Posters come from Plex for every section. When Plex can't make one, the row is shown without a poster; Airing, In Theaters and Streaming don't go stale for it.
 - The payload always includes `updated_at`, which the template shows as the "updated HH:MM" footer.
 - A failed webhook push is logged and retried on the next tick. Nothing is surfaced on screen, because the screen can't be reached in that case anyway.
 
@@ -93,9 +104,16 @@ The single interface between the collector and the template. `fixtures/sample.js
       "runtime_min": 44, "milestone": "series_premiere", "poster": "data:…"
     }]
   },
-  "releasing_today": {
+  "in_theaters": {
     "stale": false,
-    "items": [{ "title": "…", "year": 2026, "kind": "theatrical", "grabbed": false, "runtime_min": 112, "poster": "data:…" }]
+    "items": [{
+      "title": "…", "stage": "limited", "note": "IMAX", "since": "2026-10-13", "days_ago": 0,
+      "runtime_min": 112, "poster": "data:…"
+    }]
+  },
+  "streaming": {
+    "stale": false,
+    "items": [{ "title": "…", "runtime_min": 97, "poster": "data:…" }]
   }
 }
 ```
@@ -113,7 +131,7 @@ screens/media/
   src/full.liquid, src/settings.yml     trmnlp plugin (Liquid, TRMNL framework CSS)
   fixtures/sample.json                  invented data matching the payload contract
   collector/                            Python package: collect() -> payload dict
-    sources/plex.py, sonarr.py, radarr.py
+    sources/plex.py, sonarr.py, radarr.py, tmdb.py
   tests/                                pytest with scrubbed recorded responses
 collector/                              shared runner: scheduler, webhook push, stale/error state, image utils, config
 scripts/deploy                          zip screens/<name>/src and upload to LaraPaper
@@ -123,8 +141,8 @@ Dockerfile, docker-compose.example.yml
 ```
 
 ### Module seams
-- **Source adapters** (`plex`, `sonarr`, `radarr`) wrap one service each. They return plain domain objects and raise one error type on failure. They are the only modules that know about HTTP or API shapes.
-- **Screen collector** (`screens/media/collector`) turns adapter results into the payload: sorting, windowing, the releasing-today rule, poster encoding. It is pure logic apart from the adapters it receives, so it can be tested with fake adapters.
+- **Source adapters** (`plex`, `sonarr`, `radarr`, `tmdb`) wrap one service each. They return plain domain objects and raise one error type on failure. They are the only modules that know about HTTP or API shapes.
+- **Screen collector** (`screens/media/collector`) turns adapter results into the payload: sorting, windowing, the theater-run and streaming rules, poster encoding. It is pure logic apart from the adapters it receives, so it can be tested with fake adapters.
 - **Runner** discovers screens and runs each screen's collector per tick. It also owns the stale and error state and pushes to the webhook URL from config. It knows nothing about media.
 
 Adding a screen means a new `screens/<name>/` folder plus one webhook entry in `.env`.
@@ -141,14 +159,14 @@ Approved in the layout prototype (#5). Screenshots and the prototype template ar
 
 - **Continue Watching:** up to six equal posters in one row. In progress items show a progress bar across the poster with the time left printed on it; New and Next items get a corner tag. Under each poster, the one-line details (TV or film icon, SxEy, runtime) come first so they line up across the row; the title wraps below.
 - **Also waiting:** items seven to twelve as text in two left-aligned columns, each with its icon, SxEy and either time left or new/next. Anything the collector did not send is counted as "and N more not shown". When this list shows, shelf posters crop a little shorter.
-- **Airing today** and **Releasing today:** side by side below. Each row has a small poster, the title, and details on the right; Airing rows can carry a milestone label. Upcoming episodes show "airs 9:00 PM" and aired ones "aired 3h ago", worked out from `updated_at`. The screen does not mark whether an item is grabbed; `grabbed` stays in the payload for a later feature. Airing shows up to eight rows and Releasing up to three, with "and N more" beside the header past that. Airing switches to two columns past four rows, or past two when Also waiting is showing. Rows share the remaining height and size their poster and text to it (CSS container units), so fewer waiting items means larger rows.
-- **Error banner:** one black pill per failing source above everything else, "Sonarr down since 5:45 PM", adding "showing its last data" when that source's section is on screen stale. A stale section's header carries a STALE tag.
+- **Airing today** beside **In theaters** and **Streaming**, which stack in one column. Each row has a small poster, the title, and details; Airing rows can carry a milestone label, and limited In Theaters rows a "limited · IMAX" badge. In Theaters rows show "today", "yesterday" or "N days ago" from `days_ago`, and Streaming rows "out today". Upcoming episodes show "airs 9:00 PM" and aired ones "aired 3h ago", worked out from `updated_at`. The screen does not mark whether an item is grabbed; `grabbed` stays in the payload for a later feature. Airing shows up to eight rows. In Theaters and Streaming share three rows: In Theaters fills first, and Streaming keeps one row when it has items. Each shows "and N more" beside its header past that. Airing switches to two columns past four rows, or past two when Also waiting is showing. Rows share the remaining height and size their poster and text to it (CSS container units), so fewer waiting items means larger rows.
+- **Error banner:** one black pill per failing source above everything else, "Sonarr down since 5:45 PM" ("TMDB" for TMDB), adding "showing its last data" when that source's section is on screen stale. A stale section's header carries a STALE tag.
 - **Section headers:** white text on a black rounded pill with a TV, film or stack-of-cards icon. Icons are inline SVG, never emoji.
 - Grayscale e-ink constraints apply: high contrast, no hairlines or gradients, legible from across a room. Posters reduce to 16 flat grays rather than dithering, and stay recognisable at shelf size; below roughly 40 CSS px wide they stop being recognisable.
 - **LaraPaper does not wrap the template in `<div class="view view--full">`** (trmnlp and TRMNL's cloud do), so the template must include that wrapper itself for the framework's layout rules to apply.
 - **The OG** (800×480, 1–2 bit) drops posters, which turn to mud at that depth, and gets a denser layout from the same template:
-  - Continue Watching becomes a list in two columns under its own header: icon, title, SxEy and either time left or new/next. It shows eight items, or twelve when Airing and Releasing are both missing, with "and N more" beside the header.
-  - Airing and Releasing keep their rows without posters, one column each. Airing shows four rows, or seven when Continue Watching is missing; Releasing shows three.
+  - Continue Watching becomes a list in two columns under its own header: icon, title, SxEy and either time left or new/next. It shows eight items, or twelve when Airing, In Theaters and Streaming are all missing, with "and N more" beside the header.
+  - Airing, In Theaters and Streaming keep their rows without posters. Airing shows four rows, or seven when Continue Watching is missing; In Theaters and Streaming share three, as on the X.
   - The switch is the `screen--1bit` / `screen--2bit` class on `.screen`. It is the one device signal that LaraPaper, trmnlp and TRMNL's cloud all set: LaraPaper sets no size class, so the framework's `sm:`/`md:`/`lg:` classes never match there. X-only markup carries `.wtw-x`, OG-only markup `.wtw-og`.
 
 ## Testing
@@ -157,7 +175,8 @@ Approved in the layout prototype (#5). Screenshots and the prototype template ar
 - **Screen collector:** pytest with fake adapters, covering:
   - neglect-order sort, including items with no `lastViewedAt`;
   - the airing-window boundaries at exactly ±12 h;
-  - the releasing-today matrix (theatrical × digital × grabbed);
+  - the theater run (wide release on different weekdays, limited releases before, long before and after the wide one, Sunday midnight) and the streaming rule (digital today × grabbed);
+  - the TMDB page parser, against a saved page;
   - an empty section being left out;
   - a stale section reusing last good data and adding an error entry.
 - **Runner:** test that one screen's failure doesn't block another, and that state survives a restart.

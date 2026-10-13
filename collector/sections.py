@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class Section:
-    source: str  # the name reported in errors[], e.g. "sonarr"
+    source: str  # the name reported in errors[], e.g. "sonarr"; an error with a `source` attribute overrides it
     build: Callable[[], dict[str, Any] | None]  # None when the section has no items
 
 
@@ -34,8 +34,9 @@ def collect_sections(sections: dict[str, Section], state_path: Path, now: dateti
         except Exception as e:
             # Sources raise errors whose messages hold no URL or secret (ADR-0003); no
             # traceback, because one failure would otherwise flood the log every tick.
-            log.warning("section %s: %s failed: %s: %s", name, section.source, type(e).__name__, e)
-            failed.add(section.source)
+            source = getattr(e, "source", None) or section.source
+            log.warning("section %s: %s failed: %s: %s", name, source, type(e).__name__, e)
+            failed.add(source)
             if name in last_good:
                 payload[name] = {**last_good[name], "stale": True}
             continue

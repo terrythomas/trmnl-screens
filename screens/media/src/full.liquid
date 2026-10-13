@@ -6,15 +6,22 @@ An absent section and an empty items list render the same: both are left out.
 {%- endcomment -%}
 {% assign cw = continue_watching.items %}{% assign cw_n = cw | size %}
 {% assign air = airing.items %}{% assign air_n = air | size %}
-{% assign rel = releasing_today.items %}{% assign rel_n = rel | size %}
+{% assign th = in_theaters.items %}{% assign th_n = th | size %}
+{% assign st = streaming.items %}{% assign st_n = st | size %}
+{% assign rel_n = th_n | plus: st_n %}
 {% assign err_n = errors | size %}
 {% assign now_s = updated_at | date: "%s" | plus: 0 %}
-{%- comment -%} How many items the OG shows, at most the X's own limits (Airing 8, Releasing 3); a section gets more room when the others are missing. {%- endcomment -%}
+{%- comment -%} In Theaters and Streaming share three rows on both devices: In Theaters first, Streaming keeps one when it has items. {%- endcomment -%}
+{% assign th_max = 3 %}{% if st_n > 0 %}{% assign th_max = 2 %}{% endif %}
+{% assign th_shown = th_n %}{% if th_shown > th_max %}{% assign th_shown = th_max %}{% endif %}
+{% assign st_max = 3 | minus: th_shown %}{% assign st_shown = st_n %}{% if st_shown > st_max %}{% assign st_shown = st_max %}{% endif %}
+{%- comment -%} How many items the OG shows, at most the X's own limits (Airing 8); a section gets more room when the others are missing. {%- endcomment -%}
 {% if air_n > 0 or rel_n > 0 %}{% assign og_cw = 8 %}{% else %}{% assign og_cw = 12 %}{% endif %}
-{% if cw_n > 0 %}{% assign og_air = 4 %}{% else %}{% assign og_air = 7 %}{% endif %}{% assign og_rel = 3 %}
+{% if cw_n > 0 %}{% assign og_air = 4 %}{% else %}{% assign og_air = 7 %}{% endif %}
 
 {%- capture icon_tv -%}<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-0.15em"><path d="M8 2.5l4 4 4-4"/><rect x="2.5" y="6.5" width="19" height="14" rx="2.5"/></svg>{%- endcapture -%}
 {%- capture icon_film -%}<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-0.15em"><rect x="3" y="2.5" width="18" height="19" rx="2"/><path d="M7.5 2.5v19M16.5 2.5v19M3 8h4.5M3 16h4.5M16.5 8H21M16.5 16H21"/></svg>{%- endcapture -%}
+{%- capture icon_play -%}<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-0.15em"><rect x="2.5" y="4" width="19" height="16" rx="2.5"/><path d="M10 9v6l5-3z" fill="currentColor"/></svg>{%- endcapture -%}
 {%- capture icon_queue -%}<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="flex-shrink:0;vertical-align:-0.15em"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M5.5 5.5h13M8 2.5h8"/></svg>{%- endcapture -%}
 {%- capture icon_alert -%}<svg viewBox="0 0 24 24" width="1.1em" height="1.1em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-0.18em"><path d="M12 3L2 20.5h20z"/><path d="M12 10v4.5M12 17.5v.5"/></svg>{%- endcapture -%}
 
@@ -57,7 +64,7 @@ An absent section and an empty items list render the same: both are left out.
   .wtw-over .wtw-name { font-size: 26px; white-space: nowrap; }
   .wtw-over .wtw-sub { font-size: 21px; white-space: nowrap; }
 
-  /* Lower band: Airing today and Releasing today side by side. */
+  /* Lower band: Airing today beside In Theaters and Streaming, which stack. */
   .wtw-band { display: flex; gap: 32px; flex: 1; min-height: 0; border-top: 4px solid #000; padding-top: 14px; }
   .wtw-over ~ .wtw-band { padding-top: 12px; }
   .wtw-head { display: inline-flex; gap: 10px; align-items: center; font-size: 22px; font-weight: 700; margin-bottom: 6px; background: #000; color: #fff; border-radius: 9px; padding: 3px 14px 4px 10px; }
@@ -73,6 +80,8 @@ An absent section and an empty items list render the same: both are left out.
   .wtw-row .m { white-space: nowrap; text-align: right; line-height: 1.2; font-size: clamp(15px, min(21cqh, 4.4cqw), 24px); }
   .wtw-row .m2 { display: block; font-family: var(--description-font-family); font-weight: 400; margin-top: 2px; font-size: clamp(15px, min(21cqh, 4.4cqw), 24px); }
   .wtw-milestone { display: table; margin-top: 3px; background: #000; color: #fff; font-size: clamp(12px, min(15cqh, 3.2cqw), 17px); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 8px 2px; border-radius: 5px; white-space: nowrap; }
+  .wtw-col--rel .wtw-list + div { margin-top: 10px; }
+  .wtw-milestone--inline { display: inline-block; margin: 0 8px 0 0; vertical-align: .12em; }
   .wtw-more { font-family: var(--description-font-family); font-size: 18px; padding-top: 6px; }
 
   /* TRMNL OG: posters turn to mud at 1-2 bit and 800x480, so it gets text only and fewer items.
@@ -92,7 +101,7 @@ An absent section and an empty items list render the same: both are left out.
   .wtw-ogcw-item .wtw-name { flex: 1; min-width: 0; font-size: 17px; gap: 5px; align-items: baseline; }
   .wtw-ogcw-item .wtw-name > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .wtw-ogcw-item .wtw-sub { white-space: nowrap; }
-  /* Airing and Releasing keep their rows, without posters, in one column each. */
+  /* Airing, In Theaters and Streaming keep their rows, without posters, in one column each. */
   :is(.screen--1bit, .screen--2bit) .wtw-band { gap: 20px; border-top-width: 3px; padding-top: 8px; }
   :is(.screen--1bit, .screen--2bit) .wtw-col--air { flex: 3 !important; }
   :is(.screen--1bit, .screen--2bit) .wtw-col--rel { flex: 2 !important; }
@@ -111,8 +120,8 @@ An absent section and an empty items list render the same: both are left out.
 {% if err_n > 0 %}
 <div class="wtw-errors">
   {% for e in errors %}
-  {% case e.source %}{% when "plex" %}{% assign shown = cw_n %}{% when "sonarr" %}{% assign shown = air_n %}{% when "radarr" %}{% assign shown = rel_n %}{% else %}{% assign shown = 0 %}{% endcase %}
-  <span class="wtw-error">{{ icon_alert }}<span>{{ e.source | capitalize }} down since {{ e.since | date: "%-I:%M %p" }}</span>{% if shown > 0 %}<span class="why">· showing its last data</span>{% endif %}</span>
+  {% case e.source %}{% when "plex" %}{% assign shown = cw_n %}{% when "sonarr" %}{% assign shown = air_n %}{% when "radarr" %}{% assign shown = rel_n %}{% when "tmdb" %}{% assign shown = th_n %}{% else %}{% assign shown = 0 %}{% endcase %}
+  <span class="wtw-error">{{ icon_alert }}<span>{% if e.source == "tmdb" %}TMDB{% else %}{{ e.source | capitalize }}{% endif %} down since {{ e.since | date: "%-I:%M %p" }}</span>{% if shown > 0 %}<span class="why">· showing its last data</span>{% endif %}</span>
   {% endfor %}
 </div>
 {% endif %}
@@ -120,7 +129,7 @@ An absent section and an empty items list render the same: both are left out.
 {% if cw_n == 0 and air_n == 0 and rel_n == 0 %}
 <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
   <span class="value value--xxlarge">Nothing waiting</span>
-  <span class="description description--large">No shows in progress, nothing airing, nothing releasing today.</span>
+  <span class="description description--large">No shows in progress, nothing airing, nothing new in theaters or streaming.</span>
 </div>
 {% else %}
 
@@ -181,7 +190,7 @@ An absent section and an empty items list render the same: both are left out.
 {% assign air_cols = 1 %}{% if air_n > 4 or cw_n > 6 and air_n > 2 %}{% assign air_cols = 2 %}{% endif %}
 {% assign air_shown = air_n %}{% if air_shown > 8 %}{% assign air_shown = 8 %}{% endif %}
 {% assign air_rows = air_shown | plus: air_cols | minus: 1 | divided_by: air_cols %}
-{% assign rel_rows = rel_n %}{% if rel_rows > 3 %}{% assign rel_rows = 3 %}{% endif %}
+{% assign rel_rows = th_shown | plus: st_shown %}
 {% assign rows = air_rows %}{% if rel_rows > rows %}{% assign rows = rel_rows %}{% endif %}{% if rows < 2 %}{% assign rows = 2 %}{% endif %}
 <div class="wtw-band">
   {% if air_n > 0 %}
@@ -204,17 +213,33 @@ An absent section and an empty items list render the same: both are left out.
   </div>
   {% endif %}
   {% if rel_n > 0 %}
+  {%- comment -%} Each list takes as many of the band's row slots as it shows; a spacer takes the rest, so rows match Airing's. {%- endcomment -%}
   <div class="wtw-col wtw-col--rel" style="flex:2">
-    <div><span class="wtw-head">{{ icon_film }}<span>Releasing today</span>{% if releasing_today.stale %}<span class="wtw-stale">stale</span>{% endif %}</span>{% if rel_n > 3 %}<span class="wtw-x wtw-sub"> and {{ rel_n | minus: 3 }} more</span>{% endif %}{% if rel_n > og_rel %}<span class="wtw-og wtw-sub"> and {{ rel_n | minus: og_rel }} more</span>{% endif %}</div>
-    <div class="wtw-list" style="grid-template-columns:minmax(0, 1fr);grid-template-rows:repeat({{ rows }}, minmax(0, 1fr))">
-    {% for r in rel limit:3 %}
-      <div class="wtw-row{% if forloop.index > og_rel %} wtw-x{% endif %}">
+    {% if th_n > 0 %}
+    <div><span class="wtw-head">{{ icon_film }}<span>In theaters</span>{% if in_theaters.stale %}<span class="wtw-stale">stale</span>{% endif %}</span>{% if th_n > th_shown %}<span class="wtw-sub"> and {{ th_n | minus: th_shown }} more</span>{% endif %}</div>
+    <div class="wtw-list" style="flex:{{ th_shown }};grid-template-columns:minmax(0, 1fr);grid-template-rows:repeat({{ th_shown }}, minmax(0, 1fr))">
+    {% for r in th limit: th_shown %}
+      <div class="wtw-row">
         <span class="wtw-rowposter">{% if r.poster %}<img src="{{ r.poster }}" alt="">{% endif %}</span>
         {% assign rlen = r.title | size %}
-        <span class="t{% if rlen > 30 %} t--long{% endif %}">{{ r.title }}<span class="m2">{% if r.kind == "theatrical" %}in theaters{% else %}digital{% endif %}{% assign m = r.runtime_min %}{% if m %} · {% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %}{% endif %}</span></span>
+        <span class="t{% if rlen > 30 %} t--long{% endif %}">{{ r.title }}<span class="m2">{% if r.stage == "limited" %}<span class="wtw-milestone wtw-milestone--inline">limited{% if r.note %} · {{ r.note }}{% endif %}</span>{% endif %}{% if r.days_ago == 0 %}today{% elsif r.days_ago == 1 %}yesterday{% else %}{{ r.days_ago }} days ago{% endif %}{% assign m = r.runtime_min %}{% if m %} · {% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %}{% endif %}</span></span>
       </div>
     {% endfor %}
     </div>
+    {% endif %}
+    {% if st_n > 0 %}
+    <div><span class="wtw-head">{{ icon_play }}<span>Streaming</span>{% if streaming.stale %}<span class="wtw-stale">stale</span>{% endif %}</span>{% if st_n > st_shown %}<span class="wtw-sub"> and {{ st_n | minus: st_shown }} more</span>{% endif %}</div>
+    <div class="wtw-list" style="flex:{{ st_shown }};grid-template-columns:minmax(0, 1fr);grid-template-rows:repeat({{ st_shown }}, minmax(0, 1fr))">
+    {% for r in st limit: st_shown %}
+      <div class="wtw-row">
+        <span class="wtw-rowposter">{% if r.poster %}<img src="{{ r.poster }}" alt="">{% endif %}</span>
+        {% assign rlen = r.title | size %}
+        <span class="t{% if rlen > 30 %} t--long{% endif %}">{{ r.title }}<span class="m2">out today{% assign m = r.runtime_min %}{% if m %} · {% if m >= 60 %}{{ m | divided_by: 60 }}h {{ m | modulo: 60 }}m{% else %}{{ m }}m{% endif %}{% endif %}</span></span>
+      </div>
+    {% endfor %}
+    </div>
+    {% endif %}
+    {% assign spare = rows | minus: rel_rows %}{% if spare > 0 %}<div style="flex:{{ spare }}"></div>{% endif %}
   </div>
   {% endif %}
 </div>

@@ -34,7 +34,7 @@ class EmptyRadarr:
     def __init__(self, url, api_key):
         pass
 
-    def calendar(self, day):
+    def calendar(self, start, end):
         return []
 
 
@@ -84,6 +84,6 @@ def test_a_failing_source_keeps_its_last_good_section_marked_stale(empty_sources
 
 def test_sample_fixture_covers_every_payload_key():
     sample = json.loads((SCREEN / "fixtures" / "sample.json").read_text())
-    assert set(sample) == {"updated_at", "errors", "continue_watching", "airing", "releasing_today"}
-    for section in ("continue_watching", "airing", "releasing_today"):
+    assert set(sample) == {"updated_at", "errors", "continue_watching", "airing", "in_theaters", "streaming"}
+    for section in ("continue_watching", "airing", "in_theaters", "streaming"):
         assert {"stale", "items"} <= set(sample[section])
