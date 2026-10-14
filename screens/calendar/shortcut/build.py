@@ -195,17 +195,25 @@ setup = [
             "added once by checking the names so far, one per line."),
     *block("repeat.each", "upcoming-loop", "Collect each upcoming event's calendar name once.", {"WFInput": attachment(out("upcoming", "Calendar Events"))}, [
         detail("calendarevents", "upcoming-calendar", "Calendar", var("Repeat Item")),
+        comment("Keep the name as text: a Calendar object may not compare or count as text does."),
+        action("gettext", "calendar-name", WFTextActionText=text(out("upcoming-calendar", "Calendar"))),
         action("gettext", "names-so-far", WFTextActionText=text("\n", var("Calendar Names"), "\n")),
         *block("conditional", "if-new", "Only names not seen yet.",
                condition(out("names-so-far", "Text"), 999,
-                         WFConditionalActionString=text("\n", out("upcoming-calendar", "Calendar"), "\n")), [
-            action("appendvariable", WFVariableName="Calendar Names", WFInput=attachment(out("upcoming-calendar", "Calendar"))),
+                         WFConditionalActionString=text("\n", out("calendar-name", "Text"), "\n")), [
+            action("appendvariable", WFVariableName="Calendar Names", WFInput=attachment(out("calendar-name", "Text"))),
         ]),
     ]),
+    action("count", "upcoming-count", WFCountType="Items", WFInput=attachment(out("upcoming", "Calendar Events")),
+           Input=attachment(out("upcoming", "Calendar Events"))),
+    action("count", "names-count", WFCountType="Items", WFInput=attachment(var("Calendar Names")),
+           Input=attachment(var("Calendar Names"))),
     *block("conditional", "if-names", "Stop with a message rather than save a setup with no calendars.",
-           condition(var("Calendar Names"), 100), [], otherwise=[
+           condition(out("names-count", "Count"), 2, WFNumberValue="0"), [], otherwise=[
         action("alert", WFAlertActionTitle="No calendars found",
-               WFAlertActionMessage="Calendar Sync lists calendars that have upcoming events. Add an event, then run it again.",
+               WFAlertActionMessage=text("Calendar Sync lists calendars that have upcoming events. It found ",
+                                         out("upcoming-count", "Count"), " upcoming events and ",
+                                         out("names-count", "Count"), " calendars."),
                WFAlertActionCancelButtonShown=False),
         action("exit"),
     ]),

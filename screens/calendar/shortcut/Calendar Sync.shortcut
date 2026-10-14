@@ -412,6 +412,46 @@ added once by checking the names so far, one per line.</string>
 		</dict>
 		<dict>
 			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.comment</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>WFCommentActionText</key>
+				<string>Keep the name as text: a Calendar object may not compare or count as text does.</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.gettext</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>WFTextActionText</key>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>string</key>
+						<string>￼</string>
+						<key>attachmentsByRange</key>
+						<dict>
+							<key>{0, 1}</key>
+							<dict>
+								<key>Type</key>
+								<string>ActionOutput</string>
+								<key>OutputUUID</key>
+								<string>BAA25021-4400-5CE2-A9EE-094AE39FE98F</string>
+								<key>OutputName</key>
+								<string>Calendar</string>
+							</dict>
+						</dict>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenString</string>
+				</dict>
+				<key>UUID</key>
+				<string>C39F6E1D-DDA8-56A9-BFEC-E09DAFC2DD52</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
 			<string>is.workflow.actions.gettext</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
@@ -495,9 +535,9 @@ added once by checking the names so far, one per line.</string>
 								<key>Type</key>
 								<string>ActionOutput</string>
 								<key>OutputUUID</key>
-								<string>BAA25021-4400-5CE2-A9EE-094AE39FE98F</string>
+								<string>C39F6E1D-DDA8-56A9-BFEC-E09DAFC2DD52</string>
 								<key>OutputName</key>
-								<string>Calendar</string>
+								<string>Text</string>
 							</dict>
 						</dict>
 					</dict>
@@ -522,9 +562,9 @@ added once by checking the names so far, one per line.</string>
 						<key>Type</key>
 						<string>ActionOutput</string>
 						<key>OutputUUID</key>
-						<string>BAA25021-4400-5CE2-A9EE-094AE39FE98F</string>
+						<string>C39F6E1D-DDA8-56A9-BFEC-E09DAFC2DD52</string>
 						<key>OutputName</key>
-						<string>Calendar</string>
+						<string>Text</string>
 					</dict>
 					<key>WFSerializationType</key>
 					<string>WFTextTokenAttachment</string>
@@ -559,6 +599,80 @@ added once by checking the names so far, one per line.</string>
 		</dict>
 		<dict>
 			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.count</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>WFCountType</key>
+				<string>Items</string>
+				<key>WFInput</key>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>Type</key>
+						<string>ActionOutput</string>
+						<key>OutputUUID</key>
+						<string>C67218BB-BB30-51D4-8B54-DC13DB8F3B27</string>
+						<key>OutputName</key>
+						<string>Calendar Events</string>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenAttachment</string>
+				</dict>
+				<key>Input</key>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>Type</key>
+						<string>ActionOutput</string>
+						<key>OutputUUID</key>
+						<string>C67218BB-BB30-51D4-8B54-DC13DB8F3B27</string>
+						<key>OutputName</key>
+						<string>Calendar Events</string>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenAttachment</string>
+				</dict>
+				<key>UUID</key>
+				<string>70A2A155-0750-5E04-A4C1-F990C62CAA29</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.count</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>WFCountType</key>
+				<string>Items</string>
+				<key>WFInput</key>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>Type</key>
+						<string>Variable</string>
+						<key>VariableName</key>
+						<string>Calendar Names</string>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenAttachment</string>
+				</dict>
+				<key>Input</key>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>Type</key>
+						<string>Variable</string>
+						<key>VariableName</key>
+						<string>Calendar Names</string>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenAttachment</string>
+				</dict>
+				<key>UUID</key>
+				<string>DC945E70-D6EF-56EB-A09C-1C38C7E6616F</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
 			<string>is.workflow.actions.comment</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
@@ -584,16 +698,20 @@ added once by checking the names so far, one per line.</string>
 						<key>Value</key>
 						<dict>
 							<key>Type</key>
-							<string>Variable</string>
-							<key>VariableName</key>
-							<string>Calendar Names</string>
+							<string>ActionOutput</string>
+							<key>OutputUUID</key>
+							<string>DC945E70-D6EF-56EB-A09C-1C38C7E6616F</string>
+							<key>OutputName</key>
+							<string>Count</string>
 						</dict>
 						<key>WFSerializationType</key>
 						<string>WFTextTokenAttachment</string>
 					</dict>
 				</dict>
 				<key>WFCondition</key>
-				<integer>100</integer>
+				<integer>2</integer>
+				<key>WFNumberValue</key>
+				<string>0</string>
 				<key>UUID</key>
 				<string>31498A7E-65B5-5CF0-AE87-1B4A27DAEF99</string>
 			</dict>
@@ -617,7 +735,36 @@ added once by checking the names so far, one per line.</string>
 				<key>WFAlertActionTitle</key>
 				<string>No calendars found</string>
 				<key>WFAlertActionMessage</key>
-				<string>Calendar Sync lists calendars that have upcoming events. Add an event, then run it again.</string>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>string</key>
+						<string>Calendar Sync lists calendars that have upcoming events. It found ￼ upcoming events and ￼ calendars.</string>
+						<key>attachmentsByRange</key>
+						<dict>
+							<key>{66, 1}</key>
+							<dict>
+								<key>Type</key>
+								<string>ActionOutput</string>
+								<key>OutputUUID</key>
+								<string>70A2A155-0750-5E04-A4C1-F990C62CAA29</string>
+								<key>OutputName</key>
+								<string>Count</string>
+							</dict>
+							<key>{88, 1}</key>
+							<dict>
+								<key>Type</key>
+								<string>ActionOutput</string>
+								<key>OutputUUID</key>
+								<string>DC945E70-D6EF-56EB-A09C-1C38C7E6616F</string>
+								<key>OutputName</key>
+								<string>Count</string>
+							</dict>
+						</dict>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenString</string>
+				</dict>
 				<key>WFAlertActionCancelButtonShown</key>
 				<false/>
 			</dict>
