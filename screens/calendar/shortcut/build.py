@@ -196,10 +196,10 @@ setup = [
            WFChooseFromListActionPrompt="Which calendars should the screen show?",
            WFChooseFromListActionSelectMultiple=True),
     *block("repeat.each", "chosen-loop", "Ask for a short label for each chosen calendar.", {"WFInput": attachment(out("chosen", "Chosen Item"))}, [
-        action("ask", "label", WFAskActionPrompt=text("Short label for ", var("Repeat Item"),
+        action("ask", "label-ask", WFAskActionPrompt=text("Short label for ", var("Repeat Item"),
                                                       " (shown on each event, e.g. Work)"),
                WFAskActionDefaultAnswer=text(var("Repeat Item"))),
-        set_key("config-label", var("Config"), (var("Repeat Item"),), (out("label", "Provided Input"),)),
+        set_key("config-label", var("Config"), (var("Repeat Item"),), (out("label-ask", "Provided Input"),)),
         set_var("Config", out("config-label", "Dictionary")),
     ]),
     action("setitemname", "config-file", WFInput=attachment(var("Config")), WFName=CONFIG_FILE),

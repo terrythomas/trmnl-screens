@@ -34,3 +34,10 @@ def test_every_variable_sits_on_a_placeholder():
             for v in node:
                 walk(v)
     walk(load_build().workflow)
+
+
+def test_action_uuids_are_unique():
+    # Two actions sharing a name share a UUID, and Shortcuts shows their outputs as broken.
+    uuids = [a["WFWorkflowActionParameters"]["UUID"] for a in load_build().workflow["WFWorkflowActions"]
+             if "UUID" in a["WFWorkflowActionParameters"]]
+    assert len(uuids) == len(set(uuids))
