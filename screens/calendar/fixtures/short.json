@@ -6,118 +6,100 @@
    "title": "Offsite week",
    "start": "2026-10-14T00:00:00-04:00",
    "end": "2026-10-15T00:00:00-04:00",
-   "all_day": true,
+   "all_day": "Yes",
    "calendar": "Work",
    "reply": "",
-   "attendees": [],
+   "attendees": "",
    "description": ""
   },
   {
    "title": "Inbox triage",
    "start": "2026-10-14T09:00:00-04:00",
    "end": "2026-10-14T09:30:00-04:00",
-   "all_day": false,
+   "all_day": "No",
    "calendar": "Work",
    "reply": "",
-   "attendees": [],
+   "attendees": "",
    "description": ""
   },
   {
    "title": "Design review: onboarding",
    "start": "2026-10-14T10:00:00-04:00",
    "end": "2026-10-14T11:00:00-04:00",
-   "all_day": false,
+   "all_day": "No",
    "calendar": "Work",
-   "reply": "Pending",
-   "attendees": [
-    "Alex Rivera",
-    "Sam Chen"
-   ],
+   "reply": "pending",
+   "attendees": "Alex Rivera, Sam Chen",
    "description": "Bring the latest prototype."
   },
   {
    "title": "Team standup",
    "start": "2026-10-14T11:00:00-04:00",
    "end": "2026-10-14T11:30:00-04:00",
-   "all_day": false,
+   "all_day": "No",
    "calendar": "Work",
-   "reply": "Accepted",
-   "attendees": [
-    "Alex Rivera",
-    "Sam Chen",
-    "Priya Nair",
-    "Jo Park",
-    "Lee Grant",
-    "Kim Ito",
-    "Ana Ruiz"
-   ],
+   "reply": "accepted",
+   "attendees": "Alex Rivera, Sam Chen, Priya Nair, Jo Park, Lee Grant, Kim Ito, Ana Ruiz",
    "description": "Daily sync."
   },
   {
    "title": "Dentist",
    "start": "2026-10-14T11:15:00-04:00",
    "end": "2026-10-14T12:00:00-04:00",
-   "all_day": false,
+   "all_day": "No",
    "calendar": "Home",
    "reply": "",
-   "attendees": [],
+   "attendees": "",
    "description": "Cleaning. Main St office."
   },
   {
    "title": "Vendor demo",
    "start": "2026-10-14T13:00:00-04:00",
    "end": "2026-10-14T14:00:00-04:00",
-   "all_day": false,
+   "all_day": "No",
    "calendar": "Work",
-   "reply": "Declined",
-   "attendees": [
-    "Casey Doe"
-   ],
+   "reply": "declined",
+   "attendees": "Casey Doe",
    "description": ""
   },
   {
    "title": "1:1 with Jordan",
    "start": "2026-10-14T14:30:00-04:00",
    "end": "2026-10-14T15:00:00-04:00",
-   "all_day": false,
+   "all_day": "No",
    "calendar": "Work",
-   "reply": "Accepted",
-   "attendees": [
-    "Jordan Blake"
-   ],
+   "reply": "accepted",
+   "attendees": "Jordan Blake",
    "description": ""
   },
   {
    "title": "Q4 planning sync",
    "start": "2026-10-14T15:00:00-04:00",
    "end": "2026-10-14T16:00:00-04:00",
-   "all_day": false,
+   "all_day": "No",
    "calendar": "Work",
-   "reply": "Tentative",
-   "attendees": [
-    "Alex Rivera",
-    "Morgan Lee"
-   ],
-   "description": "Roadmap trade-offs.\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nJoin with Google Meet"
+   "reply": "tentative",
+   "attendees": "Alex Rivera, Morgan Lee",
+   "description": "Roadmap trade-offs.\n──────────\nJoin with Google Meet"
   },
   {
    "title": "Dinner at Sam's",
    "start": "2026-10-14T18:40:00-04:00",
    "end": "2026-10-14T20:30:00-04:00",
-   "all_day": false,
+   "all_day": "No",
    "calendar": "Home",
    "reply": "",
-   "attendees": [],
+   "attendees": "",
    "description": ""
   },
   {
    "title": "Gym",
    "start": "2026-10-15T07:00:00-04:00",
    "end": "2026-10-15T08:00:00-04:00",
-   "all_day": false,
+   "all_day": "No",
    "calendar": "Home",
    "reply": "",
-   "attendees": [],
+   "attendees": "",
    "description": ""
   }
  ]

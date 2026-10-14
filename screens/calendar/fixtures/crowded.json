@@ -9,7 +9,7 @@
    "all_day": true,
    "calendar": "Work",
    "reply": "",
-   "attendees": [],
+   "attendees": "",
    "description": ""
   },
   {
@@ -19,7 +19,7 @@
    "all_day": false,
    "calendar": "Work",
    "reply": "",
-   "attendees": [],
+   "attendees": "",
    "description": ""
   },
   {
@@ -29,13 +29,7 @@
    "all_day": false,
    "calendar": "Work",
    "reply": "Pending",
-   "attendees": [
-    "Alex Rivera",
-    "Sam Chen",
-    "Priya Nair",
-    "Jo Park",
-    "Lee Grant"
-   ],
+   "attendees": "Alex Rivera, Sam Chen, Priya Nair, Jo Park, Lee Grant",
    "description": "Walk through the new onboarding flow and agree on the empty-state copy before Thursday's build.\nBring the latest prototype.\n\nJoin Zoom Meeting\nhttps://zoom.us/j/000000000\nMeeting ID: 000 000 000"
   },
   {
@@ -45,15 +39,7 @@
    "all_day": false,
    "calendar": "Work",
    "reply": "Accepted",
-   "attendees": [
-    "Alex Rivera",
-    "Sam Chen",
-    "Priya Nair",
-    "Jo Park",
-    "Lee Grant",
-    "Kim Ito",
-    "Ana Ruiz"
-   ],
+   "attendees": "Alex Rivera, Sam Chen, Priya Nair, Jo Park, Lee Grant, Kim Ito, Ana Ruiz",
    "description": "Daily sync."
   },
   {
@@ -63,7 +49,7 @@
    "all_day": false,
    "calendar": "Home",
    "reply": "",
-   "attendees": [],
+   "attendees": "",
    "description": "Cleaning. Main St office."
   },
   {
@@ -73,9 +59,7 @@
    "all_day": false,
    "calendar": "Work",
    "reply": "Declined",
-   "attendees": [
-    "Casey Doe"
-   ],
+   "attendees": "Casey Doe",
    "description": ""
   },
   {
@@ -85,9 +69,7 @@
    "all_day": false,
    "calendar": "Work",
    "reply": "Accepted",
-   "attendees": [
-    "Jordan Blake"
-   ],
+   "attendees": "Jordan Blake",
    "description": ""
   },
   {
@@ -97,11 +79,8 @@
    "all_day": false,
    "calendar": "Work",
    "reply": "Tentative",
-   "attendees": [
-    "Alex Rivera",
-    "Morgan Lee"
-   ],
-   "description": "Roadmap trade-offs.\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nJoin with Google Meet"
+   "attendees": "Alex Rivera, Morgan Lee",
+   "description": "Roadmap trade-offs.\n──────────\nJoin with Google Meet"
   },
   {
    "title": "Dinner at Sam's",
@@ -110,7 +89,7 @@
    "all_day": false,
    "calendar": "Home",
    "reply": "",
-   "attendees": [],
+   "attendees": "",
    "description": ""
   },
   {
@@ -120,7 +99,7 @@
    "all_day": false,
    "calendar": "Home",
    "reply": "",
-   "attendees": [],
+   "attendees": "",
    "description": ""
   },
   {
@@ -130,9 +109,7 @@
    "all_day": false,
    "calendar": "Work",
    "reply": "Accepted",
-   "attendees": [
-    "Alex Rivera"
-   ],
+   "attendees": "Alex Rivera",
    "description": ""
   },
   {
@@ -142,9 +119,7 @@
    "all_day": false,
    "calendar": "Work",
    "reply": "Pending",
-   "attendees": [
-    "Alex Rivera"
-   ],
+   "attendees": "Alex Rivera",
    "description": ""
   },
   {
@@ -154,9 +129,7 @@
    "all_day": false,
    "calendar": "Work",
    "reply": "Accepted",
-   "attendees": [
-    "Alex Rivera"
-   ],
+   "attendees": "Alex Rivera",
    "description": ""
   },
   {
@@ -166,9 +139,7 @@
    "all_day": false,
    "calendar": "Work",
    "reply": "Accepted",
-   "attendees": [
-    "Alex Rivera"
-   ],
+   "attendees": "Alex Rivera",
    "description": ""
   },
   {
@@ -178,7 +149,7 @@
    "all_day": false,
    "calendar": "Home",
    "reply": "",
-   "attendees": [],
+   "attendees": "",
    "description": ""
   }
  ]

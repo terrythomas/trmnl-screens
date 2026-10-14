@@ -17,6 +17,10 @@ keywords = ["-"]
 description = "Nil UUID used as a placeholder"
 regexes = ['''^0{8}-0{4}-0{4}-0{4}-0{12}$''']
 
+[[rules.allowlists]]
+description = "Shortcut action UUIDs, derived from action names in build.py; the webhook is entered on the phone"
+paths = ['''^screens/calendar/shortcut/Calendar Sync\.shortcut$''']
+
 [[rules]]
 id = "private-ip"
 description = "Private IPv4 address (RFC 1918 or the CGNAT range Tailscale uses)"
