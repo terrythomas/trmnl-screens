@@ -189,16 +189,27 @@ setup = [
             (out("host", "Provided Input"), "/api/custom_plugins/", out("uuid", "Provided Input"))),
     set_var("Config", out("config-url", "Dictionary")),
     comment("Calendars come from upcoming events, so a calendar with nothing coming up isn't offered."),
-    set_var("Seen", out("empty", "Dictionary")),
     action("filter.calendarevents", "upcoming", WFContentItemFilter=UPCOMING,
            WFContentItemLimitEnabled=True, WFContentItemLimitNumber=300.0),
+    comment("Dictionary keys can't dedupe these: a key with dots is read as a key path. Each name is\n"
+            "added once by checking the names so far, one per line."),
     *block("repeat.each", "upcoming-loop", "Collect each upcoming event's calendar name once.", {"WFInput": attachment(out("upcoming", "Calendar Events"))}, [
         detail("calendarevents", "upcoming-calendar", "Calendar", var("Repeat Item")),
-        set_key("seen-add", var("Seen"), (out("upcoming-calendar", "Calendar"),), (out("upcoming-calendar", "Calendar"),)),
-        set_var("Seen", out("seen-add", "Dictionary")),
+        action("gettext", "names-so-far", WFTextActionText=text("\n", var("Calendar Names"), "\n")),
+        *block("conditional", "if-new", "Only names not seen yet.",
+               condition(out("names-so-far", "Text"), 999,
+                         WFConditionalActionString=text("\n", out("upcoming-calendar", "Calendar"), "\n")), [
+            action("appendvariable", WFVariableName="Calendar Names", WFInput=attachment(out("upcoming-calendar", "Calendar"))),
+        ]),
     ]),
-    action("getvalueforkey", "calendar-names", WFGetDictionaryValueType="All Keys", WFInput=attachment(var("Seen"))),
-    action("choosefromlist", "chosen", WFInput=attachment(out("calendar-names", "Dictionary Value")),
+    *block("conditional", "if-names", "Stop with a message rather than save a setup with no calendars.",
+           condition(var("Calendar Names"), 100), [], otherwise=[
+        action("alert", WFAlertActionTitle="No calendars found",
+               WFAlertActionMessage="Calendar Sync lists calendars that have upcoming events. Add an event, then run it again.",
+               WFAlertActionCancelButtonShown=False),
+        action("exit"),
+    ]),
+    action("choosefromlist", "chosen", WFInput=attachment(var("Calendar Names")),
            WFChooseFromListActionPrompt="Which calendars should the screen show?",
            WFChooseFromListActionSelectMultiple=True),
     *block("repeat.each", "chosen-loop", "Ask for a short label for each chosen calendar.", {"WFInput": attachment(out("chosen", "Chosen Item"))}, [

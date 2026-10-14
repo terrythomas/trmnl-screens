@@ -294,29 +294,6 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 		</dict>
 		<dict>
 			<key>WFWorkflowActionIdentifier</key>
-			<string>is.workflow.actions.setvariable</string>
-			<key>WFWorkflowActionParameters</key>
-			<dict>
-				<key>WFVariableName</key>
-				<string>Seen</string>
-				<key>WFInput</key>
-				<dict>
-					<key>Value</key>
-					<dict>
-						<key>Type</key>
-						<string>ActionOutput</string>
-						<key>OutputUUID</key>
-						<string>7A7815B9-7922-59DC-84B0-2EAE3C68C1DE</string>
-						<key>OutputName</key>
-						<string>Dictionary</string>
-					</dict>
-					<key>WFSerializationType</key>
-					<string>WFTextTokenAttachment</string>
-				</dict>
-			</dict>
-		</dict>
-		<dict>
-			<key>WFWorkflowActionIdentifier</key>
 			<string>is.workflow.actions.filter.calendarevents</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
@@ -362,6 +339,16 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 				<real>300.0</real>
 				<key>UUID</key>
 				<string>C67218BB-BB30-51D4-8B54-DC13DB8F3B27</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.comment</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>WFCommentActionText</key>
+				<string>Dictionary keys can't dedupe these: a key with dots is read as a key path. Each name is
+added once by checking the names so far, one per line.</string>
 			</dict>
 		</dict>
 		<dict>
@@ -425,52 +412,85 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 		</dict>
 		<dict>
 			<key>WFWorkflowActionIdentifier</key>
-			<string>is.workflow.actions.setvalueforkey</string>
+			<string>is.workflow.actions.gettext</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
-				<key>WFDictionary</key>
-				<dict>
-					<key>Value</key>
-					<dict>
-						<key>Type</key>
-						<string>Variable</string>
-						<key>VariableName</key>
-						<string>Seen</string>
-					</dict>
-					<key>WFSerializationType</key>
-					<string>WFTextTokenAttachment</string>
-				</dict>
-				<key>WFDictionaryKey</key>
+				<key>WFTextActionText</key>
 				<dict>
 					<key>Value</key>
 					<dict>
 						<key>string</key>
-						<string>￼</string>
+						<string>
+￼
+</string>
 						<key>attachmentsByRange</key>
 						<dict>
-							<key>{0, 1}</key>
+							<key>{1, 1}</key>
 							<dict>
 								<key>Type</key>
-								<string>ActionOutput</string>
-								<key>OutputUUID</key>
-								<string>BAA25021-4400-5CE2-A9EE-094AE39FE98F</string>
-								<key>OutputName</key>
-								<string>Calendar</string>
+								<string>Variable</string>
+								<key>VariableName</key>
+								<string>Calendar Names</string>
 							</dict>
 						</dict>
 					</dict>
 					<key>WFSerializationType</key>
 					<string>WFTextTokenString</string>
 				</dict>
-				<key>WFDictionaryValue</key>
+				<key>UUID</key>
+				<string>5734B843-3C36-5C84-B080-0201F41F4A9B</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.comment</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>WFCommentActionText</key>
+				<string>- Only names not seen yet.</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.conditional</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>GroupingIdentifier</key>
+				<string>DAAC6AD0-A81C-529E-8B09-D781CE12359C</string>
+				<key>WFControlFlowMode</key>
+				<integer>0</integer>
+				<key>WFInput</key>
+				<dict>
+					<key>Type</key>
+					<string>Variable</string>
+					<key>Variable</key>
+					<dict>
+						<key>Value</key>
+						<dict>
+							<key>Type</key>
+							<string>ActionOutput</string>
+							<key>OutputUUID</key>
+							<string>5734B843-3C36-5C84-B080-0201F41F4A9B</string>
+							<key>OutputName</key>
+							<string>Text</string>
+						</dict>
+						<key>WFSerializationType</key>
+						<string>WFTextTokenAttachment</string>
+					</dict>
+				</dict>
+				<key>WFCondition</key>
+				<integer>999</integer>
+				<key>WFConditionalActionString</key>
 				<dict>
 					<key>Value</key>
 					<dict>
 						<key>string</key>
-						<string>￼</string>
+						<string>
+￼
+</string>
 						<key>attachmentsByRange</key>
 						<dict>
-							<key>{0, 1}</key>
+							<key>{1, 1}</key>
 							<dict>
 								<key>Type</key>
 								<string>ActionOutput</string>
@@ -485,16 +505,16 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 					<string>WFTextTokenString</string>
 				</dict>
 				<key>UUID</key>
-				<string>1971BE38-FDF0-5D15-B54E-30D880103002</string>
+				<string>23620DE8-AC01-5053-98D6-7A0E325119FE</string>
 			</dict>
 		</dict>
 		<dict>
 			<key>WFWorkflowActionIdentifier</key>
-			<string>is.workflow.actions.setvariable</string>
+			<string>is.workflow.actions.appendvariable</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
 				<key>WFVariableName</key>
-				<string>Seen</string>
+				<string>Calendar Names</string>
 				<key>WFInput</key>
 				<dict>
 					<key>Value</key>
@@ -502,13 +522,26 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 						<key>Type</key>
 						<string>ActionOutput</string>
 						<key>OutputUUID</key>
-						<string>1971BE38-FDF0-5D15-B54E-30D880103002</string>
+						<string>BAA25021-4400-5CE2-A9EE-094AE39FE98F</string>
 						<key>OutputName</key>
-						<string>Dictionary</string>
+						<string>Calendar</string>
 					</dict>
 					<key>WFSerializationType</key>
 					<string>WFTextTokenAttachment</string>
 				</dict>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.conditional</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>GroupingIdentifier</key>
+				<string>DAAC6AD0-A81C-529E-8B09-D781CE12359C</string>
+				<key>WFControlFlowMode</key>
+				<integer>2</integer>
+				<key>UUID</key>
+				<string>46928F3B-3E5D-5DD7-A4AC-9BEB599EE798</string>
 			</dict>
 		</dict>
 		<dict>
@@ -526,25 +559,86 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 		</dict>
 		<dict>
 			<key>WFWorkflowActionIdentifier</key>
-			<string>is.workflow.actions.getvalueforkey</string>
+			<string>is.workflow.actions.comment</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
-				<key>WFGetDictionaryValueType</key>
-				<string>All Keys</string>
+				<key>WFCommentActionText</key>
+				<string>- Stop with a message rather than save a setup with no calendars.</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.conditional</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>GroupingIdentifier</key>
+				<string>151521DD-70CB-5C34-B247-F22BEAE238C6</string>
+				<key>WFControlFlowMode</key>
+				<integer>0</integer>
 				<key>WFInput</key>
 				<dict>
-					<key>Value</key>
+					<key>Type</key>
+					<string>Variable</string>
+					<key>Variable</key>
 					<dict>
-						<key>Type</key>
-						<string>Variable</string>
-						<key>VariableName</key>
-						<string>Seen</string>
+						<key>Value</key>
+						<dict>
+							<key>Type</key>
+							<string>Variable</string>
+							<key>VariableName</key>
+							<string>Calendar Names</string>
+						</dict>
+						<key>WFSerializationType</key>
+						<string>WFTextTokenAttachment</string>
 					</dict>
-					<key>WFSerializationType</key>
-					<string>WFTextTokenAttachment</string>
 				</dict>
+				<key>WFCondition</key>
+				<integer>100</integer>
 				<key>UUID</key>
-				<string>3FCA7B88-6424-5E8F-B0EF-471F3AFD1324</string>
+				<string>31498A7E-65B5-5CF0-AE87-1B4A27DAEF99</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.conditional</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>GroupingIdentifier</key>
+				<string>151521DD-70CB-5C34-B247-F22BEAE238C6</string>
+				<key>WFControlFlowMode</key>
+				<integer>1</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.alert</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>WFAlertActionTitle</key>
+				<string>No calendars found</string>
+				<key>WFAlertActionMessage</key>
+				<string>Calendar Sync lists calendars that have upcoming events. Add an event, then run it again.</string>
+				<key>WFAlertActionCancelButtonShown</key>
+				<false/>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.exit</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict/>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.conditional</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>GroupingIdentifier</key>
+				<string>151521DD-70CB-5C34-B247-F22BEAE238C6</string>
+				<key>WFControlFlowMode</key>
+				<integer>2</integer>
+				<key>UUID</key>
+				<string>7ADA75CF-57E4-5E54-AFE0-07A6C4CC4BFA</string>
 			</dict>
 		</dict>
 		<dict>
@@ -557,11 +651,9 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 					<key>Value</key>
 					<dict>
 						<key>Type</key>
-						<string>ActionOutput</string>
-						<key>OutputUUID</key>
-						<string>3FCA7B88-6424-5E8F-B0EF-471F3AFD1324</string>
-						<key>OutputName</key>
-						<string>Dictionary Value</string>
+						<string>Variable</string>
+						<key>VariableName</key>
+						<string>Calendar Names</string>
 					</dict>
 					<key>WFSerializationType</key>
 					<string>WFTextTokenAttachment</string>
