@@ -29,6 +29,7 @@ The Shortcut POSTs JSON to `<LARAPAPER_URL>/api/custom_plugins/<CALENDAR_WEBHOOK
 | Field | Meaning |
 |---|---|
 | `synced_at` | When the Shortcut ran, ISO 8601 with offset. |
+| `found` | How many events today's search returned before keeping only the chosen calendars; for diagnosing an empty `events`. |
 | `events` | Every event today that hasn't ended yet, from the chosen calendars. |
 | `title` | The event title. |
 | `start`, `end` | ISO 8601 with offset. |
