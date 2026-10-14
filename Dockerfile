@@ -23,7 +23,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
-RUN uv sync --locked --no-install-project --no-cache
+# Every screen's extra, so any screen can be enabled; dev tools stay out.
+RUN uv sync --locked --no-install-project --no-cache --all-extras --no-extra dev
 
 # Run from source, not as an installed package: discovery finds screens/ next to collector/.
 COPY collector collector

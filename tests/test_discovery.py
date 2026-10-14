@@ -1,4 +1,4 @@
-from collector.discovery import discover_screens
+from collector.discovery import discover_screens, find_screens, load_screen
 
 
 def test_discovers_every_screen_with_a_collector(tmp_path):
@@ -36,3 +36,19 @@ def test_a_screen_can_declare_its_default_interval(tmp_path):
     (pkg / "__init__.py").write_text("INTERVAL_MINUTES = 60\n\ndef collect():\n    return {}\n")
 
     assert discover_screens(tmp_path)["slow"].interval_minutes == 60
+
+
+def test_finding_screens_imports_none_of_them(tmp_path):
+    pkg = tmp_path / "heavy" / "collector"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text("import not_an_installed_package\n")
+
+    screens = find_screens(tmp_path)
+
+    assert screens == {"heavy": pkg / "__init__.py"}
+    try:
+        load_screen("heavy", screens["heavy"])
+    except ModuleNotFoundError as e:
+        assert e.name == "not_an_installed_package"
+    else:
+        raise AssertionError("expected the import to fail on load")

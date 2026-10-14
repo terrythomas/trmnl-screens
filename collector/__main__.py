@@ -6,7 +6,7 @@ import logging
 from dotenv import load_dotenv
 
 from collector.config import Config
-from collector.discovery import discover_screens
+from collector.discovery import find_screens, load_screen
 from collector.push import push
 from collector.runner import enabled_screens, run_forever, run_tick
 
@@ -22,14 +22,23 @@ def main() -> int:
     logging.getLogger("httpx").setLevel(logging.WARNING)
     load_dotenv()  # a local .env, if present; real environment variables win
     config = Config.from_env()
-    screens = enabled_screens(discover_screens(), config)
+    found = enabled_screens(find_screens(), config)
     if args.screen:
-        if args.screen not in screens:
+        if args.screen not in found:
             parser.error(f"screen {args.screen} is not enabled or does not exist")
-        screens = {args.screen: screens[args.screen]}
-    if not screens:
+        found = {args.screen: found[args.screen]}
+    if not found:
         # Fail loudly: a collector that runs but pushes nothing is easy to miss.
         parser.error("no screens enabled: set at least one <SCREEN>_WEBHOOK_UUID")
+    screens = {}
+    for name, init in found.items():
+        try:
+            screens[name] = load_screen(name, init)
+        except ModuleNotFoundError as e:
+            # A missing module of the project's own is a bug, not a missing extra.
+            if (e.name or "").split(".")[0] in ("trmnl_screens", "collector"):
+                raise
+            parser.error(f"screen {name} needs {e.name}: install it with pip install '.[{name}]'")
 
     def tick(names):
         return run_tick({name: screens[name].collect for name in names}, config, push)

@@ -113,6 +113,19 @@ uv run scripts/deploy media         # deploy the template from your clone
 docker build -t trmnl-screens:dev . && scripts/check-image trmnl-screens:dev
 ```
 
+### Adding a screen
+
+A screen is a folder under `screens/` with a `collector` package whose `__init__.py` defines `collect()`, which returns the payload for the screen's LaraPaper webhook. It can also set `INTERVAL_MINUTES`, its default schedule. The collector finds screens by folder name and imports only the enabled ones, so a screen that isn't enabled never loads.
+
+If a screen needs Python packages that the others don't, list them in `pyproject.toml` as an optional extra named after the screen, then run `uv lock`:
+
+```toml
+[project.optional-dependencies]
+weather = ["some-package>=1.0"]
+```
+
+Running from source, install it with `uv sync --extra weather`. The Docker image installs every screen's extra.
+
 To preview templates, use [trmnlp](https://github.com/usetrmnl/trmnlp). `python screens/media/fixtures/variants.py` writes a set of sample payloads, and `scripts/preview-data` loads one of them. See the [spec's testing section](docs/specs/media-screen.md#testing).
 
 ## Docs
