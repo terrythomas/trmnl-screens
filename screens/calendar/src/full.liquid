@@ -6,7 +6,16 @@ The OG layout: the countdown hero and Next on the left, the rest of the day on t
 A script at the end moves Next to the right when it doesn't fit, and trims the agenda.
 {%- endcomment -%}
 {%- assign now_s = preview_now | default: "now" | date: "%s" | plus: 0 -%}
+{%- comment -%} Show times in the phone's zone: the offset synced_at carries ("-04:00"), else the LaraPaper user's. {%- endcomment -%}
 {%- assign off = trmnl.user.utc_offset | default: 0 | plus: 0 -%}
+{%- assign tz = synced_at | slice: -6, 6 -%}
+{%- assign tz_sign = tz | slice: 0 -%}
+{%- if synced_at != blank and tz_sign == "-" or synced_at != blank and tz_sign == "+" -%}
+  {%- assign tz_h = tz | slice: 1, 2 | plus: 0 -%}{%- assign tz_m = tz | slice: 4, 2 | plus: 0 -%}
+  {%- assign off = tz_h | times: 3600 | plus: 0 -%}{%- assign tz_m = tz_m | times: 60 -%}{%- assign off = off | plus: tz_m -%}
+  {%- if tz_sign == "-" -%}{%- assign off = off | times: -1 -%}{%- endif -%}
+{%- elsif synced_at != blank and tz contains "Z" -%}{%- assign off = 0 -%}
+{%- endif -%}
 {%- assign sod = now_s | plus: off | modulo: 86400 -%}
 {%- assign today0_s = now_s | minus: sod -%}
 {%- assign midnight_s = today0_s | plus: 86400 -%}
@@ -17,13 +26,14 @@ A script at the end moves Next to the right when it doesn't fit, and trims the a
 {%- assign wd_end_s = wd[0] | times: 3600 | plus: today0_s -%}{%- assign m = wd[1] | times: 60 -%}{%- assign wd_end_s = wd_end_s | plus: m -%}
 
 {%- comment -%} The agenda: timed, not declined, not over, starting before midnight. All-day events go on their own line. {%- endcomment -%}
-{%- assign evs = events | sort: "start" -%}
-{%- assign keep = "" -%}{%- assign allday = "" -%}
+{%- comment -%} LaraPaper's engine throws on sorting or doing sums with nothing, hence the guards here and below. {%- endcomment -%}
+{%- assign evs = events -%}{%- if events -%}{%- assign evs = events | sort: "start" -%}{%- endif -%}
+{%- assign keep = "" -%}{%- assign allday = "" -%}{%- assign keep_n = 0 -%}
 {%- for e in evs -%}
   {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}
   {%- if e.reply == "Declined" or en <= now_s or s >= midnight_s -%}{%- continue -%}{%- endif -%}
   {%- if e.all_day -%}{%- assign allday = allday | append: forloop.index0 | append: "," -%}
-  {%- else -%}{%- assign keep = keep | append: forloop.index0 | append: "," -%}{%- endif -%}
+  {%- else -%}{%- assign keep = keep | append: forloop.index0 | append: "," -%}{%- assign keep_n = keep_n | plus: 1 -%}{%- endif -%}
 {%- endfor -%}
 {%- assign keep = keep | split: "," -%}{%- assign allday = allday | split: "," -%}
 
@@ -32,7 +42,7 @@ Conflicts: overlapping events chain into one cluster ("2,3;5;6"), shown side by 
 shortcut: one long event overlapping several others chains them all into one cluster; split by pairwise overlap if that happens in practice.
 {%- endcomment -%}
 {%- assign clusters = "" -%}{%- assign cl_end = 0 -%}
-{%- for k in keep -%}
+{%- for k in keep -%}{%- if k == "" -%}{%- continue -%}{%- endif -%}
   {%- assign i = k | plus: 0 -%}{%- assign e = evs[i] -%}
   {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}
   {%- if clusters != "" and s < cl_end -%}
@@ -49,7 +59,7 @@ Now: the cluster in progress, unless it ends within 5 minutes (it hands the hero
 Next: the first cluster after that. Each cluster's span is "start-end" in cl_spans.
 {%- endcomment -%}
 {%- assign now_ci = -1 -%}{%- assign next_ci = -1 -%}{%- assign cl_spans = "" -%}
-{%- for c in clusters -%}
+{%- for c in clusters -%}{%- if c == "" -%}{%- continue -%}{%- endif -%}
   {%- assign ids = c | split: "," -%}{%- assign c_s = 9999999999 -%}{%- assign c_e = 0 -%}
   {%- for k in ids -%}{%- assign i = k | plus: 0 -%}
     {%- assign s = evs[i].start | date: "%s" | plus: 0 -%}{%- assign en = evs[i].end | date: "%s" | plus: 0 -%}
@@ -66,7 +76,7 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
 
 {%- comment -%} Free blocks: gaps of more than 30 minutes inside the workday, from now on. Stored as "start-end;". {%- endcomment -%}
 {%- assign free = "" -%}{%- assign cur = now_s -%}{%- if wd_start_s > cur -%}{%- assign cur = wd_start_s -%}{%- endif -%}
-{%- for sp in cl_spans -%}
+{%- for sp in cl_spans -%}{%- if sp == "" -%}{%- continue -%}{%- endif -%}
   {%- assign p = sp | split: "-" -%}{%- assign c_s = p[0] | plus: 0 -%}{%- assign c_e = p[1] | plus: 0 -%}
   {%- assign gap_end = c_s -%}{%- if gap_end > wd_end_s -%}{%- assign gap_end = wd_end_s -%}{%- endif -%}
   {%- assign gap = gap_end | minus: cur -%}
@@ -74,24 +84,23 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
   {%- if c_e > cur -%}{%- assign cur = c_e -%}{%- endif -%}
 {%- endfor -%}
 {%- comment -%} With no events at all there is nothing to be free between. {%- endcomment -%}
-{%- assign gap = wd_end_s | minus: cur -%}{%- if keep.size == 0 -%}{%- assign gap = 0 -%}{%- endif -%}
+{%- assign gap = wd_end_s | minus: cur -%}{%- if keep_n == 0 -%}{%- assign gap = 0 -%}{%- endif -%}
 {%- if gap > 1800 -%}{%- assign free = free | append: cur | append: "-" | append: wd_end_s | append: ";" -%}{%- endif -%}
 {%- assign free = free | split: ";" -%}
 
 {%- comment -%} The rest of the day after Next, in time order: "start|C|cluster index" or "start|F|end". {%- endcomment -%}
 {%- assign rest = "" -%}
-{%- for sp in cl_spans -%}
+{%- for sp in cl_spans -%}{%- if sp == "" -%}{%- continue -%}{%- endif -%}
   {%- if forloop.index0 > next_ci and next_ci != -1 -%}{%- assign p = sp | split: "-" -%}{%- assign rest = rest | append: p[0] | append: "|C|" | append: forloop.index0 | append: ";" -%}{%- endif -%}
 {%- endfor -%}
 {%- comment -%} Free time before Next belongs to the hero, not the rest of the day. {%- endcomment -%}
 {%- assign pre_free = "" -%}{%- assign next_s = 0 -%}{%- if next_ci != -1 -%}{%- assign p = cl_spans[next_ci] | split: "-" -%}{%- assign next_s = p[0] | plus: 0 -%}{%- endif -%}
-{%- for f in free -%}{%- assign p = f | split: "-" -%}{%- assign f_s = p[0] | plus: 0 -%}{%- if f_s < next_s -%}{%- assign pre_free = f -%}{%- continue -%}{%- endif -%}{%- assign rest = rest | append: p[0] | append: "|F|" | append: p[1] | append: ";" -%}{%- endfor -%}
+{%- for f in free -%}{%- if f == "" -%}{%- continue -%}{%- endif -%}{%- assign p = f | split: "-" -%}{%- assign f_s = p[0] | plus: 0 -%}{%- if f_s < next_s -%}{%- assign pre_free = f -%}{%- continue -%}{%- endif -%}{%- assign rest = rest | append: p[0] | append: "|F|" | append: p[1] | append: ";" -%}{%- endfor -%}
 {%- assign rest = rest | split: ";" | sort -%}
 
 {%- comment -%} Sync: whether the last push was today. The screen only leaves the playlist on an empty agenda after a sync today. {%- endcomment -%}
-{%- assign sync_s = synced_at | date: "%s" | plus: 0 -%}
+{%- assign sync_s = 0 -%}{%- if synced_at != blank -%}{%- assign sync_s = synced_at | date: "%s" | plus: 0 -%}{%- endif -%}
 {%- assign synced_today = false -%}{%- if sync_s >= today0_s -%}{%- assign synced_today = true -%}{%- endif -%}
-{%- assign keep_n = keep | size -%}
 {%- if keep_n == 0 and synced_today -%}<script>window.TRMNL_SKIP_DISPLAY = true</script>{%- endif -%}
 <style>
   /* A full-width header (date and all-day events), then the two columns. */
@@ -153,9 +162,9 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
 <div class="layout layout--col cal-page">
   <div class="cal-top">
       <span class="cal-date">{{ now_s | plus: off | date: "%A, %b %-d" }}</span>
-      {%- for k in allday -%}{%- assign i = k | plus: 0 -%}<span class="cal-ad">{{ evs[i].title }}</span>{%- endfor -%}
+      {%- for k in allday -%}{%- if k == "" -%}{%- continue -%}{%- endif -%}{%- assign i = k | plus: 0 -%}<span class="cal-ad">{{ evs[i].title }}</span>{%- endfor -%}
       {%- if synced_at == blank -%}<span class="cal-pill cal-pill--solid">{{ icon_alert }} Not synced yet</span>
-      {%- elsif synced_today == false -%}<span class="cal-pill cal-pill--solid">{{ icon_alert }} Last sync {{ sync_s | plus: off | date: "%a %-l:%M" }}</span>{%- endif -%}
+      {%- elsif synced_today == false -%}<span class="cal-pill cal-pill--solid">{{ icon_alert }} Last sync {{ sync_s | plus: off | date: "%a %-I:%M" }}</span>{%- endif -%}
     </div>
   <div class="cal">
   <div class="cal-hero{% if now_ci != -1 %}{% assign ids = clusters[now_ci] | split: "," %}{% assign n_ids = ids | size %}{% if n_ids > 1 %} cal-hero--conflict{% endif %}{% endif %}">
@@ -172,7 +181,7 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
         <div class="cal-line">
           {%- if e.reply == "Pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif e.reply == "Tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
           <span class="cal-pill">{{ e.calendar }}</span>
-          <span class="cal-meta">{{ s | plus: off | date: "%-l:%M" }}–{{ en | plus: off | date: "%-l:%M %p" }}</span>
+          <span class="cal-meta">{{ s | plus: off | date: "%-I:%M" }}–{{ en | plus: off | date: "%-I:%M %p" }}</span>
         </div>
         {%- assign a_n = e.attendees | size -%}
         {%- if a_n > 0 -%}<div class="cal-meta" style="margin-top:3px">{% for a in e.attendees limit: 3 %}{{ a }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 3 %} +{{ a_n | minus: 3 }}{% endif %}</div>{%- endif -%}
@@ -214,7 +223,7 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
           <div class="cal-line">
             {%- if e.reply == "Pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif e.reply == "Tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
             <span class="cal-pill">{{ e.calendar }}</span>
-            <span class="cal-meta">{{ s | plus: off | date: "%-l:%M" }}–{{ en | plus: off | date: "%-l:%M" }}</span>
+            <span class="cal-meta">{{ s | plus: off | date: "%-I:%M" }}–{{ en | plus: off | date: "%-I:%M" }}</span>
           </div>
         </div>
       {%- endfor -%}
@@ -225,10 +234,10 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
   <div class="cal-side">
 
     <div class="cal-list">
-    {%- for r in rest -%}
+    {%- for r in rest -%}{%- if r == "" -%}{%- continue -%}{%- endif -%}
       {%- assign p = r | split: "|" -%}{%- assign r_s = p[0] | plus: 0 -%}
       <div class="cal-item" data-kind="{{ p[1] }}">
-        <span class="cal-t">{{ r_s | plus: off | date: "%-l:%M" }}</span>
+        <span class="cal-t">{{ r_s | plus: off | date: "%-I:%M" }}</span>
       {%- if p[1] == "F" -%}
         {%- assign gap = p[2] | plus: 0 | minus: r_s | divided_by: 60 -%}
         <div class="cal-hatch"><span>Free · {% if gap >= 60 %}{{ gap | divided_by: 60 }}h {% endif %}{% assign mm = gap | modulo: 60 %}{% if mm > 0 %}{{ mm }}m{% endif %}</span></div>
@@ -275,6 +284,6 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
 </script>
 <div class="title_bar">
   <span class="title">Calendar</span>
-  <span class="instance">{% if synced_at != blank %}synced {{ sync_s | plus: off | date: "%-l:%M %p" }}{% endif %}</span>
+  <span class="instance">{% if synced_at != blank %}synced {{ sync_s | plus: off | date: "%-I:%M %p" }}{% endif %}</span>
 </div>
 </div>
