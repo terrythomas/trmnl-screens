@@ -99,7 +99,7 @@ If a source is down, the screen keeps showing that section's last good data, mar
 The Calendar screen's events come from an iOS Shortcut, not from the collector ([ADR-0007](docs/adr/0007-calendar-screen-fed-by-phone-kept-fresh-by-collector.md)).
 
 1. Deploy it like the Media screen: `scripts/deploy calendar`, then add `CALENDAR_PLUGIN_ID` and `CALENDAR_WEBHOOK_UUID` to `.env`, add the plugin to the device's playlist, and deploy again.
-2. Build the Shortcut and its automations as described in [docs/calendar-sync.md](docs/calendar-sync.md), pointed at the plugin's webhook URL. The phone must be able to reach LaraPaper.
+2. Sign `screens/calendar/shortcut/Calendar Sync.shortcut` on a Mac, AirDrop it to the phone and run it once: it asks for the webhook and which calendars to show. Then add its automations. See [docs/calendar-sync.md](docs/calendar-sync.md). The phone must be able to reach LaraPaper.
 3. Set the workday in the plugin's settings in LaraPaper (default 9:00 to 17:00). Free blocks are only shown inside it.
 
 With `CALENDAR_WEBHOOK_UUID` set, the collector refreshes the screen every 15 minutes without touching the events, so Now and Next stay current between syncs. A deploy clears the stored events, so run the Shortcut once afterwards.

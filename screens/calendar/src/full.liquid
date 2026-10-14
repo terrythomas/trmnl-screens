@@ -31,8 +31,10 @@ A script at the end moves Next to the right when it doesn't fit, and trims the a
 {%- assign keep = "" -%}{%- assign allday = "" -%}{%- assign keep_n = 0 -%}
 {%- for e in evs -%}
   {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}
-  {%- if e.reply == "Declined" or en <= now_s or s >= midnight_s -%}{%- continue -%}{%- endif -%}
-  {%- if e.all_day -%}{%- assign allday = allday | append: forloop.index0 | append: "," -%}
+  {%- assign rp = e.reply | downcase -%}
+  {%- if rp == "declined" or en <= now_s or s >= midnight_s -%}{%- continue -%}{%- endif -%}
+  {%- assign ad = e.all_day | append: "" | downcase -%}
+  {%- if ad == "true" or ad == "yes" or ad == "1" -%}{%- assign allday = allday | append: forloop.index0 | append: "," -%}
   {%- else -%}{%- assign keep = keep | append: forloop.index0 | append: "," -%}{%- assign keep_n = keep_n | plus: 1 -%}{%- endif -%}
 {%- endfor -%}
 {%- assign keep = keep | split: "," -%}{%- assign allday = allday | split: "," -%}
@@ -179,12 +181,12 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
       <div class="cal-lane">
         <div class="cal-title">{{ e.title }}</div>
         <div class="cal-line">
-          {%- if e.reply == "Pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif e.reply == "Tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
+          {%- assign rp = e.reply | downcase -%}{%- if rp == "pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif rp == "tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
           <span class="cal-pill">{{ e.calendar }}</span>
           <span class="cal-meta">{{ s | plus: off | date: "%-I:%M" }}–{{ en | plus: off | date: "%-I:%M %p" }}</span>
         </div>
-        {%- assign a_n = e.attendees | size -%}
-        {%- if a_n > 0 -%}<div class="cal-meta" style="margin-top:3px">{% for a in e.attendees limit: 3 %}{{ a }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 3 %} +{{ a_n | minus: 3 }}{% endif %}</div>{%- endif -%}
+        {%- assign a_n = 0 -%}{%- if e.attendees != blank -%}{%- assign names = e.attendees | split: ", " -%}{%- assign a_n = names | size -%}{%- endif -%}
+        {%- if a_n > 0 -%}<div class="cal-meta" style="margin-top:3px">{% for a in names limit: 3 %}{{ a }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 3 %} +{{ a_n | minus: 3 }}{% endif %}</div>{%- endif -%}
         {%- if n_ids == 1 -%}
           {%- assign lines = e.description | newline_to_br | split: "<br />" -%}{%- assign d = "" -%}
           {%- for l in lines -%}{%- assign l = l | strip -%}
@@ -221,7 +223,7 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
         <div class="cal-lane">
           <div class="cal-title">{{ e.title }}</div>
           <div class="cal-line">
-            {%- if e.reply == "Pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif e.reply == "Tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
+            {%- assign rp = e.reply | downcase -%}{%- if rp == "pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif rp == "tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
             <span class="cal-pill">{{ e.calendar }}</span>
             <span class="cal-meta">{{ s | plus: off | date: "%-I:%M" }}–{{ en | plus: off | date: "%-I:%M" }}</span>
           </div>
@@ -248,7 +250,7 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
           <div class="cal-line">
             {%- if n_ids > 1 and forloop.first -%}<span class="cal-pill cal-pill--solid">{{ icon_alert }}</span>{%- endif -%}
             <span class="cal-title">{{ e.title }}</span>
-            {%- if e.reply == "Pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif e.reply == "Tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
+            {%- assign rp = e.reply | downcase -%}{%- if rp == "pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif rp == "tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
             <span class="cal-pill">{{ e.calendar }}</span>
           </div>
         {%- endfor -%}
