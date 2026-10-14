@@ -69,8 +69,10 @@ def detail(identifier: str, name: str, prop: str, of: dict) -> dict:
 
 
 def iso(name: str, date: dict) -> dict:
+    fmt = "yyyy-MM-dd'T'HH:mm:ssXXXXX"
+    # The runtime reads WFDateFormat; the editor shows WFDateFormatString. Without the first it sends RFC 2822.
     return action("format.date", name, WFDateFormatStyle="Custom",
-                  WFDateFormatString="yyyy-MM-dd'T'HH:mm:ssXXXXX", WFDate=text(date))
+                  WFDateFormat=fmt, WFDateFormatString=fmt, WFDate=text(date))
 
 
 def fields(items: dict) -> dict:
@@ -223,6 +225,7 @@ actions = [
     action("date", "now", WFDateActionMode="Current Date"),
     iso("synced-at", out("now", "Date")),
     action("filter.calendarevents", "events", WFContentItemFilter=FILTER),
+    action("count", "found", WFCountType="Items", WFInput=attachment(out("events", "Calendar Events"))),
     *block("repeat.each", "events-loop", "For each event left today.", {"WFInput": attachment(out("events", "Calendar Events"))}, [
         set_var("Event", var("Repeat Item")),
         detail("calendarevents", "calendar", "Calendar", var("Event")),
@@ -235,7 +238,7 @@ actions = [
            WFTextSeparator="Custom", WFTextCustomSeparator=","),
     action("gettext", "body", WFTextActionText=text(
         '{"merge_variables":{"synced_at":"', out("synced-at", "Formatted Date"),
-        '","events":[', out("events-json", "Combined Text"), "]}}")),
+        '","found":', out("found", "Count"), ',"events":[', out("events-json", "Combined Text"), "]}}")),
     action("downloadurl", "post", WFURL=text(out("url", "Dictionary Value")), WFHTTPMethod="POST", WFHTTPBodyType="File",
            WFRequestVariable=attachment(out("body", "Text")),
            WFFormValues={"Value": {"WFDictionaryFieldValueItems": []}, "WFSerializationType": "WFDictionaryFieldValue"},
