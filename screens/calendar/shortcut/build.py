@@ -69,8 +69,10 @@ def detail(identifier: str, name: str, prop: str, of: dict) -> dict:
 
 
 def iso(name: str, date: dict) -> dict:
+    fmt = "yyyy-MM-dd'T'HH:mm:ssXXXXX"
+    # The runtime reads WFDateFormat; the editor shows WFDateFormatString. Without the first it sends RFC 2822.
     return action("format.date", name, WFDateFormatStyle="Custom",
-                  WFDateFormatString="yyyy-MM-dd'T'HH:mm:ssXXXXX", WFDate=text(date))
+                  WFDateFormat=fmt, WFDateFormatString=fmt, WFDate=text(date))
 
 
 def fields(items: dict) -> dict:

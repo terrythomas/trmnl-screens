@@ -887,6 +887,8 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 			<dict>
 				<key>WFDateFormatStyle</key>
 				<string>Custom</string>
+				<key>WFDateFormat</key>
+				<string>yyyy-MM-dd'T'HH:mm:ssXXXXX</string>
 				<key>WFDateFormatString</key>
 				<string>yyyy-MM-dd'T'HH:mm:ssXXXXX</string>
 				<key>WFDate</key>
@@ -1260,6 +1262,8 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 			<dict>
 				<key>WFDateFormatStyle</key>
 				<string>Custom</string>
+				<key>WFDateFormat</key>
+				<string>yyyy-MM-dd'T'HH:mm:ssXXXXX</string>
 				<key>WFDateFormatString</key>
 				<string>yyyy-MM-dd'T'HH:mm:ssXXXXX</string>
 				<key>WFDate</key>
@@ -1295,6 +1299,8 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 			<dict>
 				<key>WFDateFormatStyle</key>
 				<string>Custom</string>
+				<key>WFDateFormat</key>
+				<string>yyyy-MM-dd'T'HH:mm:ssXXXXX</string>
 				<key>WFDateFormatString</key>
 				<string>yyyy-MM-dd'T'HH:mm:ssXXXXX</string>
 				<key>WFDate</key>
