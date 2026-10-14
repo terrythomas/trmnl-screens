@@ -55,7 +55,7 @@ AirDrop the signed file to the phone and add it. Then run it once from the Short
 2. It lists the calendars that have upcoming events; pick the ones the screen should show.
 3. It asks for a short label for each, such as `Work` or `Home`.
 
-The answers are saved to `Shortcuts/trmnl-calendar.json` in iCloud Drive, and every later run reads them and syncs without asking. To change them, delete that file and run the Shortcut again. iOS asks once for access to the calendars and to iCloud Drive.
+The answers are saved to `Shortcuts/trmnl-calendar.json` in iCloud Drive, and every later run reads them and syncs without asking. To change them, delete that file and run the Shortcut again, or edit it: each key is a calendar's name with any `.` replaced by `_` (Shortcuts reads dots in a key as a path), and its value is the label, e.g. `{"_webhook": "…", "me@example_com": "Work", "Personal": "Home"}`. iOS asks once for access to the calendars and to iCloud Drive.
 
 The events come from Find Calendar Events (Start Date is today, End Date is after now), and each one's reply comes from the attendee marked Is Me.
 

@@ -661,6 +661,41 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 		</dict>
 		<dict>
 			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.text.replace</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>WFInput</key>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>string</key>
+						<string>￼</string>
+						<key>attachmentsByRange</key>
+						<dict>
+							<key>{0, 1}</key>
+							<dict>
+								<key>Type</key>
+								<string>Variable</string>
+								<key>VariableName</key>
+								<string>Repeat Item</string>
+							</dict>
+						</dict>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenString</string>
+				</dict>
+				<key>WFReplaceTextFind</key>
+				<string>.</string>
+				<key>WFReplaceTextReplace</key>
+				<string>_</string>
+				<key>WFReplaceTextRegularExpression</key>
+				<false/>
+				<key>UUID</key>
+				<string>F0AE691A-61EE-54B1-A8DE-204C1EA2E457</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
 			<string>is.workflow.actions.setvalueforkey</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
@@ -687,9 +722,11 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 							<key>{0, 1}</key>
 							<dict>
 								<key>Type</key>
-								<string>Variable</string>
-								<key>VariableName</key>
-								<string>Repeat Item</string>
+								<string>ActionOutput</string>
+								<key>OutputUUID</key>
+								<string>F0AE691A-61EE-54B1-A8DE-204C1EA2E457</string>
+								<key>OutputName</key>
+								<string>Updated Text</string>
 							</dict>
 						</dict>
 					</dict>
@@ -993,6 +1030,20 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 					<key>WFSerializationType</key>
 					<string>WFTextTokenAttachment</string>
 				</dict>
+				<key>Input</key>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>Type</key>
+						<string>ActionOutput</string>
+						<key>OutputUUID</key>
+						<string>72BC1EAF-49EB-5515-B452-06F3FB85FC8C</string>
+						<key>OutputName</key>
+						<string>Calendar Events</string>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenAttachment</string>
+				</dict>
 				<key>UUID</key>
 				<string>523AC85F-EA4B-56A4-A3AB-8FA22C34035D</string>
 			</dict>
@@ -1079,6 +1130,43 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 		</dict>
 		<dict>
 			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.text.replace</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>WFInput</key>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>string</key>
+						<string>￼</string>
+						<key>attachmentsByRange</key>
+						<dict>
+							<key>{0, 1}</key>
+							<dict>
+								<key>Type</key>
+								<string>ActionOutput</string>
+								<key>OutputUUID</key>
+								<string>1973F5D1-71BC-5B3E-81ED-EDD409419684</string>
+								<key>OutputName</key>
+								<string>Calendar</string>
+							</dict>
+						</dict>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenString</string>
+				</dict>
+				<key>WFReplaceTextFind</key>
+				<string>.</string>
+				<key>WFReplaceTextReplace</key>
+				<string>_</string>
+				<key>WFReplaceTextRegularExpression</key>
+				<false/>
+				<key>UUID</key>
+				<string>FD62176A-AA6F-5F7F-A26D-39B23C95236A</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
 			<string>is.workflow.actions.getvalueforkey</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
@@ -1109,9 +1197,9 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 								<key>Type</key>
 								<string>ActionOutput</string>
 								<key>OutputUUID</key>
-								<string>1973F5D1-71BC-5B3E-81ED-EDD409419684</string>
+								<string>FD62176A-AA6F-5F7F-A26D-39B23C95236A</string>
 								<key>OutputName</key>
-								<string>Calendar</string>
+								<string>Updated Text</string>
 							</dict>
 						</dict>
 					</dict>

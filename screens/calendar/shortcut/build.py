@@ -75,6 +75,12 @@ def iso(name: str, date: dict) -> dict:
                   WFDateFormat=fmt, WFDateFormatString=fmt, WFDate=text(date))
 
 
+def dotless(name: str, of: dict) -> dict:
+    # Dictionary keys are key paths, so a calendar named a@b.com would be read as a@b -> com.
+    return action("text.replace", name, WFInput=text(of), WFReplaceTextFind=".", WFReplaceTextReplace="_",
+                  WFReplaceTextRegularExpression=False)
+
+
 def fields(items: dict) -> dict:
     """A Dictionary action's text fields."""
     return {"Value": {"WFDictionaryFieldValueItems": [
@@ -199,7 +205,8 @@ setup = [
         action("ask", "label-ask", WFAskActionPrompt=text("Short label for ", var("Repeat Item"),
                                                       " (shown on each event, e.g. Work)"),
                WFAskActionDefaultAnswer=text(var("Repeat Item"))),
-        set_key("config-label", var("Config"), (var("Repeat Item"),), (out("label-ask", "Provided Input"),)),
+        dotless("chosen-key", var("Repeat Item")),
+        set_key("config-label", var("Config"), (out("chosen-key", "Updated Text"),), (out("label-ask", "Provided Input"),)),
         set_var("Config", out("config-label", "Dictionary")),
     ]),
     action("setitemname", "config-file", WFInput=attachment(var("Config")), WFName=CONFIG_FILE),
@@ -225,12 +232,14 @@ actions = [
     action("date", "now", WFDateActionMode="Current Date"),
     iso("synced-at", out("now", "Date")),
     action("filter.calendarevents", "events", WFContentItemFilter=FILTER),
-    action("count", "found", WFCountType="Items", WFInput=attachment(out("events", "Calendar Events"))),
+    action("count", "found", WFCountType="Items", WFInput=attachment(out("events", "Calendar Events")),
+           Input=attachment(out("events", "Calendar Events"))),
     *block("repeat.each", "events-loop", "For each event left today.", {"WFInput": attachment(out("events", "Calendar Events"))}, [
         set_var("Event", var("Repeat Item")),
         detail("calendarevents", "calendar", "Calendar", var("Event")),
+        dotless("calendar-key", out("calendar", "Calendar")),
         action("getvalueforkey", "label", WFGetDictionaryValueType="Value",
-               WFInput=attachment(var("Config")), WFDictionaryKey=text(out("calendar", "Calendar"))),
+               WFInput=attachment(var("Config")), WFDictionaryKey=text(out("calendar-key", "Updated Text"))),
         *block("conditional", "if-listed", "Only calendars chosen at setup; the label is what the screen shows.", condition(out("label", "Dictionary Value"), 100), event_body),
     ]),
     comment("Each event becomes JSON when combined as text, so titles and notes are escaped for us."),
