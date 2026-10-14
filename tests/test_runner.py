@@ -12,7 +12,7 @@ class FakePush:
         self.calls = []
         self.fail_for = fail_for
 
-    def __call__(self, url, payload):
+    def __call__(self, url, payload, merge_strategy=None):
         if any(url.endswith(uuid) for uuid in self.fail_for):
             raise ConnectionError("LaraPaper unreachable")
         self.calls.append((url, payload))
@@ -25,6 +25,13 @@ def test_pushes_each_screen_payload_to_its_webhook():
         ("http://larapaper.example/api/custom_plugins/media-uuid", {"a": 1}),
         ("http://larapaper.example/api/custom_plugins/other-uuid", {"b": 2}),
     ]
+
+
+def test_passes_each_screen_its_merge_strategy():
+    seen = []
+    run_tick({"media": lambda: {}, "other": lambda: {}}, CONFIG,
+             lambda url, payload, merge_strategy=None: seen.append(merge_strategy), {"other": "deep_merge"})
+    assert seen == [None, "deep_merge"]
 
 
 def test_a_failing_collector_does_not_block_other_screens():

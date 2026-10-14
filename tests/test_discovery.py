@@ -38,6 +38,12 @@ def test_a_screen_can_declare_its_default_interval(tmp_path):
     assert discover_screens(tmp_path)["slow"].interval_minutes == 60
 
 
+def test_the_calendar_screen_only_refreshes_what_the_phone_pushed():
+    calendar = discover_screens()["calendar"]
+    assert calendar.merge_strategy == "deep_merge"
+    assert calendar.collect() == {}
+
+
 def test_finding_screens_imports_none_of_them(tmp_path):
     pkg = tmp_path / "heavy" / "collector"
     pkg.mkdir(parents=True)

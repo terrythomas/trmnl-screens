@@ -24,8 +24,11 @@ def enabled_screens(screens: dict[str, T], config: Config) -> dict[str, T]:
     return enabled
 
 
-def run_tick(screens: dict[str, Collect], config: Config, push: Push) -> dict[str, bool]:
+def run_tick(
+    screens: dict[str, Collect], config: Config, push: Push, merge_strategies: dict[str, str | None] | None = None
+) -> dict[str, bool]:
     """Run each screen once. A failing screen is logged and never blocks the others."""
+    merge_strategies = merge_strategies or {}
     results = {}
     for name, collect in screens.items():
         url = config.webhook_url(name)
@@ -34,7 +37,7 @@ def run_tick(screens: dict[str, Collect], config: Config, push: Push) -> dict[st
             results[name] = False
             continue
         try:
-            push(url, collect())
+            push(url, collect(), merge_strategies.get(name))
         except Exception:
             # A failed push is retried on the next tick (spec: empty and failure behaviour).
             log.exception("screen %s: collect or push failed", name)

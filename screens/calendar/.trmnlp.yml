@@ -1,0 +1,12 @@
+# trmnlp dev server config (not uploaded). Load fixture data with scripts/preview-data.
+---
+watch:
+  - src
+custom_fields:
+  workday_start: "9:00"
+  workday_end: "17:00"
+variables:
+  trmnl:
+    user:
+      utc_offset: -14400
+      time_zone_iana: America/New_York

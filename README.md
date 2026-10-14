@@ -4,6 +4,8 @@ Custom e-ink dashboard screens for [TRMNL](https://usetrmnl.com) devices, served
 
 The first screen is the **Media screen**: what to keep watching from Plex, what is airing in Sonarr, and which Radarr movies are in theaters or just out on streaming. Theatrical dates for your country come from TMDB's public release pages; no TMDB account is needed. It is laid out for the TRMNL X, and the OG gets a text-only version of the same screen.
 
+The **Calendar screen** shows the meeting you're in and how long it has left (or how long until the next one), what's next, and the rest of today with free blocks and conflicts marked. An iOS Shortcut pushes the events from the phone's calendar, so it works with calendars no server can reach. It is laid out for the OG. See [Calendar screen](#calendar-screen).
+
 ## Setup
 
 The collector ships as a Docker image, `ghcr.io/terrythomas/trmnl-screens`. On each screen's schedule (every 15 minutes for Media) it collects that screen's data and pushes it to that screen's LaraPaper plugin. The same image also uploads the screen's template to LaraPaper, so you don't need Python or a clone of this repo.
@@ -92,6 +94,16 @@ Each screen is opt-in: the collector runs only the screens that have a `<SCREEN>
 
 If a source is down, the screen keeps showing that section's last good data, marks it stale, and shows an error banner. That data lives in the `state` volume, so it survives restarts. If you bind-mount a folder there instead, make it writable by user ID 10001: the container does not run as root.
 
+### Calendar screen
+
+The Calendar screen's events come from an iOS Shortcut, not from the collector ([ADR-0007](docs/adr/0007-calendar-screen-fed-by-phone-kept-fresh-by-collector.md)).
+
+1. Deploy it like the Media screen: `scripts/deploy calendar`, then add `CALENDAR_PLUGIN_ID` and `CALENDAR_WEBHOOK_UUID` to `.env`, add the plugin to the device's playlist, and deploy again.
+2. Build the Shortcut and its automations as described in [docs/calendar-sync.md](docs/calendar-sync.md), pointed at the plugin's webhook URL. The phone must be able to reach LaraPaper.
+3. Set the workday in the plugin's settings in LaraPaper (default 9:00 to 17:00). Free blocks are only shown inside it.
+
+With `CALENDAR_WEBHOOK_UUID` set, the collector refreshes the screen every 15 minutes without touching the events, so Now and Next stay current between syncs. A deploy clears the stored events, so run the Shortcut once afterwards.
+
 ### Updating
 
 ```sh
@@ -132,6 +144,7 @@ To preview templates, use [trmnlp](https://github.com/usetrmnl/trmnlp). `python 
 
 - [CONTEXT.md](CONTEXT.md): glossary of the project's terms
 - [docs/specs/media-screen.md](docs/specs/media-screen.md): Media screen spec
+- [docs/calendar-sync.md](docs/calendar-sync.md): Calendar screen payload and Shortcut
 - [docs/adr/](docs/adr/): architecture decisions
 
 ## Secrets

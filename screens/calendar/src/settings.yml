@@ -1,0 +1,19 @@
+---
+name: Calendar
+description: Now, Next and the rest of today's agenda, pushed from an iOS Shortcut
+strategy: webhook
+refresh_interval: 15
+no_screen_padding: 'no'
+dark_mode: 'no'
+static_data: ''
+framework_version: latest
+custom_fields:
+- keyname: workday_start
+  field_type: string
+  name: Workday start
+  description: Free blocks are only found between the workday start and end (24-hour H:MM).
+  default: '9:00'
+- keyname: workday_end
+  field_type: string
+  name: Workday end
+  default: '17:00'

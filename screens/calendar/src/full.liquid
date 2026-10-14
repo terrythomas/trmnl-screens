@@ -1,0 +1,280 @@
+{%- comment -%}
+Calendar. Payload contract: docs/calendar-sync.md. Vocabulary: CONTEXT.md.
+Everything is worked out against the render time (preview_now in fixtures), as epoch seconds;
+times are shown by adding the user's UTC offset and formatting as UTC.
+The OG layout: the countdown hero and Next on the left, the rest of the day on the right.
+A script at the end moves Next to the right when it doesn't fit, and trims the agenda.
+{%- endcomment -%}
+{%- assign now_s = preview_now | default: "now" | date: "%s" | plus: 0 -%}
+{%- assign off = trmnl.user.utc_offset | default: 0 | plus: 0 -%}
+{%- assign sod = now_s | plus: off | modulo: 86400 -%}
+{%- assign today0_s = now_s | minus: sod -%}
+{%- assign midnight_s = today0_s | plus: 86400 -%}
+{%- assign cf = trmnl.plugin_settings.custom_fields_values -%}
+{%- assign wd = cf.workday_start | default: "9:00" | split: ":" -%}
+{%- assign wd_start_s = wd[0] | times: 3600 | plus: today0_s -%}{%- assign m = wd[1] | times: 60 -%}{%- assign wd_start_s = wd_start_s | plus: m -%}
+{%- assign wd = cf.workday_end | default: "17:00" | split: ":" -%}
+{%- assign wd_end_s = wd[0] | times: 3600 | plus: today0_s -%}{%- assign m = wd[1] | times: 60 -%}{%- assign wd_end_s = wd_end_s | plus: m -%}
+
+{%- comment -%} The agenda: timed, not declined, not over, starting before midnight. All-day events go on their own line. {%- endcomment -%}
+{%- assign evs = events | sort: "start" -%}
+{%- assign keep = "" -%}{%- assign allday = "" -%}
+{%- for e in evs -%}
+  {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}
+  {%- if e.reply == "Declined" or en <= now_s or s >= midnight_s -%}{%- continue -%}{%- endif -%}
+  {%- if e.all_day -%}{%- assign allday = allday | append: forloop.index0 | append: "," -%}
+  {%- else -%}{%- assign keep = keep | append: forloop.index0 | append: "," -%}{%- endif -%}
+{%- endfor -%}
+{%- assign keep = keep | split: "," -%}{%- assign allday = allday | split: "," -%}
+
+{%- comment -%}
+Conflicts: overlapping events chain into one cluster ("2,3;5;6"), shown side by side.
+shortcut: one long event overlapping several others chains them all into one cluster; split by pairwise overlap if that happens in practice.
+{%- endcomment -%}
+{%- assign clusters = "" -%}{%- assign cl_end = 0 -%}
+{%- for k in keep -%}
+  {%- assign i = k | plus: 0 -%}{%- assign e = evs[i] -%}
+  {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}
+  {%- if clusters != "" and s < cl_end -%}
+    {%- assign clusters = clusters | append: "," | append: i -%}{%- if en > cl_end -%}{%- assign cl_end = en -%}{%- endif -%}
+  {%- else -%}
+    {%- if clusters != "" -%}{%- assign clusters = clusters | append: ";" -%}{%- endif -%}
+    {%- assign clusters = clusters | append: i -%}{%- assign cl_end = en -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign clusters = clusters | split: ";" -%}
+
+{%- comment -%}
+Now: the cluster in progress, unless it ends within 5 minutes (it hands the hero to Next).
+Next: the first cluster after that. Each cluster's span is "start-end" in cl_spans.
+{%- endcomment -%}
+{%- assign now_ci = -1 -%}{%- assign next_ci = -1 -%}{%- assign cl_spans = "" -%}
+{%- for c in clusters -%}
+  {%- assign ids = c | split: "," -%}{%- assign c_s = 9999999999 -%}{%- assign c_e = 0 -%}
+  {%- for k in ids -%}{%- assign i = k | plus: 0 -%}
+    {%- assign s = evs[i].start | date: "%s" | plus: 0 -%}{%- assign en = evs[i].end | date: "%s" | plus: 0 -%}
+    {%- if s < c_s -%}{%- assign c_s = s -%}{%- endif -%}{%- if en > c_e -%}{%- assign c_e = en -%}{%- endif -%}
+  {%- endfor -%}
+  {%- assign cl_spans = cl_spans | append: c_s | append: "-" | append: c_e | append: ";" -%}
+  {%- assign left = c_e | minus: now_s -%}
+  {%- if c_s <= now_s and left > 300 and now_ci == -1 -%}{%- assign now_ci = forloop.index0 -%}
+  {%- elsif c_s > now_s and next_ci == -1 -%}{%- assign next_ci = forloop.index0 -%}
+  {%- elsif c_s <= now_s and left <= 300 and next_ci == -1 -%}{%- comment -%} handing over: skipped {%- endcomment -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign cl_spans = cl_spans | split: ";" -%}
+
+{%- comment -%} Free blocks: gaps of more than 30 minutes inside the workday, from now on. Stored as "start-end;". {%- endcomment -%}
+{%- assign free = "" -%}{%- assign cur = now_s -%}{%- if wd_start_s > cur -%}{%- assign cur = wd_start_s -%}{%- endif -%}
+{%- for sp in cl_spans -%}
+  {%- assign p = sp | split: "-" -%}{%- assign c_s = p[0] | plus: 0 -%}{%- assign c_e = p[1] | plus: 0 -%}
+  {%- assign gap_end = c_s -%}{%- if gap_end > wd_end_s -%}{%- assign gap_end = wd_end_s -%}{%- endif -%}
+  {%- assign gap = gap_end | minus: cur -%}
+  {%- if gap > 1800 -%}{%- assign free = free | append: cur | append: "-" | append: gap_end | append: ";" -%}{%- endif -%}
+  {%- if c_e > cur -%}{%- assign cur = c_e -%}{%- endif -%}
+{%- endfor -%}
+{%- comment -%} With no events at all there is nothing to be free between. {%- endcomment -%}
+{%- assign gap = wd_end_s | minus: cur -%}{%- if keep.size == 0 -%}{%- assign gap = 0 -%}{%- endif -%}
+{%- if gap > 1800 -%}{%- assign free = free | append: cur | append: "-" | append: wd_end_s | append: ";" -%}{%- endif -%}
+{%- assign free = free | split: ";" -%}
+
+{%- comment -%} The rest of the day after Next, in time order: "start|C|cluster index" or "start|F|end". {%- endcomment -%}
+{%- assign rest = "" -%}
+{%- for sp in cl_spans -%}
+  {%- if forloop.index0 > next_ci and next_ci != -1 -%}{%- assign p = sp | split: "-" -%}{%- assign rest = rest | append: p[0] | append: "|C|" | append: forloop.index0 | append: ";" -%}{%- endif -%}
+{%- endfor -%}
+{%- comment -%} Free time before Next belongs to the hero, not the rest of the day. {%- endcomment -%}
+{%- assign pre_free = "" -%}{%- assign next_s = 0 -%}{%- if next_ci != -1 -%}{%- assign p = cl_spans[next_ci] | split: "-" -%}{%- assign next_s = p[0] | plus: 0 -%}{%- endif -%}
+{%- for f in free -%}{%- assign p = f | split: "-" -%}{%- assign f_s = p[0] | plus: 0 -%}{%- if f_s < next_s -%}{%- assign pre_free = f -%}{%- continue -%}{%- endif -%}{%- assign rest = rest | append: p[0] | append: "|F|" | append: p[1] | append: ";" -%}{%- endfor -%}
+{%- assign rest = rest | split: ";" | sort -%}
+
+{%- comment -%} Sync: whether the last push was today. The screen only leaves the playlist on an empty agenda after a sync today. {%- endcomment -%}
+{%- assign sync_s = synced_at | date: "%s" | plus: 0 -%}
+{%- assign synced_today = false -%}{%- if sync_s >= today0_s -%}{%- assign synced_today = true -%}{%- endif -%}
+{%- assign keep_n = keep | size -%}
+{%- if keep_n == 0 and synced_today -%}<script>window.TRMNL_SKIP_DISPLAY = true</script>{%- endif -%}
+<style>
+  /* A full-width header (date and all-day events), then the two columns. */
+  .cal-page { align-items: stretch !important; justify-content: flex-start !important; gap: 12px; padding: 6px 0 12px; }
+  .cal { flex: 1; min-height: 0; display: flex; }
+  .cal-title, .cal-pill, .cal-big, .cal-unit, .cal-more, .cal-t { font-family: var(--title-font-family); }
+  .cal-meta, .cal-desc, .cal-date, .cal-ad, .cal-sub { font-family: var(--description-font-family); }
+
+  .cal-hero { flex: 0 0 56%; min-width: 0; min-height: 0; display: flex; flex-direction: column; padding-right: 18px; }
+  .cal-side { flex: 1; min-width: 0; display: flex; flex-direction: column; border-left: 3px solid #000; padding-left: 16px; }
+
+  .cal-top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .cal-top .cal-pill--solid { margin-left: auto; }
+  .cal-date { font-size: 19px; font-weight: 700; }
+  .cal-ad { font-size: 14px; border: 2px solid #000; border-radius: 6px; padding: 0 7px 1px; }
+
+  /* The countdown carries the hero: time left in Now, or free time until Next. */
+  .cal-count { display: flex; align-items: baseline; gap: 10px; }
+  .cal-big { font-size: 84px; font-weight: 700; line-height: .9; letter-spacing: -.03em; }
+  .cal-unit { font-size: 26px; font-weight: 700; }
+  .cal-sub { font-size: 24px; font-weight: 700; margin-top: 4px; font-family: var(--title-font-family); }
+  .cal-hero .cal-title { font-size: 26px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: 14px; }
+  .cal-hero .cal-meta { font-size: 16px; }
+  .cal-hero .cal-desc { font-size: 15px; -webkit-line-clamp: 3; }
+  .cal-hero .cal-lane + .cal-lane { border-top: 2px solid #000; margin-top: 8px; padding-top: 4px; }
+  .cal-hero .cal-lane + .cal-lane .cal-title { margin-top: 0; }
+  .cal-hero--conflict .cal-title { font-size: 21px; -webkit-line-clamp: 1; margin-top: 4px; }
+
+  .cal-title { font-size: 17px; font-weight: 700; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-line { display: flex; align-items: center; gap: 6px; min-width: 0; margin-top: 3px; }
+  .cal-meta { font-size: 14px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-desc { font-size: 14px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 6px; }
+  .cal-pill { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border: 2px solid #000; border-radius: 5px; padding: 0 5px 1px; line-height: 1.35; }
+  .cal-pill--solid { background: #000; color: #fff; }
+
+  /* Next: a bordered block at the top of the side column. */
+  .cal-hero { overflow: hidden; }
+  .cal-next { border: 3px solid #000; border-radius: 8px; padding: 6px 10px 8px; margin-top: auto; flex-shrink: 0; }
+  .cal-hero .cal-next { margin-top: auto; }
+  .cal-hero > .cal-lane:last-of-type, .cal-hero > .cal-sub { margin-bottom: 14px; }
+  .cal-side > .cal-next { margin: 0 0 8px; }
+  .cal-next .cal-title { font-size: 20px; margin-top: 4px; }
+  .cal-next .cal-lane + .cal-lane { border-top: 2px solid #000; margin-top: 6px; padding-top: 4px; }
+
+  .cal-list { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .cal-list > .cal-item:first-child { padding-top: 0; }
+  .cal-item { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; align-items: baseline; border-bottom: 1px solid #000; padding: 4px 0 5px; flex-shrink: 0; }
+  .cal-t { font-size: 14px; font-weight: 700; text-align: right; }
+  .cal-item .cal-line { margin-top: 0; }
+  .cal-item .cal-title { flex: 0 1 auto; font-size: 16px; }
+  .cal-hatch { border-radius: 5px; background: repeating-linear-gradient(-45deg, #000 0 1px, #fff 1px 7px); padding: 2px; display: flex; }
+  .cal-hatch span { background: #fff; border: 2px solid #000; border-radius: 4px; padding: 0 6px 1px; font-family: var(--title-font-family); font-weight: 700; font-size: 14px; }
+  .cal-more { flex-shrink: 0; font-size: 15px; font-weight: 700; padding-top: 5px; }
+</style>
+
+{%- capture icon_alert -%}<svg viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 3L2 20.5h20z"/><path d="M12 10v4.5M12 17.5v.5"/></svg>{%- endcapture -%}
+
+<div class="view view--full">
+<div class="layout layout--col cal-page">
+  <div class="cal-top">
+      <span class="cal-date">{{ now_s | plus: off | date: "%A, %b %-d" }}</span>
+      {%- for k in allday -%}{%- assign i = k | plus: 0 -%}<span class="cal-ad">{{ evs[i].title }}</span>{%- endfor -%}
+      {%- if synced_at == blank -%}<span class="cal-pill cal-pill--solid">{{ icon_alert }} Not synced yet</span>
+      {%- elsif synced_today == false -%}<span class="cal-pill cal-pill--solid">{{ icon_alert }} Last sync {{ sync_s | plus: off | date: "%a %-l:%M" }}</span>{%- endif -%}
+    </div>
+  <div class="cal">
+  <div class="cal-hero{% if now_ci != -1 %}{% assign ids = clusters[now_ci] | split: "," %}{% assign n_ids = ids | size %}{% if n_ids > 1 %} cal-hero--conflict{% endif %}{% endif %}">
+  {%- if now_ci != -1 -%}
+    {%- assign p = cl_spans[now_ci] | split: "-" -%}{%- assign left = p[1] | plus: 0 | minus: now_s | divided_by: 60 -%}
+    <div class="cal-count">
+      <span class="cal-big">{% if left >= 60 %}{{ left | divided_by: 60 }}h {{ left | modulo: 60 }}m{% else %}{{ left }}m{% endif %}</span><span class="cal-unit">left</span>
+      {%- if n_ids > 1 -%}<span class="cal-pill cal-pill--solid" style="align-self:center">{{ icon_alert }} Conflict</span>{%- endif -%}
+    </div>
+    {%- for k in ids -%}{%- assign i = k | plus: 0 -%}{%- assign e = evs[i] -%}
+      {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}
+      <div class="cal-lane">
+        <div class="cal-title">{{ e.title }}</div>
+        <div class="cal-line">
+          {%- if e.reply == "Pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif e.reply == "Tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
+          <span class="cal-pill">{{ e.calendar }}</span>
+          <span class="cal-meta">{{ s | plus: off | date: "%-l:%M" }}–{{ en | plus: off | date: "%-l:%M %p" }}</span>
+        </div>
+        {%- assign a_n = e.attendees | size -%}
+        {%- if a_n > 0 -%}<div class="cal-meta" style="margin-top:3px">{% for a in e.attendees limit: 3 %}{{ a }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 3 %} +{{ a_n | minus: 3 }}{% endif %}</div>{%- endif -%}
+        {%- if n_ids == 1 -%}
+          {%- assign lines = e.description | newline_to_br | split: "<br />" -%}{%- assign d = "" -%}
+          {%- for l in lines -%}{%- assign l = l | strip -%}
+            {%- if l contains "zoom.us" or l contains "meet.google" or l contains "teams.microsoft" or l contains "Join " or l contains "──" or l contains "Meeting ID" -%}{%- break -%}{%- endif -%}
+            {%- if l != "" -%}{%- assign d = d | append: l | append: " " -%}{%- endif -%}
+          {%- endfor -%}
+          {%- if d != "" -%}<div class="cal-desc">{{ d | strip }}</div>{%- endif -%}
+        {%- endif -%}
+      </div>
+    {%- endfor -%}
+  {%- elsif next_ci != -1 -%}
+    {%- assign p = cl_spans[next_ci] | split: "-" -%}{%- assign next_s = p[0] | plus: 0 -%}{%- assign gap = next_s | minus: now_s | divided_by: 60 -%}
+    {%- comment -%} Within 15 minutes of Next the countdown reads "starts in"; before that, time until it. {%- endcomment -%}
+    {%- if gap < 15 -%}
+    <div class="cal-count"><span class="cal-unit">starts in</span><span class="cal-big">{{ gap }}m</span></div>
+    {%- else -%}
+    <div class="cal-count"><span class="cal-big">{% if gap >= 60 %}{{ gap | divided_by: 60 }}h {{ gap | modulo: 60 }}m{% else %}{{ gap }}m{% endif %}</span></div>
+    <div class="cal-sub">until next meeting</div>
+    {%- endif -%}
+  {%- else -%}
+    <div class="cal-count"><span class="cal-unit" style="font-size:40px">Nothing left today</span></div>
+  {%- endif -%}
+  {%- if next_ci != -1 -%}
+    {%- assign ids = clusters[next_ci] | split: "," -%}{%- assign n_ids = ids | size -%}
+    {%- assign p = cl_spans[next_ci] | split: "-" -%}{%- assign in_m = p[0] | plus: 0 | minus: now_s | divided_by: 60 -%}
+    <div class="cal-next">
+      <div class="cal-line" style="margin-top:0">
+        <span class="cal-pill cal-pill--solid">Next</span>
+        <span class="cal-meta" style="font-weight:700">in {% if in_m >= 60 %}{{ in_m | divided_by: 60 }}h {% endif %}{{ in_m | modulo: 60 }}m</span>
+        {%- if n_ids > 1 -%}<span class="cal-pill cal-pill--solid" style="margin-left:auto">{{ icon_alert }} Conflict</span>{%- endif -%}
+      </div>
+      {%- for k in ids -%}{%- assign i = k | plus: 0 -%}{%- assign e = evs[i] -%}
+        {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}
+        <div class="cal-lane">
+          <div class="cal-title">{{ e.title }}</div>
+          <div class="cal-line">
+            {%- if e.reply == "Pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif e.reply == "Tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
+            <span class="cal-pill">{{ e.calendar }}</span>
+            <span class="cal-meta">{{ s | plus: off | date: "%-l:%M" }}–{{ en | plus: off | date: "%-l:%M" }}</span>
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+  </div>
+
+  <div class="cal-side">
+
+    <div class="cal-list">
+    {%- for r in rest -%}
+      {%- assign p = r | split: "|" -%}{%- assign r_s = p[0] | plus: 0 -%}
+      <div class="cal-item" data-kind="{{ p[1] }}">
+        <span class="cal-t">{{ r_s | plus: off | date: "%-l:%M" }}</span>
+      {%- if p[1] == "F" -%}
+        {%- assign gap = p[2] | plus: 0 | minus: r_s | divided_by: 60 -%}
+        <div class="cal-hatch"><span>Free · {% if gap >= 60 %}{{ gap | divided_by: 60 }}h {% endif %}{% assign mm = gap | modulo: 60 %}{% if mm > 0 %}{{ mm }}m{% endif %}</span></div>
+      {%- else -%}
+        {%- assign ci = p[2] | plus: 0 -%}{%- assign ids = clusters[ci] | split: "," -%}{%- assign n_ids = ids | size -%}
+        <div>
+        {%- for k in ids -%}{%- assign i = k | plus: 0 -%}{%- assign e = evs[i] -%}
+          <div class="cal-line">
+            {%- if n_ids > 1 and forloop.first -%}<span class="cal-pill cal-pill--solid">{{ icon_alert }}</span>{%- endif -%}
+            <span class="cal-title">{{ e.title }}</span>
+            {%- if e.reply == "Pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif e.reply == "Tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
+            <span class="cal-pill">{{ e.calendar }}</span>
+          </div>
+        {%- endfor -%}
+        </div>
+      {%- endif -%}
+      </div>
+    {%- endfor -%}
+    </div>
+    <div class="cal-more" hidden></div>
+  </div>
+</div>
+</div>
+<script>
+  /* Next stays under the hero when it fits, else moves to the top of the side column.
+     Then agenda rows that don't fit are dropped, and the dropped events are counted. */
+  function fit() {
+    var box = document.querySelector(".cal"), next = document.querySelector(".cal-hero .cal-next"),
+        side = document.querySelector(".cal-side"), list = document.querySelector(".cal-list"), more = document.querySelector(".cal-more");
+    var bottom = box.getBoundingClientRect().bottom;
+    if (next && next.getBoundingClientRect().bottom > bottom + 1) side.insertBefore(next, side.firstChild);
+    var over = function () { var last = list.lastElementChild; return last && last.getBoundingClientRect().bottom > list.getBoundingClientRect().bottom + 1; };
+    if (!over()) return;
+    more.hidden = false; more.textContent = "+ more";
+    var hidden = 0;
+    while (list.lastElementChild && over()) {
+      if (list.lastElementChild.getAttribute("data-kind") === "C") hidden++;
+      list.removeChild(list.lastElementChild);
+    }
+    if (hidden) more.textContent = "+" + hidden + " more today"; else more.hidden = true;
+  }
+  // Measure once fonts and layout have settled.
+  if (document.readyState === "complete") fit(); else window.addEventListener("load", fit);
+</script>
+<div class="title_bar">
+  <span class="title">Calendar</span>
+  <span class="instance">{% if synced_at != blank %}synced {{ sync_s | plus: off | date: "%-l:%M %p" }}{% endif %}</span>
+</div>
+</div>
