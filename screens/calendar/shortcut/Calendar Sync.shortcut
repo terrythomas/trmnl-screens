@@ -656,7 +656,7 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 					<string>WFTextTokenString</string>
 				</dict>
 				<key>UUID</key>
-				<string>F4CC6332-B6F1-5F3B-900B-DE627DA3CCB9</string>
+				<string>FE7761D8-53B9-5CD3-B869-7FCCD08A04A6</string>
 			</dict>
 		</dict>
 		<dict>
@@ -709,7 +709,7 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 								<key>Type</key>
 								<string>ActionOutput</string>
 								<key>OutputUUID</key>
-								<string>F4CC6332-B6F1-5F3B-900B-DE627DA3CCB9</string>
+								<string>FE7761D8-53B9-5CD3-B869-7FCCD08A04A6</string>
 								<key>OutputName</key>
 								<string>Provided Input</string>
 							</dict>
