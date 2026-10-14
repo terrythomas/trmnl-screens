@@ -17,6 +17,8 @@ class Screen:
     collect: Collect
     # The screen's own default, from INTERVAL_MINUTES in its collector package.
     interval_minutes: int | None = None
+    # MERGE_STRATEGY in its collector package; None replaces the stored data on each push.
+    merge_strategy: str | None = None
 
 
 def find_screens(screens_dir: Path = SCREENS_DIR) -> dict[str, Path]:
@@ -31,7 +33,7 @@ def find_screens(screens_dir: Path = SCREENS_DIR) -> dict[str, Path]:
 def load_screen(name: str, init: Path) -> Screen:
     """Import one screen's collector. Raises ModuleNotFoundError if its dependencies are missing."""
     module = _load(name, init)
-    return Screen(module.collect, getattr(module, "INTERVAL_MINUTES", None))
+    return Screen(module.collect, getattr(module, "INTERVAL_MINUTES", None), getattr(module, "MERGE_STRATEGY", None))
 
 
 def discover_screens(screens_dir: Path = SCREENS_DIR) -> dict[str, Screen]:

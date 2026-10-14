@@ -39,3 +39,19 @@ def test_push_error_reports_status(monkeypatch):
     monkeypatch.setattr(httpx, "post", fake_post(response=httpx.Response(413)))
     with pytest.raises(PushError, match="HTTP 413"):
         push(f"http://larapaper.example/api/custom_plugins/{SECRET}", {})
+
+
+@pytest.mark.parametrize("strategy, body", [
+    (None, {"merge_variables": {"a": 1}}),
+    ("deep_merge", {"merge_variables": {"a": 1}, "merge_strategy": "deep_merge"}),
+])
+def test_push_sends_the_merge_strategy_only_when_set(monkeypatch, strategy, body):
+    sent = {}
+
+    def post(url, json, **kwargs):
+        sent.update(json)
+        return httpx.Response(200, request=httpx.Request("POST", url))
+    monkeypatch.setattr(httpx, "post", post)
+
+    push("http://larapaper.example/api/custom_plugins/x", {"a": 1}, strategy)
+    assert sent == body

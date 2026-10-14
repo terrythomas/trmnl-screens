@@ -41,7 +41,10 @@ def main() -> int:
             parser.error(f"screen {name} needs {e.name}: install it with pip install '.[{name}]'")
 
     def tick(names):
-        return run_tick({name: screens[name].collect for name in names}, config, push)
+        return run_tick(
+            {name: screens[name].collect for name in names}, config, push,
+            {name: screens[name].merge_strategy for name in names},
+        )
 
     if args.once:
         return 0 if all(tick(list(screens)).values()) else 1

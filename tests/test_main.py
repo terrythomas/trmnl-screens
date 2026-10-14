@@ -15,7 +15,7 @@ def run(monkeypatch):
         monkeypatch.setattr(entry, "load_dotenv", lambda: None)
         monkeypatch.setattr(entry, "find_screens", lambda: {"media": "media/collector/__init__.py"})
         monkeypatch.setattr(entry, "load_screen", load)
-        monkeypatch.setattr(entry, "push", lambda url, payload: None)
+        monkeypatch.setattr(entry, "push", lambda url, payload, merge_strategy=None: None)
         for key in list(os.environ):
             if key.endswith(("_WEBHOOK_UUID", "INTERVAL_MINUTES")):
                 monkeypatch.delenv(key)

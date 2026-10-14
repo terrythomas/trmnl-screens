@@ -5,7 +5,7 @@ Custom e-ink dashboard screens for TRMNL devices, served by a self-hosted LaraPa
 ## Platform
 
 **Screen**:
-One self-contained dashboard design (template plus its collector), e.g. the Media screen. Future screens are added alongside it.
+One self-contained dashboard design: a template plus whatever feeds it data (a collector, or a calendar sync), e.g. the Media screen or the Calendar screen.
 _Avoid_: Plugin (LaraPaper's term for the installed form of a screen), recipe, dashboard
 
 **Collector**:
@@ -16,8 +16,12 @@ _Avoid_: Fetcher, poller, backend
 A service a collector reads from (Plex, Sonarr, Radarr, TMDB).
 _Avoid_: Integration, provider
 
+**Calendar sync**:
+The phone pushing the day's events to the Calendar screen. Unlike a collector, it runs on the phone, not in this repo.
+_Avoid_: Collector, companion
+
 **Device**:
-A physical TRMNL display. The **X** (large, 16 grays) is the primary target; the **OG** (small, 1–2 bit) gets a reduced, poster-free rendering of the same screen.
+A physical TRMNL display: the **X** (large, 16 grays) or the **OG** (small, 1–2 bit). Each screen picks its primary device; the Media screen targets the X, the Calendar screen the OG.
 
 ## Media screen
 
@@ -85,6 +89,41 @@ _Avoid_: Opening weekend, window
 **Streaming**:
 Monitored Radarr movies with a digital release today that aren't grabbed yet. Shown for that day only. Physical releases are ignored.
 _Avoid_: Digital, releasing today, VOD
+
+## Calendar screen
+
+**Calendar**:
+One of the calendars chosen for the calendar sync, e.g. work or personal. Every event shows which calendar it belongs to.
+
+**Agenda**:
+The events left today: anything not yet over, through midnight. Declined events are never shown. When no timed events are left, the Calendar screen leaves the playlist, unless the last calendar sync was before today.
+_Avoid_: Schedule, timeline
+
+**Now**:
+The event in progress, shown as the hero. With none, the hero counts down to Next instead: time until the next meeting, then "starts in" for the last 15 minutes. An event hands the hero to Next 5 minutes before it ends.
+_Avoid_: Current meeting
+
+**Next**:
+The first event starting after Now.
+_Avoid_: Up next, upcoming
+
+**Reply**:
+Your answer to an invitation. **Pending** (not answered yet) gets a prominent badge, **tentative** a light "maybe" mark, accepted none. Declined events are hidden. Events without attendees have no reply.
+_Avoid_: RSVP, response, status
+
+**All-day event**:
+An event with no start time. Shown on one line above the agenda; never counted for conflicts or free blocks.
+
+**Conflict**:
+Two or more events, from any calendars, that overlap by any amount. Events awaiting a reply count; declined and all-day events do not.
+_Avoid_: Clash, double-booking
+
+**Workday**:
+The hours free blocks are found in, 9:00 to 17:00 by default; both ends are plugin settings.
+
+**Free block**:
+A gap of more than 30 minutes with no events, between now and the end of the workday.
+_Avoid_: Free time, gap, availability
 
 ## Health
 

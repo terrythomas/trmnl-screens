@@ -1,0 +1,16 @@
+{
+  "preview_now": "2026-10-14T10:48:00-04:00",
+  "synced_at": "2026-10-14T09:12:00-04:00",
+  "events": [
+    {"title": "Offsite week", "start": "2026-10-14T00:00:00-04:00", "end": "2026-10-15T00:00:00-04:00", "all_day": true, "calendar": "Work", "reply": "", "attendees": [], "description": ""},
+    {"title": "Inbox triage", "start": "2026-10-14T09:00:00-04:00", "end": "2026-10-14T09:30:00-04:00", "all_day": false, "calendar": "Work", "reply": "", "attendees": [], "description": ""},
+    {"title": "Design review: onboarding", "start": "2026-10-14T10:00:00-04:00", "end": "2026-10-14T11:00:00-04:00", "all_day": false, "calendar": "Work", "reply": "Pending", "attendees": ["Alex Rivera", "Sam Chen", "Priya Nair", "Jo Park", "Lee Grant"], "description": "Walk through the new onboarding flow and agree on the empty-state copy before Thursday's build.\nBring the latest prototype.\n\nJoin Zoom Meeting\nhttps://zoom.us/j/000000000\nMeeting ID: 000 000 000"},
+    {"title": "Team standup", "start": "2026-10-14T11:00:00-04:00", "end": "2026-10-14T11:30:00-04:00", "all_day": false, "calendar": "Work", "reply": "Accepted", "attendees": ["Alex Rivera", "Sam Chen", "Priya Nair", "Jo Park", "Lee Grant", "Kim Ito", "Ana Ruiz"], "description": "Daily sync."},
+    {"title": "Dentist", "start": "2026-10-14T11:15:00-04:00", "end": "2026-10-14T12:00:00-04:00", "all_day": false, "calendar": "Home", "reply": "", "attendees": [], "description": "Cleaning. Main St office."},
+    {"title": "Vendor demo", "start": "2026-10-14T13:00:00-04:00", "end": "2026-10-14T14:00:00-04:00", "all_day": false, "calendar": "Work", "reply": "Declined", "attendees": ["Casey Doe"], "description": ""},
+    {"title": "1:1 with Jordan", "start": "2026-10-14T14:30:00-04:00", "end": "2026-10-14T15:00:00-04:00", "all_day": false, "calendar": "Work", "reply": "Accepted", "attendees": ["Jordan Blake"], "description": ""},
+    {"title": "Q4 planning sync", "start": "2026-10-14T15:00:00-04:00", "end": "2026-10-14T16:00:00-04:00", "all_day": false, "calendar": "Work", "reply": "Tentative", "attendees": ["Alex Rivera", "Morgan Lee"], "description": "Roadmap trade-offs.\n──────────\nJoin with Google Meet"},
+    {"title": "Dinner at Sam's", "start": "2026-10-14T18:40:00-04:00", "end": "2026-10-14T20:30:00-04:00", "all_day": false, "calendar": "Home", "reply": "", "attendees": [], "description": ""},
+    {"title": "Gym", "start": "2026-10-15T07:00:00-04:00", "end": "2026-10-15T08:00:00-04:00", "all_day": false, "calendar": "Home", "reply": "", "attendees": [], "description": ""}
+  ]
+}
