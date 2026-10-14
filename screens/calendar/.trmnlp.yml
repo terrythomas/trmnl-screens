@@ -8,5 +8,5 @@ custom_fields:
 variables:
   trmnl:
     user:
-      utc_offset: -14400
-      time_zone_iana: America/New_York
+      utc_offset: 0
+      time_zone_iana: Etc/UTC
