@@ -57,7 +57,7 @@ AirDrop the signed file to the phone and add it. Then run it once from the Short
 
 The answers are saved to `Shortcuts/trmnl-calendar.json` in iCloud Drive, and every later run reads them and syncs without asking. To change them, delete that file and run the Shortcut again, or edit it: each key is a calendar's name with any `.` replaced by `_` (Shortcuts reads dots in a key as a path), and its value is the label, e.g. `{"_webhook": "…", "me@example_com": "Work", "Personal": "Home"}`. iOS asks once for access to the calendars and to iCloud Drive.
 
-The events come from Find Calendar Events (Start Date is today, End Date is after now), and each one's reply comes from the attendee marked Is Me.
+The events come from Find Calendar Events (Start Date is today; events that have ended are hidden by the template), and each one's reply comes from the attendee marked Is Me.
 
 ## When it runs
 

@@ -107,11 +107,10 @@ FILTER = {
         "WFActionParameterFilterPrefix": 1,  # all of:
         "WFContentPredicateBoundedDate": False,
         "WFActionParameterFilterTemplates": [
-            # The one shape that works on a real phone. Tried and failed: "any of" today / in the next 2 days
-            # (found nothing), and "is in the next" on End Date (iOS resets it to Start Date, 7 days).
+            # Start Date only: an "End Date is after now" row here was hidden in the phone's editor yet still
+            # filtered out every event. Finished events ride along; the template hides them.
+            # Also failed: "any of" today / in the next 2 days (found nothing).
             {"Operator": 1002, "Property": "Start Date", "Removable": True, "Values": {}},  # is today
-            {"Operator": 2, "Property": "End Date", "Removable": True,  # is after now
-             "Values": {"Date": attachment({"Type": "CurrentDate"})}},
         ],
     },
     "WFSerializationType": "WFContentPredicateTableTemplate",
@@ -174,7 +173,7 @@ UPCOMING = {
             # An open-ended "Start Date is after now" found nothing on a real phone; bound it.
             {"Operator": 1000, "Property": "Start Date", "Removable": True,  # is in the next 2 weeks
              "Values": {"Number": "2", "Unit": 8192}},
-            {"Operator": 2, "Property": "End Date", "Removable": True,  # is after now, as in FILTER
+            {"Operator": 2, "Property": "End Date", "Removable": True,  # is after now; shows and works here
              "Values": {"Date": attachment({"Type": "CurrentDate"})}},
         ],
     },

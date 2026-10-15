@@ -1233,27 +1233,6 @@ added once by checking the names so far, one per line.</string>
 								<key>Values</key>
 								<dict/>
 							</dict>
-							<dict>
-								<key>Operator</key>
-								<integer>2</integer>
-								<key>Property</key>
-								<string>End Date</string>
-								<key>Removable</key>
-								<true/>
-								<key>Values</key>
-								<dict>
-									<key>Date</key>
-									<dict>
-										<key>Value</key>
-										<dict>
-											<key>Type</key>
-											<string>CurrentDate</string>
-										</dict>
-										<key>WFSerializationType</key>
-										<string>WFTextTokenAttachment</string>
-									</dict>
-								</dict>
-							</dict>
 						</array>
 					</dict>
 					<key>WFSerializationType</key>
