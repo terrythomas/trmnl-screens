@@ -5,6 +5,8 @@ times are shown by adding the user's UTC offset and formatting as UTC.
 The layout (OG and X alike): the countdown hero and Next on the left, the rest of the day on the right.
 The X shows more attendee names and description lines in the hero; the agenda fills whatever height there is.
 A script at the end moves Next to the right when it doesn't fit, and trims the agenda.
+On the X, when the agenda would fill less than half its column, the script switches to a focus view instead:
+Now and Next at full width, the rest of the day on one Later line.
 {%- endcomment -%}
 {%- assign now_s = preview_now | default: "now" | date: "%s" | plus: 0 -%}
 {%- comment -%} Show times in the phone's zone: the offset synced_at carries ("-04:00"), else the LaraPaper user's. {%- endcomment -%}
@@ -198,6 +200,19 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
   .screen:not(.screen--1bit, .screen--2bit) .cal-hatch { border-radius: 8px; padding: 3px; }
   .screen:not(.screen--1bit, .screen--2bit) .cal-hatch span { font-size: 20px; border-radius: 6px; padding: 1px 10px 2px; }
   .screen:not(.screen--1bit, .screen--2bit) .cal-more { font-size: 21px; padding-top: 10px; }
+
+  /* The focus view (the X only, when the agenda would be mostly empty; see fit()): one column, Now and Next at full width, the rest on one Later line. */
+  .cal-later { display: none; }
+  .cal.cal--focus { flex-direction: column; }
+  .cal--focus > .cal-hero { flex: 1; padding-right: 0; }
+  .cal--focus > .cal-side { display: none; }
+  .cal--focus > .cal-later { display: flex; align-items: center; gap: 14px; border-top: 3px solid #000; margin-top: 22px; padding-top: 14px; }
+  .cal--focus > .cal-later .cal-meta { font-size: 24px; }
+  .cal.cal--focus .cal-big { font-size: 190px; }
+  .cal.cal--focus .cal-unit { font-size: 48px; }
+  .cal--focus > .cal-hero:not(.cal-hero--conflict) > .cal-lane > .cal-title { font-size: 52px; }
+  .cal--focus > .cal-hero > .cal-lane .cal-desc { font-size: 24px; }
+  .cal--focus > .cal-hero > .cal-next .cal-title { font-size: 36px; }
 </style>
 
 {%- capture icon_alert -%}<svg viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 3L2 20.5h20z"/><path d="M12 10v4.5M12 17.5v.5"/></svg>{%- endcapture -%}
@@ -229,8 +244,8 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
         </div>
         {%- assign a_n = 0 -%}{%- if e.attendees != blank -%}{%- assign names = e.attendees | split: ", " -%}{%- assign a_n = names | size -%}{%- endif -%}
         {%- if a_n > 0 -%}
-          <div class="cal-meta cal-names cal-x">{% for a in names limit: 10 %}{{ a }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 10 %} +{{ a_n | minus: 10 }}{% endif %}</div>
-          <div class="cal-meta cal-names cal-og">{% for a in names limit: 3 %}{{ a }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 3 %} +{{ a_n | minus: 3 }}{% endif %}</div>
+          <div class="cal-meta cal-names cal-x">{% for a in names limit: 10 %}{{ a | split: "@" | first }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 10 %} +{{ a_n | minus: 10 }}{% endif %}</div>
+          <div class="cal-meta cal-names cal-og">{% for a in names limit: 3 %}{{ a | split: "@" | first }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 3 %} +{{ a_n | minus: 3 }}{% endif %}</div>
         {%- endif -%}
         {%- if n_ids == 1 -%}
           {%- assign lines = e.description | newline_to_br | split: "<br />" -%}{%- assign d = "" -%}
@@ -273,7 +288,7 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
             <span class="cal-meta">{{ s | plus: off | date: "%-I:%M" }}–{{ en | plus: off | date: "%-I:%M" }}</span>
           </div>
           {%- if e.attendees != blank -%}{%- assign names = e.attendees | split: ", " -%}{%- assign a_n = names | size -%}
-          <div class="cal-meta cal-x" style="margin-top:4px">{% for a in names limit: 3 %}{{ a }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 3 %} +{{ a_n | minus: 3 }}{% endif %}</div>
+          <div class="cal-meta cal-x" style="margin-top:4px">{% for a in names limit: 3 %}{{ a | split: "@" | first }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 3 %} +{{ a_n | minus: 3 }}{% endif %}</div>
           {%- endif -%}
         </div>
       {%- endfor -%}
@@ -305,7 +320,7 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
           {%- comment -%} The X has room for each event's times, people and the first line of its notes. {%- endcomment -%}
           {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}{%- assign a_n = 0 -%}
           {%- if e.attendees != blank -%}{%- assign names = e.attendees | split: ", " -%}{%- assign a_n = names | size -%}{%- endif -%}
-          <div class="cal-meta cal-x">{{ s | plus: off | date: "%-I:%M" }}–{{ en | plus: off | date: "%-I:%M" }}{% if a_n > 0 %} · {% for a in names limit: 4 %}{{ a }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 4 %} +{{ a_n | minus: 4 }}{% endif %}{% endif %}</div>
+          <div class="cal-meta cal-x">{{ s | plus: off | date: "%-I:%M" }}–{{ en | plus: off | date: "%-I:%M" }}{% if a_n > 0 %} · {% for a in names limit: 4 %}{{ a | split: "@" | first }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 4 %} +{{ a_n | minus: 4 }}{% endif %}{% endif %}</div>
           {%- assign lines = e.description | newline_to_br | split: "<br />" -%}{%- assign d = "" -%}
           {%- for l in lines -%}{%- assign l = l | strip -%}
             {%- if l contains "zoom.us" or l contains "meet.google" or l contains "teams.microsoft" or l contains "Join " or l contains "──" or l contains "Meeting ID" -%}{%- break -%}{%- endif -%}
@@ -321,6 +336,15 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
     </div>
     <div class="cal-more" hidden></div>
   </div>
+  {%- comment -%}
+  The focus view's one line for the rest of the day (see fit()).
+  shortcut: a conflict shows only its first title; list every lane if that turns out to hide things.
+  {%- endcomment -%}
+  {%- capture later -%}{%- for r in rest -%}{%- assign p = r | split: "|" -%}{%- if p[1] != "C" -%}{%- continue -%}{%- endif -%}
+    {%- assign ci = p[2] | plus: 0 -%}{%- assign ids = clusters[ci] | split: "," -%}{%- assign i = ids[0] | plus: 0 -%}
+    {{- " · " -}}<b>{{ p[0] | plus: off | date: "%-I:%M" }}</b> {{ evs[i].title }}
+  {%- endfor -%}{%- endcapture -%}
+  {%- if later != "" -%}<div class="cal-later"><span class="cal-pill cal-pill--solid">Later</span><span class="cal-meta">{{ later | remove_first: " · " }}</span></div>{%- endif -%}
 </div>
 </div>
 <script>
@@ -332,10 +356,21 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
     var bottom = box.getBoundingClientRect().bottom, desc = document.querySelector(".cal-hero .cal-desc");
     var nextOver = function () { return next && next.getBoundingClientRect().bottom > bottom + 1; };
     // Shorten the hero's notes before giving up the room under the hero: on the X down to none, on the OG never below 3 lines.
-    var clamp = desc ? parseInt(getComputedStyle(desc).webkitLineClamp, 10) || 0 : 0,
-        least = document.querySelector(".screen--1bit, .screen--2bit") ? 3 : 0;
-    while (nextOver() && clamp > least) { --clamp; if (clamp) desc.style.webkitLineClamp = clamp; else desc.hidden = true; }
-    if (nextOver()) { if (desc) { desc.style.webkitLineClamp = ""; desc.hidden = false; } side.insertBefore(next, side.firstChild); }
+    var og = !!document.querySelector(".screen--1bit, .screen--2bit"), least = og ? 3 : 0;
+    var reset = function () { if (desc) { desc.style.webkitLineClamp = ""; desc.hidden = false; } };
+    var shorten = function () {
+      var clamp = desc ? parseInt(getComputedStyle(desc).webkitLineClamp, 10) || 0 : 0;
+      while (nextOver() && clamp > least) { --clamp; if (clamp) desc.style.webkitLineClamp = clamp; else desc.hidden = true; }
+      return !nextOver();
+    };
+    // On the X, an agenda that would fill less than half its column gives the screen to Now and Next instead.
+    var last = list.lastElementChild, used = last ? last.getBoundingClientRect().bottom - list.getBoundingClientRect().top : 0;
+    if (!og && used < list.clientHeight / 2) {
+      box.classList.add("cal--focus");
+      if (shorten()) return;
+      box.classList.remove("cal--focus"); reset();
+    }
+    if (!shorten()) { reset(); side.insertBefore(next, side.firstChild); }
     var over = function () { var last = list.lastElementChild; return last && last.getBoundingClientRect().bottom > list.getBoundingClientRect().bottom + 1; };
     if (!over()) return;
     more.hidden = false; more.textContent = "+ more";

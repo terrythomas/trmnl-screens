@@ -36,7 +36,7 @@ The Shortcut POSTs JSON to `<LARAPAPER_URL>/api/custom_plugins/<CALENDAR_WEBHOOK
 | `all_day` | Whether the event is all-day: `true`, `Yes` or `1` (the Shortcut sends whatever iOS gives it). |
 | `calendar` | The calendar's short label, e.g. `Work` or `Home`. |
 | `reply` | Your own attendee status as iOS reports it: `Accepted`, `Pending`, `Tentative` or `Declined`, in any case. Empty when the event has no attendees. The template hides declined events. |
-| `attendees` | Other attendees' names, without you, separated by `, `. |
+| `attendees` | Other attendees' names, without you, separated by `, `. An attendee with no name arrives as an email address; the screen shows the part before the `@`. |
 | `description` | The event notes, untrimmed. The template cuts meeting-link boilerplate. |
 
 Fixtures may also set `preview_now` (ISO 8601) to pin the time the template renders against. The Shortcut never sends it.
