@@ -107,9 +107,10 @@ FILTER = {
         "WFActionParameterFilterPrefix": 1,  # all of:
         "WFContentPredicateBoundedDate": False,
         "WFActionParameterFilterTemplates": [
+            # Start Date only: an "End Date is after now" row here was hidden in the phone's editor yet still
+            # filtered out every event. Finished events ride along; the template hides them.
+            # Also failed: "any of" today / in the next 2 days (found nothing).
             {"Operator": 1002, "Property": "Start Date", "Removable": True, "Values": {}},  # is today
-            {"Operator": 2, "Property": "End Date", "Removable": True,  # is after now
-             "Values": {"Date": attachment({"Type": "CurrentDate"})}},
         ],
     },
     "WFSerializationType": "WFContentPredicateTableTemplate",
@@ -120,7 +121,10 @@ attendee_loop = block("repeat.each", "attendees-loop", "For each attendee of thi
             "\"couldn't convert from Number to Event Attendee\"."),
     set_var("Attendee", var("Repeat Item 2")),
     detail("eventattendees", "is-me", "Is Me", var("Attendee")),
-    *block("conditional", "if-me", "If this attendee is you, keep your reply; otherwise keep their name.", condition(out("is-me", "Is Me"), 2, WFNumberValue="0"), [
+    comment("Compared as text: a number comparison on Is Me imports with its value blank. Yes/No as text, like all_day."),
+    action("gettext", "is-me-text", WFTextActionText=text(out("is-me", "Is Me"))),
+    *block("conditional", "if-me", "If this attendee is you, keep your reply; otherwise keep their name.",
+           condition(out("is-me-text", "Text"), 4, WFConditionalActionString="Yes"), [
         detail("eventattendees", "status", "Status", var("Attendee")),
         set_var("Reply", out("status", "Status")),
     ], otherwise=[
@@ -166,7 +170,10 @@ UPCOMING = {
         "WFActionParameterFilterPrefix": 1,
         "WFContentPredicateBoundedDate": False,
         "WFActionParameterFilterTemplates": [
-            {"Operator": 2, "Property": "Start Date", "Removable": True,
+            # An open-ended "Start Date is after now" found nothing on a real phone; bound it.
+            {"Operator": 1000, "Property": "Start Date", "Removable": True,  # is in the next 2 weeks
+             "Values": {"Number": "2", "Unit": 8192}},
+            {"Operator": 2, "Property": "End Date", "Removable": True,  # is after now; shows and works here
              "Values": {"Date": attachment({"Type": "CurrentDate"})}},
         ],
     },
@@ -189,16 +196,35 @@ setup = [
             (out("host", "Provided Input"), "/api/custom_plugins/", out("uuid", "Provided Input"))),
     set_var("Config", out("config-url", "Dictionary")),
     comment("Calendars come from upcoming events, so a calendar with nothing coming up isn't offered."),
-    set_var("Seen", out("empty", "Dictionary")),
     action("filter.calendarevents", "upcoming", WFContentItemFilter=UPCOMING,
            WFContentItemLimitEnabled=True, WFContentItemLimitNumber=300.0),
+    comment("Dictionary keys can't dedupe these: a key with dots is read as a key path. Each name is\n"
+            "added once by checking the names so far, one per line."),
     *block("repeat.each", "upcoming-loop", "Collect each upcoming event's calendar name once.", {"WFInput": attachment(out("upcoming", "Calendar Events"))}, [
         detail("calendarevents", "upcoming-calendar", "Calendar", var("Repeat Item")),
-        set_key("seen-add", var("Seen"), (out("upcoming-calendar", "Calendar"),), (out("upcoming-calendar", "Calendar"),)),
-        set_var("Seen", out("seen-add", "Dictionary")),
+        comment("Keep the name as text: a Calendar object may not compare or count as text does."),
+        action("gettext", "calendar-name", WFTextActionText=text(out("upcoming-calendar", "Calendar"))),
+        action("gettext", "names-so-far", WFTextActionText=text("\n", var("Calendar Names"), "\n")),
+        *block("conditional", "if-new", "Only names not seen yet.",
+               condition(out("names-so-far", "Text"), 999,
+                         WFConditionalActionString=text("\n", out("calendar-name", "Text"), "\n")), [
+            action("appendvariable", WFVariableName="Calendar Names", WFInput=attachment(out("calendar-name", "Text"))),
+        ]),
     ]),
-    action("getvalueforkey", "calendar-names", WFGetDictionaryValueType="All Keys", WFInput=attachment(var("Seen"))),
-    action("choosefromlist", "chosen", WFInput=attachment(out("calendar-names", "Dictionary Value")),
+    action("count", "upcoming-count", WFCountType="Items", WFInput=attachment(out("upcoming", "Calendar Events")),
+           Input=attachment(out("upcoming", "Calendar Events"))),
+    action("count", "names-count", WFCountType="Items", WFInput=attachment(var("Calendar Names")),
+           Input=attachment(var("Calendar Names"))),
+    *block("conditional", "if-names", "Stop with a message rather than save a setup with no calendars.",
+           condition(out("names-count", "Count"), 2, WFNumberValue="0"), [], otherwise=[
+        action("alert", WFAlertActionTitle="No calendars found",
+               WFAlertActionMessage=text("Calendar Sync lists calendars that have upcoming events. It found ",
+                                         out("upcoming-count", "Count"), " upcoming events and ",
+                                         out("names-count", "Count"), " calendars."),
+               WFAlertActionCancelButtonShown=False),
+        action("exit"),
+    ]),
+    action("choosefromlist", "chosen", WFInput=attachment(var("Calendar Names")),
            WFChooseFromListActionPrompt="Which calendars should the screen show?",
            WFChooseFromListActionSelectMultiple=True),
     *block("repeat.each", "chosen-loop", "Ask for a short label for each chosen calendar.", {"WFInput": attachment(out("chosen", "Chosen Item"))}, [
