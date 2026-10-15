@@ -104,12 +104,14 @@ def condition(ref: dict, code: int, **extra) -> dict:
 
 FILTER = {
     "Value": {
-        "WFActionParameterFilterPrefix": 1,  # all of:
+        "WFActionParameterFilterPrefix": 0,  # any of:
         "WFContentPredicateBoundedDate": False,
         "WFActionParameterFilterTemplates": [
-            # By end date, so the meeting in progress stays in and finished ones drop out. Tomorrow's events
-            # come along too; the template shows only today's. Unit 16 is days; Number must be text or iOS shows its default, 7.
-            {"Operator": 1000, "Property": "End Date", "Removable": True,  # is in the next 2 days
+            # Today's, so the meeting in progress stays in (the template hides finished ones), plus
+            # tomorrow's for testing. iOS only takes "is in the next" on Start Date: on End Date it
+            # resets the row to "Start Date is in the next 7 days". Unit 16 is days; Number is text.
+            {"Operator": 1002, "Property": "Start Date", "Removable": True, "Values": {}},  # is today
+            {"Operator": 1000, "Property": "Start Date", "Removable": True,  # is in the next 2 days
              "Values": {"Number": "2", "Unit": 16}},
         ],
     },
@@ -244,7 +246,7 @@ setup = [
 
 actions = [
     comment("Calendar Sync for the TRMNL Calendar screen (docs/calendar-sync.md).\n"
-            "Pushes the events that haven't ended, through tomorrow, to the screen's LaraPaper webhook."),
+            "Pushes today's and tomorrow's events to the screen's LaraPaper webhook."),
     comment("- First run asks for the webhook and the calendars, and saves them to Shortcuts/trmnl-calendar.json\n"
             "- Delete that file to set up again\n"
             "- Run it from automations: closing Calendar, joining home Wi-Fi, hourly in the workday"),
@@ -260,7 +262,7 @@ actions = [
     action("filter.calendarevents", "events", WFContentItemFilter=FILTER),
     action("count", "found", WFCountType="Items", WFInput=attachment(out("events", "Calendar Events")),
            Input=attachment(out("events", "Calendar Events"))),
-    *block("repeat.each", "events-loop", "For each event that hasn't ended, through tomorrow.", {"WFInput": attachment(out("events", "Calendar Events"))}, [
+    *block("repeat.each", "events-loop", "For each event today or in the next 2 days.", {"WFInput": attachment(out("events", "Calendar Events"))}, [
         set_var("Event", var("Repeat Item")),
         detail("calendarevents", "calendar", "Calendar", var("Event")),
         dotless("calendar-key", out("calendar", "Calendar")),
