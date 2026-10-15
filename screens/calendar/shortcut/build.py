@@ -121,7 +121,10 @@ attendee_loop = block("repeat.each", "attendees-loop", "For each attendee of thi
             "\"couldn't convert from Number to Event Attendee\"."),
     set_var("Attendee", var("Repeat Item 2")),
     detail("eventattendees", "is-me", "Is Me", var("Attendee")),
-    *block("conditional", "if-me", "If this attendee is you, keep your reply; otherwise keep their name.", condition(out("is-me", "Is Me"), 2, WFNumberValue="0"), [
+    comment("Compared as text: a number comparison on Is Me imports with its value blank. Yes/No as text, like all_day."),
+    action("gettext", "is-me-text", WFTextActionText=text(out("is-me", "Is Me"))),
+    *block("conditional", "if-me", "If this attendee is you, keep your reply; otherwise keep their name.",
+           condition(out("is-me-text", "Text"), 4, WFConditionalActionString="Yes"), [
         detail("eventattendees", "status", "Status", var("Attendee")),
         set_var("Reply", out("status", "Status")),
     ], otherwise=[
