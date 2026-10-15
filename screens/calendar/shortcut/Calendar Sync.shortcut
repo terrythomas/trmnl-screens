@@ -309,9 +309,24 @@ Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 						<array>
 							<dict>
 								<key>Operator</key>
-								<integer>2</integer>
+								<integer>1000</integer>
 								<key>Property</key>
 								<string>Start Date</string>
+								<key>Removable</key>
+								<true/>
+								<key>Values</key>
+								<dict>
+									<key>Number</key>
+									<integer>2</integer>
+									<key>Unit</key>
+									<integer>8192</integer>
+								</dict>
+							</dict>
+							<dict>
+								<key>Operator</key>
+								<integer>2</integer>
+								<key>Property</key>
+								<string>End Date</string>
 								<key>Removable</key>
 								<true/>
 								<key>Values</key>

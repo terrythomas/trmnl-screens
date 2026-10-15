@@ -166,7 +166,10 @@ UPCOMING = {
         "WFActionParameterFilterPrefix": 1,
         "WFContentPredicateBoundedDate": False,
         "WFActionParameterFilterTemplates": [
-            {"Operator": 2, "Property": "Start Date", "Removable": True,
+            # An open-ended "Start Date is after now" found nothing on a real phone; bound it.
+            {"Operator": 1000, "Property": "Start Date", "Removable": True,  # is in the next 2 weeks
+             "Values": {"Number": 2, "Unit": 8192}},
+            {"Operator": 2, "Property": "End Date", "Removable": True,  # is after now, as in FILTER
              "Values": {"Date": attachment({"Type": "CurrentDate"})}},
         ],
     },
