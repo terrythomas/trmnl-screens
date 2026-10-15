@@ -13,7 +13,7 @@
 			<dict>
 				<key>WFCommentActionText</key>
 				<string>Calendar Sync for the TRMNL Calendar screen (docs/calendar-sync.md).
-Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
+Pushes the events that haven't ended, through tomorrow, to the screen's LaraPaper webhook.</string>
 			</dict>
 		</dict>
 		<dict>
@@ -1225,33 +1225,17 @@ added once by checking the names so far, one per line.</string>
 						<array>
 							<dict>
 								<key>Operator</key>
-								<integer>1002</integer>
-								<key>Property</key>
-								<string>Start Date</string>
-								<key>Removable</key>
-								<true/>
-								<key>Values</key>
-								<dict/>
-							</dict>
-							<dict>
-								<key>Operator</key>
-								<integer>2</integer>
+								<integer>1000</integer>
 								<key>Property</key>
 								<string>End Date</string>
 								<key>Removable</key>
 								<true/>
 								<key>Values</key>
 								<dict>
-									<key>Date</key>
-									<dict>
-										<key>Value</key>
-										<dict>
-											<key>Type</key>
-											<string>CurrentDate</string>
-										</dict>
-										<key>WFSerializationType</key>
-										<string>WFTextTokenAttachment</string>
-									</dict>
+									<key>Number</key>
+									<integer>2</integer>
+									<key>Unit</key>
+									<integer>16</integer>
 								</dict>
 							</dict>
 						</array>
@@ -1308,7 +1292,7 @@ added once by checking the names so far, one per line.</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
 				<key>WFCommentActionText</key>
-				<string>- For each event left today.</string>
+				<string>- For each event that hasn't ended, through tomorrow.</string>
 			</dict>
 		</dict>
 		<dict>
