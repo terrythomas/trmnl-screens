@@ -30,7 +30,7 @@ The Shortcut POSTs JSON to `<LARAPAPER_URL>/api/custom_plugins/<CALENDAR_WEBHOOK
 |---|---|
 | `synced_at` | When the Shortcut ran, ISO 8601 with offset. |
 | `found` | How many events the search returned before keeping only the chosen calendars; for diagnosing an empty `events`. |
-| `events` | Every event from the chosen calendars that starts today or in the next two days. The template shows only today's that haven't ended. |
+| `events` | Every event today that hasn't ended yet, from the chosen calendars. |
 | `title` | The event title. |
 | `start`, `end` | ISO 8601 with offset. |
 | `all_day` | Whether the event is all-day: `true`, `Yes` or `1` (the Shortcut sends whatever iOS gives it). |
@@ -57,7 +57,7 @@ AirDrop the signed file to the phone and add it. Then run it once from the Short
 
 The answers are saved to `Shortcuts/trmnl-calendar.json` in iCloud Drive, and every later run reads them and syncs without asking. To change them, delete that file and run the Shortcut again, or edit it: each key is a calendar's name with any `.` replaced by `_` (Shortcuts reads dots in a key as a path), and its value is the label, e.g. `{"_webhook": "…", "me@example_com": "Work", "Personal": "Home"}`. iOS asks once for access to the calendars and to iCloud Drive.
 
-The events come from Find Calendar Events (Start Date is today, or is in the next 2 days), and each one's reply comes from the attendee marked Is Me.
+The events come from Find Calendar Events (Start Date is today, End Date is after now), and each one's reply comes from the attendee marked Is Me.
 
 ## When it runs
 

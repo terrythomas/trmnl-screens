@@ -13,7 +13,7 @@
 			<dict>
 				<key>WFCommentActionText</key>
 				<string>Calendar Sync for the TRMNL Calendar screen (docs/calendar-sync.md).
-Pushes today's and tomorrow's events to the screen's LaraPaper webhook.</string>
+Pushes the rest of today's events to the screen's LaraPaper webhook.</string>
 			</dict>
 		</dict>
 		<dict>
@@ -1218,7 +1218,7 @@ added once by checking the names so far, one per line.</string>
 					<key>Value</key>
 					<dict>
 						<key>WFActionParameterFilterPrefix</key>
-						<integer>0</integer>
+						<integer>1</integer>
 						<key>WFContentPredicateBoundedDate</key>
 						<false/>
 						<key>WFActionParameterFilterTemplates</key>
@@ -1235,17 +1235,23 @@ added once by checking the names so far, one per line.</string>
 							</dict>
 							<dict>
 								<key>Operator</key>
-								<integer>1000</integer>
+								<integer>2</integer>
 								<key>Property</key>
-								<string>Start Date</string>
+								<string>End Date</string>
 								<key>Removable</key>
 								<true/>
 								<key>Values</key>
 								<dict>
-									<key>Number</key>
-									<string>2</string>
-									<key>Unit</key>
-									<integer>16</integer>
+									<key>Date</key>
+									<dict>
+										<key>Value</key>
+										<dict>
+											<key>Type</key>
+											<string>CurrentDate</string>
+										</dict>
+										<key>WFSerializationType</key>
+										<string>WFTextTokenAttachment</string>
+									</dict>
 								</dict>
 							</dict>
 						</array>
@@ -1302,7 +1308,7 @@ added once by checking the names so far, one per line.</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
 				<key>WFCommentActionText</key>
-				<string>- For each event today or in the next 2 days.</string>
+				<string>- For each event left today.</string>
 			</dict>
 		</dict>
 		<dict>

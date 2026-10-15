@@ -104,15 +104,14 @@ def condition(ref: dict, code: int, **extra) -> dict:
 
 FILTER = {
     "Value": {
-        "WFActionParameterFilterPrefix": 0,  # any of:
+        "WFActionParameterFilterPrefix": 1,  # all of:
         "WFContentPredicateBoundedDate": False,
         "WFActionParameterFilterTemplates": [
-            # Today's, so the meeting in progress stays in (the template hides finished ones), plus
-            # tomorrow's for testing. iOS only takes "is in the next" on Start Date: on End Date it
-            # resets the row to "Start Date is in the next 7 days". Unit 16 is days; Number is text.
+            # The one shape that works on a real phone. Tried and failed: "any of" today / in the next 2 days
+            # (found nothing), and "is in the next" on End Date (iOS resets it to Start Date, 7 days).
             {"Operator": 1002, "Property": "Start Date", "Removable": True, "Values": {}},  # is today
-            {"Operator": 1000, "Property": "Start Date", "Removable": True,  # is in the next 2 days
-             "Values": {"Number": "2", "Unit": 16}},
+            {"Operator": 2, "Property": "End Date", "Removable": True,  # is after now
+             "Values": {"Date": attachment({"Type": "CurrentDate"})}},
         ],
     },
     "WFSerializationType": "WFContentPredicateTableTemplate",
@@ -246,7 +245,7 @@ setup = [
 
 actions = [
     comment("Calendar Sync for the TRMNL Calendar screen (docs/calendar-sync.md).\n"
-            "Pushes today's and tomorrow's events to the screen's LaraPaper webhook."),
+            "Pushes the rest of today's events to the screen's LaraPaper webhook."),
     comment("- First run asks for the webhook and the calendars, and saves them to Shortcuts/trmnl-calendar.json\n"
             "- Delete that file to set up again\n"
             "- Run it from automations: closing Calendar, joining home Wi-Fi, hourly in the workday"),
@@ -262,7 +261,7 @@ actions = [
     action("filter.calendarevents", "events", WFContentItemFilter=FILTER),
     action("count", "found", WFCountType="Items", WFInput=attachment(out("events", "Calendar Events")),
            Input=attachment(out("events", "Calendar Events"))),
-    *block("repeat.each", "events-loop", "For each event today or in the next 2 days.", {"WFInput": attachment(out("events", "Calendar Events"))}, [
+    *block("repeat.each", "events-loop", "For each event left today.", {"WFInput": attachment(out("events", "Calendar Events"))}, [
         set_var("Event", var("Repeat Item")),
         detail("calendarevents", "calendar", "Calendar", var("Event")),
         dotless("calendar-key", out("calendar", "Calendar")),
