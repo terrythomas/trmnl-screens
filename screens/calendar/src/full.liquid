@@ -166,6 +166,38 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
   :is(.screen--1bit, .screen--2bit) .cal-x { display: none; }
   :is(.screen--1bit, .screen--2bit) .cal-og { display: revert; }
   :is(.screen--1bit, .screen--2bit) .cal-hero .cal-desc { -webkit-line-clamp: 3; }
+
+  /* The X: same layout, larger type and more air. Sizes are CSS px at the X's 1.8 scale (about 1040×780). */
+  .screen:not(.screen--1bit, .screen--2bit) .cal-page { gap: 20px; padding: 10px 0 18px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-date { font-size: 28px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-ad { font-size: 19px; border-radius: 8px; padding: 1px 10px 2px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-hero { flex-basis: 54%; padding-right: 28px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-side { padding-left: 26px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-big { font-size: 136px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-unit { font-size: 38px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-sub { font-size: 34px; margin-top: 8px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-pill { font-size: 15px; border-radius: 7px; padding: 1px 8px 2px; gap: 6px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-line { gap: 10px; margin-top: 6px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-meta { font-size: 20px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-hero .cal-title { font-size: 40px; margin-top: 26px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-hero .cal-meta { font-size: 22px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-hero .cal-desc { font-size: 21px; margin-top: 12px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-names { margin-top: 8px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-hero--conflict .cal-title { font-size: 30px; margin-top: 10px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-hero .cal-lane + .cal-lane { margin-top: 14px; padding-top: 10px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-next { border-radius: 12px; padding: 12px 16px 14px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-hero > .cal-lane:last-of-type, .screen:not(.screen--1bit, .screen--2bit) .cal-hero > .cal-sub { margin-bottom: 24px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-side > .cal-next { margin-bottom: 14px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-next .cal-title { font-size: 30px; margin-top: 8px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-next .cal-lane + .cal-lane { margin-top: 10px; padding-top: 8px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-item { grid-template-columns: 76px minmax(0, 1fr); gap: 14px; padding: 11px 0 12px; border-bottom-width: 2px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-t { font-size: 22px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-item .cal-title { font-size: 26px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-item .cal-meta { font-size: 18px; margin-top: 3px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-item .cal-lane + .cal-lane { margin-top: 8px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-hatch { border-radius: 8px; padding: 3px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-hatch span { font-size: 20px; border-radius: 6px; padding: 1px 10px 2px; }
+  .screen:not(.screen--1bit, .screen--2bit) .cal-more { font-size: 21px; padding-top: 10px; }
 </style>
 
 {%- capture icon_alert -%}<svg viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 3L2 20.5h20z"/><path d="M12 10v4.5M12 17.5v.5"/></svg>{%- endcapture -%}
@@ -240,6 +272,9 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
             <span class="cal-pill">{{ e.calendar }}</span>
             <span class="cal-meta">{{ s | plus: off | date: "%-I:%M" }}–{{ en | plus: off | date: "%-I:%M" }}</span>
           </div>
+          {%- if e.attendees != blank -%}{%- assign names = e.attendees | split: ", " -%}{%- assign a_n = names | size -%}
+          <div class="cal-meta cal-x" style="margin-top:4px">{% for a in names limit: 3 %}{{ a }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 3 %} +{{ a_n | minus: 3 }}{% endif %}</div>
+          {%- endif -%}
         </div>
       {%- endfor -%}
     </div>
@@ -260,11 +295,23 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
         {%- assign ci = p[2] | plus: 0 -%}{%- assign ids = clusters[ci] | split: "," -%}{%- assign n_ids = ids | size -%}
         <div>
         {%- for k in ids -%}{%- assign i = k | plus: 0 -%}{%- assign e = evs[i] -%}
+          <div class="cal-lane">
           <div class="cal-line">
             {%- if n_ids > 1 and forloop.first -%}<span class="cal-pill cal-pill--solid">{{ icon_alert }}</span>{%- endif -%}
             <span class="cal-title">{{ e.title }}</span>
             {%- assign rp = e.reply | downcase -%}{%- if rp == "pending" -%}<span class="cal-pill cal-pill--solid">Reply?</span>{%- elsif rp == "tentative" -%}<span class="cal-pill">maybe</span>{%- endif -%}
             <span class="cal-pill">{{ e.calendar }}</span>
+          </div>
+          {%- comment -%} The X has room for each event's times, people and the first line of its notes. {%- endcomment -%}
+          {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}{%- assign a_n = 0 -%}
+          {%- if e.attendees != blank -%}{%- assign names = e.attendees | split: ", " -%}{%- assign a_n = names | size -%}{%- endif -%}
+          <div class="cal-meta cal-x">{{ s | plus: off | date: "%-I:%M" }}–{{ en | plus: off | date: "%-I:%M" }}{% if a_n > 0 %} · {% for a in names limit: 4 %}{{ a }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 4 %} +{{ a_n | minus: 4 }}{% endif %}{% endif %}</div>
+          {%- assign lines = e.description | newline_to_br | split: "<br />" -%}{%- assign d = "" -%}
+          {%- for l in lines -%}{%- assign l = l | strip -%}
+            {%- if l contains "zoom.us" or l contains "meet.google" or l contains "teams.microsoft" or l contains "Join " or l contains "──" or l contains "Meeting ID" -%}{%- break -%}{%- endif -%}
+            {%- if l != "" -%}{%- assign d = l -%}{%- break -%}{%- endif -%}
+          {%- endfor -%}
+          {%- if d != "" -%}<div class="cal-meta cal-x">{{ d }}</div>{%- endif -%}
           </div>
         {%- endfor -%}
         </div>
@@ -282,8 +329,13 @@ Next: the first cluster after that. Each cluster's span is "start-end" in cl_spa
   function fit() {
     var box = document.querySelector(".cal"), next = document.querySelector(".cal-hero .cal-next"),
         side = document.querySelector(".cal-side"), list = document.querySelector(".cal-list"), more = document.querySelector(".cal-more");
-    var bottom = box.getBoundingClientRect().bottom;
-    if (next && next.getBoundingClientRect().bottom > bottom + 1) side.insertBefore(next, side.firstChild);
+    var bottom = box.getBoundingClientRect().bottom, desc = document.querySelector(".cal-hero .cal-desc");
+    var nextOver = function () { return next && next.getBoundingClientRect().bottom > bottom + 1; };
+    // Shorten the hero's notes before giving up the room under the hero: on the X down to none, on the OG never below 3 lines.
+    var clamp = desc ? parseInt(getComputedStyle(desc).webkitLineClamp, 10) || 0 : 0,
+        least = document.querySelector(".screen--1bit, .screen--2bit") ? 3 : 0;
+    while (nextOver() && clamp > least) { --clamp; if (clamp) desc.style.webkitLineClamp = clamp; else desc.hidden = true; }
+    if (nextOver()) { if (desc) { desc.style.webkitLineClamp = ""; desc.hidden = false; } side.insertBefore(next, side.firstChild); }
     var over = function () { var last = list.lastElementChild; return last && last.getBoundingClientRect().bottom > list.getBoundingClientRect().bottom + 1; };
     if (!over()) return;
     more.hidden = false; more.textContent = "+ more";
