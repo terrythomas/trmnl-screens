@@ -4,7 +4,7 @@ Custom e-ink dashboard screens for [TRMNL](https://usetrmnl.com) devices, served
 
 The first screen is the **Media screen**: what to keep watching from Plex, what is airing in Sonarr, and which Radarr movies are in theaters or just out on streaming. Theatrical dates for your country come from TMDB's public release pages; no TMDB account is needed. It is laid out for the TRMNL X, and the OG gets a text-only version of the same screen.
 
-The **Calendar screen** shows the meeting you're in and how long it has left (or how long until the next one), what's next, and the rest of today with free blocks and conflicts marked. An iOS Shortcut pushes the events from the phone's calendar, so it works with calendars no server can reach. It is laid out for the OG. See [Calendar screen](#calendar-screen).
+The **Calendar screen** shows the meeting you're in and how long it has left (or how long until the next one), what's next, and the rest of today with free blocks and conflicts marked. An iOS Shortcut pushes the events from the phone's calendar, so it works with calendars no server can reach. It is laid out for the OG; the X gets the same layout with more room. See [Calendar screen](#calendar-screen).
 
 ## Setup
 
