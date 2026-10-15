@@ -317,7 +317,7 @@ Pushes the events that haven't ended, through tomorrow, to the screen's LaraPape
 								<key>Values</key>
 								<dict>
 									<key>Number</key>
-									<integer>2</integer>
+									<string>2</string>
 									<key>Unit</key>
 									<integer>8192</integer>
 								</dict>
@@ -1233,7 +1233,7 @@ added once by checking the names so far, one per line.</string>
 								<key>Values</key>
 								<dict>
 									<key>Number</key>
-									<integer>2</integer>
+									<string>2</string>
 									<key>Unit</key>
 									<integer>16</integer>
 								</dict>

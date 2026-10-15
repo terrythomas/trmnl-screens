@@ -108,9 +108,9 @@ FILTER = {
         "WFContentPredicateBoundedDate": False,
         "WFActionParameterFilterTemplates": [
             # By end date, so the meeting in progress stays in and finished ones drop out. Tomorrow's events
-            # come along too; the template shows only today's. Unit 16 is days (NSCalendarUnitDay).
+            # come along too; the template shows only today's. Unit 16 is days; Number must be text or iOS shows its default, 7.
             {"Operator": 1000, "Property": "End Date", "Removable": True,  # is in the next 2 days
-             "Values": {"Number": 2, "Unit": 16}},
+             "Values": {"Number": "2", "Unit": 16}},
         ],
     },
     "WFSerializationType": "WFContentPredicateTableTemplate",
@@ -172,7 +172,7 @@ UPCOMING = {
         "WFActionParameterFilterTemplates": [
             # An open-ended "Start Date is after now" found nothing on a real phone; bound it.
             {"Operator": 1000, "Property": "Start Date", "Removable": True,  # is in the next 2 weeks
-             "Values": {"Number": 2, "Unit": 8192}},
+             "Values": {"Number": "2", "Unit": 8192}},
             {"Operator": 2, "Property": "End Date", "Removable": True,  # is after now, as in FILTER
              "Values": {"Date": attachment({"Type": "CurrentDate"})}},
         ],
