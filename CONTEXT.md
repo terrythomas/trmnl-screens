@@ -107,6 +107,12 @@ _Avoid_: Current meeting
 The first event starting after Now.
 _Avoid_: Up next, upcoming
 
+**Later**:
+The agenda after Next, on one line, in the focus view.
+
+**Focus view**:
+The Calendar screen's layout on the X for a light day: Now and Next at full width, then Later. Used when the agenda would fill less than half its column; busier days keep the two columns.
+
 **Reply**:
 Your answer to an invitation. **Pending** (not answered yet) gets a prominent badge, **tentative** a light "maybe" mark, accepted none. Declined events are hidden. Events without attendees have no reply.
 _Avoid_: RSVP, response, status
