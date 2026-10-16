@@ -1,0 +1,105 @@
+{%- comment -%}
+Calendar: the day worked out from the payload, shared by every layout (LaraPaper puts this file in front of each one).
+Payload contract: docs/calendar-sync.md. Vocabulary: CONTEXT.md.
+Everything is worked out against the render time (preview_now in fixtures), as epoch seconds;
+times are shown by adding the user's UTC offset and formatting as UTC.
+{%- endcomment -%}
+{%- assign now_s = preview_now | default: "now" | date: "%s" | plus: 0 -%}
+{%- comment -%} Show times in the phone's zone: the offset synced_at carries ("-04:00"), else the LaraPaper user's. {%- endcomment -%}
+{%- assign off = trmnl.user.utc_offset | default: 0 | plus: 0 -%}
+{%- assign tz = synced_at | slice: -6, 6 -%}
+{%- assign tz_sign = tz | slice: 0 -%}
+{%- if synced_at != blank and tz_sign == "-" or synced_at != blank and tz_sign == "+" -%}
+  {%- assign tz_h = tz | slice: 1, 2 | plus: 0 -%}{%- assign tz_m = tz | slice: 4, 2 | plus: 0 -%}
+  {%- assign off = tz_h | times: 3600 | plus: 0 -%}{%- assign tz_m = tz_m | times: 60 -%}{%- assign off = off | plus: tz_m -%}
+  {%- if tz_sign == "-" -%}{%- assign off = off | times: -1 -%}{%- endif -%}
+{%- elsif synced_at != blank and tz contains "Z" -%}{%- assign off = 0 -%}
+{%- endif -%}
+{%- assign sod = now_s | plus: off | modulo: 86400 -%}
+{%- assign today0_s = now_s | minus: sod -%}
+{%- assign midnight_s = today0_s | plus: 86400 -%}
+{%- assign cf = trmnl.plugin_settings.custom_fields_values -%}
+{%- assign wd = cf.workday_start | default: "9:00" | split: ":" -%}
+{%- assign wd_start_s = wd[0] | times: 3600 | plus: today0_s -%}{%- assign m = wd[1] | times: 60 -%}{%- assign wd_start_s = wd_start_s | plus: m -%}
+{%- assign wd = cf.workday_end | default: "17:00" | split: ":" -%}
+{%- assign wd_end_s = wd[0] | times: 3600 | plus: today0_s -%}{%- assign m = wd[1] | times: 60 -%}{%- assign wd_end_s = wd_end_s | plus: m -%}
+
+{%- comment -%} The agenda: timed, not declined, not over, starting before midnight. All-day events go on their own line. {%- endcomment -%}
+{%- comment -%} LaraPaper's engine throws on sorting or doing sums with nothing, hence the guards here and below. {%- endcomment -%}
+{%- assign evs = events -%}{%- if events -%}{%- assign evs = events | sort: "start" -%}{%- endif -%}
+{%- assign keep = "" -%}{%- assign allday = "" -%}{%- assign keep_n = 0 -%}
+{%- for e in evs -%}
+  {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}
+  {%- assign rp = e.reply | downcase -%}
+  {%- if rp == "declined" or en <= now_s or s >= midnight_s -%}{%- continue -%}{%- endif -%}
+  {%- assign ad = e.all_day | append: "" | downcase -%}
+  {%- if ad == "true" or ad == "yes" or ad == "1" -%}{%- assign allday = allday | append: forloop.index0 | append: "," -%}
+  {%- else -%}{%- assign keep = keep | append: forloop.index0 | append: "," -%}{%- assign keep_n = keep_n | plus: 1 -%}{%- endif -%}
+{%- endfor -%}
+{%- assign keep = keep | split: "," -%}{%- assign allday = allday | split: "," -%}
+
+{%- comment -%}
+Conflicts: overlapping events chain into one cluster ("2,3;5;6"), shown side by side.
+shortcut: one long event overlapping several others chains them all into one cluster; split by pairwise overlap if that happens in practice.
+{%- endcomment -%}
+{%- assign clusters = "" -%}{%- assign cl_end = 0 -%}
+{%- for k in keep -%}{%- if k == "" -%}{%- continue -%}{%- endif -%}
+  {%- assign i = k | plus: 0 -%}{%- assign e = evs[i] -%}
+  {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}
+  {%- if clusters != "" and s < cl_end -%}
+    {%- assign clusters = clusters | append: "," | append: i -%}{%- if en > cl_end -%}{%- assign cl_end = en -%}{%- endif -%}
+  {%- else -%}
+    {%- if clusters != "" -%}{%- assign clusters = clusters | append: ";" -%}{%- endif -%}
+    {%- assign clusters = clusters | append: i -%}{%- assign cl_end = en -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign clusters = clusters | split: ";" -%}
+
+{%- comment -%}
+Now: the cluster in progress, unless it ends within 5 minutes (it hands the hero to Next).
+Next: the first cluster after that. Each cluster's span is "start-end" in cl_spans.
+{%- endcomment -%}
+{%- assign now_ci = -1 -%}{%- assign next_ci = -1 -%}{%- assign cl_spans = "" -%}
+{%- for c in clusters -%}{%- if c == "" -%}{%- continue -%}{%- endif -%}
+  {%- assign ids = c | split: "," -%}{%- assign c_s = 9999999999 -%}{%- assign c_e = 0 -%}
+  {%- for k in ids -%}{%- assign i = k | plus: 0 -%}
+    {%- assign s = evs[i].start | date: "%s" | plus: 0 -%}{%- assign en = evs[i].end | date: "%s" | plus: 0 -%}
+    {%- if s < c_s -%}{%- assign c_s = s -%}{%- endif -%}{%- if en > c_e -%}{%- assign c_e = en -%}{%- endif -%}
+  {%- endfor -%}
+  {%- assign cl_spans = cl_spans | append: c_s | append: "-" | append: c_e | append: ";" -%}
+  {%- assign left = c_e | minus: now_s -%}
+  {%- if c_s <= now_s and left > 300 and now_ci == -1 -%}{%- assign now_ci = forloop.index0 -%}
+  {%- elsif c_s > now_s and next_ci == -1 -%}{%- assign next_ci = forloop.index0 -%}
+  {%- elsif c_s <= now_s and left <= 300 and next_ci == -1 -%}{%- comment -%} handing over: skipped {%- endcomment -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign cl_spans = cl_spans | split: ";" -%}
+
+{%- comment -%} Free blocks: gaps of more than 30 minutes inside the workday, from now on. Stored as "start-end;". {%- endcomment -%}
+{%- assign free = "" -%}{%- assign cur = now_s -%}{%- if wd_start_s > cur -%}{%- assign cur = wd_start_s -%}{%- endif -%}
+{%- for sp in cl_spans -%}{%- if sp == "" -%}{%- continue -%}{%- endif -%}
+  {%- assign p = sp | split: "-" -%}{%- assign c_s = p[0] | plus: 0 -%}{%- assign c_e = p[1] | plus: 0 -%}
+  {%- assign gap_end = c_s -%}{%- if gap_end > wd_end_s -%}{%- assign gap_end = wd_end_s -%}{%- endif -%}
+  {%- assign gap = gap_end | minus: cur -%}
+  {%- if gap > 1800 -%}{%- assign free = free | append: cur | append: "-" | append: gap_end | append: ";" -%}{%- endif -%}
+  {%- if c_e > cur -%}{%- assign cur = c_e -%}{%- endif -%}
+{%- endfor -%}
+{%- comment -%} With no events at all there is nothing to be free between. {%- endcomment -%}
+{%- assign gap = wd_end_s | minus: cur -%}{%- if keep_n == 0 -%}{%- assign gap = 0 -%}{%- endif -%}
+{%- if gap > 1800 -%}{%- assign free = free | append: cur | append: "-" | append: wd_end_s | append: ";" -%}{%- endif -%}
+{%- assign free = free | split: ";" -%}
+
+{%- comment -%} The rest of the day after Next, in time order: "start|C|cluster index" or "start|F|end". {%- endcomment -%}
+{%- assign rest = "" -%}
+{%- for sp in cl_spans -%}{%- if sp == "" -%}{%- continue -%}{%- endif -%}
+  {%- if forloop.index0 > next_ci and next_ci != -1 -%}{%- assign p = sp | split: "-" -%}{%- assign rest = rest | append: p[0] | append: "|C|" | append: forloop.index0 | append: ";" -%}{%- endif -%}
+{%- endfor -%}
+{%- comment -%} Free time before Next belongs to the hero, not the rest of the day. {%- endcomment -%}
+{%- assign pre_free = "" -%}{%- assign next_s = 0 -%}{%- if next_ci != -1 -%}{%- assign p = cl_spans[next_ci] | split: "-" -%}{%- assign next_s = p[0] | plus: 0 -%}{%- endif -%}
+{%- for f in free -%}{%- if f == "" -%}{%- continue -%}{%- endif -%}{%- assign p = f | split: "-" -%}{%- assign f_s = p[0] | plus: 0 -%}{%- if f_s < next_s -%}{%- assign pre_free = f -%}{%- continue -%}{%- endif -%}{%- assign rest = rest | append: p[0] | append: "|F|" | append: p[1] | append: ";" -%}{%- endfor -%}
+{%- assign rest = rest | split: ";" | sort -%}
+
+{%- comment -%} Sync: whether the last push was today. The screen only leaves the playlist on an empty agenda after a sync today. {%- endcomment -%}
+{%- assign sync_s = 0 -%}{%- if synced_at != blank -%}{%- assign sync_s = synced_at | date: "%s" | plus: 0 -%}{%- endif -%}
+{%- assign synced_today = false -%}{%- if sync_s >= today0_s -%}{%- assign synced_today = true -%}{%- endif -%}
+{%- capture icon_alert -%}<svg viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 3L2 20.5h20z"/><path d="M12 10v4.5M12 17.5v.5"/></svg>{%- endcapture -%}
