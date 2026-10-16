@@ -104,6 +104,8 @@ The Calendar screen's events come from an iOS Shortcut, not from the collector (
 
 With `CALENDAR_WEBHOOK_UUID` set, the collector refreshes the screen every 15 minutes without touching the events, so Now and Next stay current between syncs. A deploy clears the stored events, so run the Shortcut once afterwards.
 
+The Calendar screen also has a `half_vertical` layout for LaraPaper mashups: just the agenda, with Now and Next marked. The Media screen is full-screen only.
+
 ### Updating
 
 ```sh

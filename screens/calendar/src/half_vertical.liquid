@@ -1,0 +1,129 @@
+{%- comment -%}
+Calendar, half_vertical (for mashups). The day's data comes from shared.liquid.
+Just the agenda: Now and Next are ordinary rows, marked, followed by the rest of the day.
+No TRMNL_SKIP_DISPLAY here: in a mashup it would hide the other plugins too.
+Classes are calh-* so they can't clash with the plugin sharing the screen.
+{%- endcomment -%}
+{%- comment -%} Rows in time order, "start|kind|x": N = Now cluster, X = Next cluster, C = later cluster (x = cluster index), F = free (x = end). {%- endcomment -%}
+{%- assign rows = "" -%}
+{%- if now_ci != -1 -%}{%- assign p = cl_spans[now_ci] | split: "-" -%}{%- assign rows = rows | append: p[0] | append: "|N|" | append: now_ci | append: ";" -%}{%- endif -%}
+{%- if pre_free != "" -%}{%- assign p = pre_free | split: "-" -%}{%- assign rows = rows | append: p[0] | append: "|F|" | append: p[1] | append: ";" -%}{%- endif -%}
+{%- if next_ci != -1 -%}{%- assign p = cl_spans[next_ci] | split: "-" -%}{%- assign rows = rows | append: p[0] | append: "|X|" | append: next_ci | append: ";" -%}{%- endif -%}
+{%- for r in rest -%}{%- if r == "" -%}{%- continue -%}{%- endif -%}{%- assign rows = rows | append: r | append: ";" -%}{%- endfor -%}
+{%- assign none_left = false -%}{%- if rows == "" -%}{%- assign none_left = true -%}{%- endif -%}
+{%- assign rows = rows | split: ";" -%}
+<style>
+  .calh { gap: 8px; align-items: stretch !important; justify-content: flex-start !important; padding: 4px 0 8px; }
+  .calh-title, .calh-pill, .calh-t, .calh-more, .calh-empty { font-family: var(--title-font-family); }
+  .calh-meta, .calh-date, .calh-ad { font-family: var(--description-font-family); }
+  .calh-top { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+  .calh-date { font-size: 17px; font-weight: 700; }
+  .calh-ad { font-size: 13px; border: 2px solid #000; border-radius: 6px; padding: 0 6px 1px; }
+  .calh-list { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .calh-item { flex-shrink: 0; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; align-items: baseline; border-bottom: 1px solid #000; padding: 5px 0 6px; }
+  .calh-list > .calh-item:first-child { padding-top: 0; }
+  .calh-t { font-size: 13px; font-weight: 700; text-align: right; }
+  .calh-line { display: flex; align-items: center; gap: 5px; min-width: 0; }
+  .calh-line + .calh-line { margin-top: 3px; }
+  .calh-lane + .calh-lane { margin-top: 5px; }
+  .calh-title { font-size: 16px; font-weight: 700; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .calh-meta { font-size: 13px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .calh-pill { flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border: 2px solid #000; border-radius: 5px; padding: 0 4px 1px; line-height: 1.35; }
+  .calh-pill--solid { background: #000; color: #fff; }
+  .calh-hatch { justify-self: start; border-radius: 5px; background: repeating-linear-gradient(-45deg, #000 0 1px, #fff 1px 7px); padding: 2px; display: flex; }
+  .calh-hatch span { background: #fff; border: 2px solid #000; border-radius: 4px; padding: 0 6px 1px; font-family: var(--title-font-family); font-weight: 700; font-size: 13px; }
+  .calh-more { flex-shrink: 0; font-size: 14px; font-weight: 700; }
+  .calh-empty { font-size: 24px; font-weight: 700; }
+  .calh-x { display: none; }
+
+  /* The X: larger type and attendee names. Sizes are CSS px at the X's 1.8 scale (this half is about 520×780). */
+  .screen:not(.screen--1bit, .screen--2bit) .calh { gap: 16px; padding: 8px 0 14px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-date { font-size: 26px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-ad { font-size: 18px; border-radius: 8px; padding: 1px 9px 2px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-item { grid-template-columns: 70px minmax(0, 1fr); gap: 14px; padding: 11px 0 12px; border-bottom-width: 2px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-t { font-size: 21px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-line { gap: 9px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-line + .calh-line { margin-top: 6px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-lane + .calh-lane { margin-top: 10px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-title { font-size: 27px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-meta { font-size: 19px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-pill { font-size: 14px; border-radius: 7px; padding: 1px 7px 2px; gap: 5px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-hatch { border-radius: 8px; padding: 3px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-hatch span { font-size: 19px; border-radius: 6px; padding: 1px 10px 2px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-more { font-size: 20px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-empty { font-size: 38px; }
+  .screen:not(.screen--1bit, .screen--2bit) .calh-x { display: block; }
+</style>
+
+<div class="view view--half_vertical">
+<div class="layout layout--col calh">
+  <div class="calh-top">
+    <span class="calh-date">{{ now_s | plus: off | date: "%a, %b %-d" }}</span>
+    {%- for k in allday -%}{%- if k == "" -%}{%- continue -%}{%- endif -%}{%- assign i = k | plus: 0 -%}<span class="calh-ad">{{ evs[i].title }}</span>{%- endfor -%}
+    {%- if synced_at == blank -%}<span class="calh-pill calh-pill--solid">{{ icon_alert }} Not synced</span>
+    {%- elsif synced_today == false -%}<span class="calh-pill calh-pill--solid">{{ icon_alert }} Synced {{ sync_s | plus: off | date: "%a" }}</span>{%- endif -%}
+  </div>
+  <div class="calh-list">
+  {%- for r in rows -%}{%- if r == "" -%}{%- continue -%}{%- endif -%}
+    {%- assign p = r | split: "|" -%}{%- assign r_s = p[0] | plus: 0 -%}{%- assign kind = p[1] -%}
+    <div class="calh-item" data-kind="{{ kind }}">
+      <span class="calh-t">{{ r_s | plus: off | date: "%-I:%M" }}</span>
+    {%- if kind == "F" -%}
+      {%- assign gap = p[2] | plus: 0 | minus: r_s | divided_by: 60 -%}
+      <div class="calh-hatch"><span>Free · {% if gap >= 60 %}{{ gap | divided_by: 60 }}h {% endif %}{% assign mm = gap | modulo: 60 %}{% if mm > 0 %}{{ mm }}m{% endif %}</span></div>
+    {%- else -%}
+      {%- assign ci = p[2] | plus: 0 -%}{%- assign ids = clusters[ci] | split: "," -%}{%- assign n_ids = ids | size -%}
+      {%- assign sp = cl_spans[ci] | split: "-" -%}{%- assign c_s = sp[0] | plus: 0 -%}{%- assign c_e = sp[1] | plus: 0 -%}
+      <div>
+      {%- for k in ids -%}{%- assign i = k | plus: 0 -%}{%- assign e = evs[i] -%}
+        {%- assign s = e.start | date: "%s" | plus: 0 -%}{%- assign en = e.end | date: "%s" | plus: 0 -%}
+        <div class="calh-lane">
+          <div class="calh-line">
+            {%- if forloop.first and kind == "N" -%}<span class="calh-pill calh-pill--solid">Now</span>{%- elsif forloop.first and kind == "X" -%}<span class="calh-pill calh-pill--solid">Next</span>{%- endif -%}
+            {%- if forloop.first and n_ids > 1 -%}<span class="calh-pill calh-pill--solid">{{ icon_alert }}</span>{%- endif -%}
+            <span class="calh-title">{{ e.title }}</span>
+          </div>
+          <div class="calh-line">
+            {%- assign rp = e.reply | downcase -%}{%- if rp == "pending" -%}<span class="calh-pill calh-pill--solid">Reply?</span>{%- elsif rp == "tentative" -%}<span class="calh-pill">maybe</span>{%- endif -%}
+            <span class="calh-pill">{{ e.calendar }}</span>
+            <span class="calh-meta">{{ s | plus: off | date: "%-I:%M" }}–{{ en | plus: off | date: "%-I:%M" }}
+              {%- if forloop.first and kind == "N" -%}{%- assign m = c_e | minus: now_s | divided_by: 60 %} · {% if m >= 60 %}{{ m | divided_by: 60 }}h {% endif %}{{ m | modulo: 60 }}m left
+              {%- elsif forloop.first and kind == "X" -%}{%- assign m = c_s | minus: now_s | divided_by: 60 %} · in {% if m >= 60 %}{{ m | divided_by: 60 }}h {% endif %}{{ m | modulo: 60 }}m{%- endif -%}</span>
+          </div>
+          {%- comment -%} Names only on Now and Next, so more of the day fits. {%- endcomment -%}
+          {%- if e.attendees != blank and kind != "C" -%}{%- assign names = e.attendees | split: ", " -%}{%- assign a_n = names | size -%}
+          <div class="calh-meta calh-x" style="margin-top:4px">{% for a in names limit: 3 %}{{ a | split: "@" | first }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if a_n > 3 %} +{{ a_n | minus: 3 }}{% endif %}</div>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+      </div>
+    {%- endif -%}
+    </div>
+  {%- endfor -%}
+  {%- if none_left -%}<div class="calh-empty">Nothing left today</div>{%- endif -%}
+  </div>
+  <div class="calh-more" hidden></div>
+</div>
+<script>
+  /* Drop agenda rows that don't fit, and count the dropped events. */
+  (function () {
+    function fit() {
+      var list = document.querySelector(".calh-list"), more = document.querySelector(".calh-more");
+      var over = function () { var last = list.lastElementChild; return last && last.getBoundingClientRect().bottom > list.getBoundingClientRect().bottom + 1; };
+      if (!over()) return;
+      more.hidden = false; more.textContent = "+ more";
+      var hidden = 0;
+      while (list.lastElementChild && over()) {
+        if (list.lastElementChild.getAttribute("data-kind") !== "F") hidden++;
+        list.removeChild(list.lastElementChild);
+      }
+      if (hidden) more.textContent = "+" + hidden + " more today"; else more.hidden = true;
+    }
+    if (document.readyState === "complete") fit(); else window.addEventListener("load", fit);
+  })();
+</script>
+<div class="title_bar">
+  <span class="title">Calendar</span>
+  <span class="instance">{% if synced_at != blank %}synced {{ sync_s | plus: off | date: "%-I:%M %p" }}{% endif %}</span>
+</div>
+</div>
