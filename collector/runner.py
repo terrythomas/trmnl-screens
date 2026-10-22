@@ -4,7 +4,7 @@ import logging
 import time
 from typing import Callable, TypeVar
 
-from collector.config import Config
+from collector.config import Config, _key
 from collector.discovery import Collect, NextRun
 from collector.push import Push
 
@@ -21,7 +21,7 @@ def enabled_screens(screens: dict[str, T], config: Config) -> dict[str, T]:
     enabled = {}
     for name, screen in screens.items():
         if config.webhook_url(name) is None:
-            log.info("screen %s: off (set %s_WEBHOOK_UUID to enable it)", name, name.upper())
+            log.info("screen %s: off (set %s_WEBHOOK_UUID to enable it)", name, _key(name).upper())
         else:
             enabled[name] = screen
     return enabled
@@ -46,7 +46,7 @@ def run_tick(
     for name, collect in screens.items():
         url = config.webhook_url(name)
         if url is None:
-            log.warning("screen %s: no %s_WEBHOOK_UUID set, skipping", name, name.upper())
+            log.warning("screen %s: no %s_WEBHOOK_UUID set, skipping", name, _key(name).upper())
             results[name] = False
             continue
         try:
