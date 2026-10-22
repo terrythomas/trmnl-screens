@@ -27,10 +27,14 @@ LOGO_HEIGHTS, ICON_HEIGHTS = (32, 64), (20, 30)
 
 # Channel icons are flat marks, so one threshold suits them all (approved mock-ups).
 ICON_THRESHOLD = 150
-# A logo falls back to the device's dithering when more than this share of its inked
-# pixels is mid-gray, or of its 1-bit image is black.
-MIDTONE_SHARE = 0.5
-BLACK_SHARE = 0.75
+# A logo falls back to the device's dithering when it is built from mid-tones, or when more
+# than BLACK_SHARE of its 1-bit image is black. Built from mid-tones means both: its grays
+# don't split cleanly into dark and light (Otsu separability, 1 for two tones, 0.75 for a
+# gradient), and they are shaded rather than flat (share of inked pixels in the 8 most
+# common grays). Flat logos of three or more tones split poorly but still threshold well.
+SEPARABILITY = 0.85
+FLATNESS = 0.85
+BLACK_SHARE = 0.85
 
 # Keyed by team ("league-abbr") or channel name: a fixed 1-bit threshold, or None to
 # force the fallback, for the few images the automatic choice gets wrong.
@@ -95,7 +99,7 @@ def convert(data: bytes, kind: str, override: int | None | str = "auto") -> Imag
     gray = _uri(_fit(g, box).quantize(8))
     if override is None:
         return Images(gray, None, None)
-    if override == "auto" and kind == "logo" and _midtone_share(g) > MIDTONE_SHARE:
+    if override == "auto" and kind == "logo" and _otsu(g)[1] < SEPARABILITY and _flatness(g) < FLATNESS:
         return Images(gray, None, None)
     threshold = ICON_THRESHOLD if override == "auto" and kind == "icon" else override
     return Images(gray, *(_onebit(g, h, threshold) for h in heights))
@@ -129,10 +133,9 @@ def _fit(g: Image.Image, box: tuple[int, int]) -> Image.Image:
     return g.resize((max(1, round(g.width * scale)), max(1, round(g.height * scale))), Image.LANCZOS)
 
 
-def _midtone_share(g: Image.Image) -> float:
-    hist = g.histogram()
-    inked = sum(hist[:208])
-    return sum(hist[48:208]) / inked if inked else 0
+def _flatness(g: Image.Image) -> float:
+    inked = g.histogram()[:250]
+    return sum(sorted(inked)[-8:]) / sum(inked) if sum(inked) else 1.0
 
 
 def _onebit(g: Image.Image, height: int, threshold: int | str) -> str | None:
@@ -140,17 +143,19 @@ def _onebit(g: Image.Image, height: int, threshold: int | str) -> str | None:
     big = g.resize((max(4, round(g.width * height * 4 / g.height)), height * 4), Image.LANCZOS)
     small = big.resize((big.width // 4, height), Image.BOX)
     auto = threshold == "auto"
-    t = _otsu(small) if auto else threshold
+    t = _otsu(small)[0] if auto else threshold
     bits = small.point(lambda v: 0 if v < t else 255).convert("1")
     if auto and bits.histogram()[0] > BLACK_SHARE * bits.width * bits.height:
         return None  # mostly solid black: the device's dithering keeps more of it
     return _uri(bits)
 
 
-def _otsu(g: Image.Image) -> int:
-    """The threshold that best splits the image into dark and light (Otsu's method)."""
+def _otsu(g: Image.Image) -> tuple[int, float]:
+    """The threshold that best splits the image into dark and light (Otsu's method), and how
+    much of the image's variance that split explains."""
     hist = g.histogram()
     total, total_sum = sum(hist), sum(i * n for i, n in enumerate(hist))
+    variance = sum(i * i * n for i, n in enumerate(hist)) / total - (total_sum / total) ** 2
     best, best_t, count, dark_sum = -1.0, 128, 0, 0
     for t in range(255):
         count += hist[t]
@@ -160,7 +165,7 @@ def _otsu(g: Image.Image) -> int:
             spread = count * light * (dark_sum / count - (total_sum - dark_sum) / light) ** 2
             if spread > best:
                 best, best_t = spread, t + 1
-    return best_t
+    return best_t, (best / total**2 / variance if variance > 0 else 1.0)
 
 
 def _uri(im: Image.Image) -> str:

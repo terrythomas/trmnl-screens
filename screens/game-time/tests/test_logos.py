@@ -127,6 +127,17 @@ def test_midtone_logo_gets_no_onebit(tmp_path):
     assert logo.onebit is None and logo.onebit_big is None
 
 
+def test_flat_midgray_logo_keeps_onebit(tmp_path):
+    """Three flat tones split poorly into two, but threshold cleanly; only shaded tones fall back."""
+    im = Image.new("RGBA", (300, 200), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.ellipse((0, 0, 299, 199), fill=(20, 30, 90, 255))
+    d.ellipse((30, 30, 269, 169), fill=(150, 150, 150, 255))
+    d.rectangle((120, 60, 180, 140), fill=(255, 255, 255, 255))
+    logo = store(tmp_path, png(im)).logo("nfl-aaa", URL, NOW)
+    assert logo.onebit and logo.onebit_big
+
+
 def test_override_fixes_threshold(tmp_path):
     logo = store(tmp_path, gradient(), overrides={"nfl-aaa": 128}).logo("nfl-aaa", URL, NOW)
     im = decode(logo.onebit).convert("L")
