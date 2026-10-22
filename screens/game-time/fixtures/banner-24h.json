@@ -1,0 +1,49 @@
+{
+  "preview_now": "2026-10-23T09:00:00-04:00",
+  "updated_at": "2026-10-23T09:00:00-04:00",
+  "games": [
+    {
+      "league": "nba",
+      "start": "2026-10-22T19:30:00-04:00",
+      "local_date": "2026-10-22",
+      "state": "final",
+      "status": null,
+      "followed": {
+        "abbr": "RVT",
+        "name": "Barges",
+        "logo": null,
+        "score": 104,
+        "home": true
+      },
+      "opponent": {
+        "abbr": "SLT",
+        "name": "Comets",
+        "logo": null,
+        "score": 99,
+        "home": false
+      },
+      "both_followed": false,
+      "channels": [
+        {
+          "name": "Regional Network",
+          "icon": false
+        }
+      ],
+      "channels_incomplete": false,
+      "stale": false,
+      "featured": false
+    }
+  ],
+  "logos": {},
+  "logos1": {},
+  "logos1h": {},
+  "icons": {},
+  "icons1": {},
+  "icons1h": {},
+  "errors": [
+    {
+      "source": "espn-nba",
+      "since": "2026-10-22T08:00:00-04:00"
+    }
+  ]
+}

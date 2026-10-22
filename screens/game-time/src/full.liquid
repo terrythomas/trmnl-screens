@@ -25,16 +25,21 @@ Every size is calc(var(--z) * Npx): --k scales rows by game count, --u by device
 Today: games starting today, plus any still live that started yesterday. Tomorrow: games starting tomorrow.
 Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the last comma, so loops skip it.
 {%- endcomment -%}
-{%- assign t_ids = "" -%}{%- assign m_ids = "" -%}{%- assign t_n = 0 -%}{%- assign m_n = 0 -%}
+{%- assign t_ids = "" -%}{%- assign m_ids = "" -%}{%- assign t_n = 0 -%}{%- assign m_n = 0 -%}{%- assign stale_lgs = "" -%}
 {%- for g in games -%}
   {%- if g.local_date == today or g.local_date == yesterday and g.state == "live" -%}
     {%- assign t_ids = t_ids | append: forloop.index0 | append: "," -%}{%- assign t_n = t_n | plus: 1 -%}
   {%- elsif g.local_date == tomorrow -%}
     {%- assign m_ids = m_ids | append: forloop.index0 | append: "," -%}{%- assign m_n = m_n | plus: 1 -%}
+  {%- else -%}{%- continue -%}
   {%- endif -%}
+  {%- if g.stale -%}{%- assign stale_lgs = stale_lgs | append: g.league | append: "," -%}{%- endif -%}
 {%- endfor -%}
 {%- assign total = t_n | plus: m_n -%}
-{%- if total == 0 -%}<script>window.TRMNL_SKIP_DISPLAY = true</script>{%- endif -%}
+{%- comment -%} An empty screen leaves the playlist, unless the error banner has been up 24 hours: then a broken collector shows. {%- endcomment -%}
+{%- assign err_up = 0 -%}
+{%- for e in errors -%}{%- assign up = e.since | date: "%s" | plus: 0 -%}{%- assign up = now_s | minus: up -%}{%- if up > err_up -%}{%- assign err_up = up -%}{%- endif -%}{%- endfor -%}
+{%- if total == 0 and err_up < 86400 -%}<script>window.TRMNL_SKIP_DISPLAY = true</script>{%- endif -%}
 {%- comment -%} Rows grow to fill the height: k = 1.25 - 0.1 x (games - 5), never above 1.25. {%- endcomment -%}
 {%- assign k = total | minus: 5 | times: 0.1 -%}{%- assign k = 1.25 | minus: k -%}{%- if k > 1.25 -%}{%- assign k = 1.25 -%}{%- endif -%}
 <style>
@@ -61,6 +66,11 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
   .gt-chs { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px calc(var(--z) * 14px); }
   .gt-chtxt { white-space: nowrap; font-size: calc(var(--z) * 16px); font-weight: 700; border: 2px solid #000; border-radius: 6px; padding: 2px 8px; }
   .gt-dim { opacity: .55; }
+  /* Error banner: one black pill per failing source, as on the Media screen */
+  .gt-errs { display: flex; gap: 12px; flex-wrap: wrap; }
+  .gt-err { display: inline-flex; gap: 10px; align-items: center; background: #000; color: #fff; font-size: 22px; font-weight: 700; border-radius: 9px; padding: 4px 16px 5px 12px; }
+  .gt-err .why { font-family: var(--description-font-family); font-weight: 400; }
+  .gt-stale { font-size: calc(var(--z) * 13px); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border: 1.5px solid #000; border-radius: 5px; padding: 0 6px 1px; margin-top: 4px; }
   /* A live game is framed, with a larger score, so it stands out */
   .gt-row.live { border: calc(var(--u) * 3px) solid #000 !important; border-radius: calc(var(--u) * 10px); padding-inline: calc(var(--z) * 10px); }
   .gt-row.live + .gt-row { border-top: 0; }
@@ -73,6 +83,9 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
   :is(.screen--1bit, .screen--2bit) :is(.gt-lg, .gt-chtxt) { font-size: max(10px, calc(var(--z) * 14px)); }
   :is(.screen--1bit, .screen--2bit) .gt-sub { font-size: max(11px, calc(var(--z) * 16px)); }
   :is(.screen--1bit, .screen--2bit) .gt-sub .gt-live { font-size: 10px; }
+  :is(.screen--1bit, .screen--2bit) .gt-errs { gap: 6px; }
+  :is(.screen--1bit, .screen--2bit) .gt-err { font-size: 14px; gap: 6px; border-radius: 6px; padding: 2px 10px 3px 8px; }
+  :is(.screen--1bit, .screen--2bit) .gt-stale { font-size: 10px; border-width: 1px; border-radius: 3px; margin-top: 1px; padding: 0 4px; }
   :is(.screen--1bit, .screen--2bit) .gt-row + .gt-row { border-top: 1px solid #000; }
   /* The OG is too narrow for wrapped channels: they keep one line and take the width that's left */
   :is(.screen--1bit, .screen--2bit) .gt-row { grid-template-columns: calc(var(--z) * 40px) calc(var(--z) * 300px) calc(var(--z) * 200px) minmax(0, 1fr); min-height: 0; overflow: hidden; }
@@ -85,6 +98,23 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
 
 <div class="view view--full">
 <div class="layout"><div class="gt" style="--k: {{ k }}">
+  {%- assign err_n = errors | size -%}
+  {%- if err_n > 0 -%}
+  <div class="gt-errs">
+    {%- for e in errors -%}
+    {%- assign since_s = e.since | date: "%s" | plus: off -%}
+    {%- assign up = e.since | date: "%s" | plus: 0 -%}{%- assign up = now_s | minus: up -%}
+    {%- if up < 86400 -%}{%- assign since = since_s | date: "%-I:%M %p" -%}{%- else -%}{%- assign since = since_s | date: "%a %-I:%M %p" -%}{%- endif -%}
+    <span class="gt-err"><svg viewBox="0 0 24 24" width="1.1em" height="1.1em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-0.18em"><path d="M12 3L2 20.5h20z"/><path d="M12 10v4.5M12 17.5v.5"/></svg>
+      {%- if e.source contains "unknown-team:" -%}<span>Unknown team: {{ e.source | remove_first: "unknown-team:" }}</span>
+      {%- else -%}{%- assign lg = e.source | remove_first: "espn-" -%}
+        <span>{% if e.source contains "espn-" %}ESPN {{ lg | upcase }}{% else %}{{ e.source }}{% endif %} down since {{ since }}</span>
+        {%- if stale_lgs contains lg -%}<span class="why">· showing its last data</span>{%- endif -%}
+      {%- endif -%}
+    </span>
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
   {%- for sec in (1..2) -%}
     {%- if sec == 1 -%}{%- assign ids = t_ids | split: "," -%}{%- assign n = t_n -%}{%- assign label = "Today" -%}{%- assign day_s = local_s -%}
     {%- else -%}{%- assign ids = m_ids | split: "," -%}{%- assign n = m_n -%}{%- assign label = "Tomorrow" -%}{%- assign day_s = local_s | plus: 86400 -%}{%- endif -%}
@@ -106,9 +136,11 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
             {%- when "scheduled" -%}<span class="gt-time">{{ g.start | date: "%s" | plus: off | date: "%-I:%M %p" }}</span>
             {%- when "postponed" -%}<span class="gt-pp">Postponed</span>
             {%- when "live" -%}<span class="gt-score">{{ a.score }}–{{ b.score }}</span>
-              <span class="gt-sub"><span class="gt-live">LIVE</span>{% if age < 1200 %}{{ g.status }}{% endif %}</span>
+              {%- comment -%} A stale game's status is from an older push, so it reads plain "LIVE" too. {%- endcomment -%}
+              <span class="gt-sub"><span class="gt-live">LIVE</span>{% if age < 1200 and g.stale != true %}{{ g.status }}{% endif %}</span>
             {%- else -%}<span class="gt-score">{{ a.score }}–{{ b.score }}</span><span class="gt-sub">Final</span>
             {%- endcase -%}
+            {%- if g.stale -%}<span class="gt-stale">stale</span>{%- endif -%}
           </div>
           <div class="gt-chs">{%- for c in g.channels -%}<span class="gt-chtxt">{{ c.name }}</span>{%- endfor -%}</div>
         </div>
