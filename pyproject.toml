@@ -10,6 +10,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=9"]
+# Logo and channel-icon conversion; cairosvg needs the system cairo library.
+game-time = ["pillow>=12", "cairosvg>=2.8"]
 
 [build-system]
 requires = ["setuptools>=75"]
