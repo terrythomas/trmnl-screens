@@ -1,5 +1,7 @@
 """Game Time screen collector: builds the payload described in docs/specs/game-time-screen.md."""
 
+import json
+import logging
 import os
 from datetime import datetime, timedelta
 from functools import cache
@@ -14,6 +16,8 @@ from .channels import record_unknown
 from .games import games, parse_teams
 from .sources.espn import EspnError, EspnSource
 
+log = logging.getLogger(__name__)
+
 # Default minutes between runs; GAME_TIME_INTERVAL_MINUTES or INTERVAL_MINUTES override it.
 INTERVAL_MINUTES = 60
 
@@ -25,7 +29,7 @@ def collect() -> dict[str, Any]:
     followed = parse_teams(os.environ["GAME_TIME_TEAMS"])
     state_dir = Path(os.environ.get("STATE_DIR") or "state")
     espn = EspnSource()
-    teams = cache(espn.teams)  # one team list per league per run
+    teams = _team_lists(espn, state_dir / "game-time" / "teams.json", now)
     # One section per league, so a failing league shows its last good games while the others stay fresh.
     sections = {
         league: Section(f"espn-{league}", lambda league=league, abbrs=abbrs: _league(espn, league, abbrs, now))
@@ -66,6 +70,37 @@ def next_run_minutes(payload: dict[str, Any]) -> int | None:
 def _league(espn, league, abbrs, now):
     found = games(espn, {league: abbrs}, now)
     return {"games": found} if found else None
+
+
+def _team_lists(espn, path, now):
+    """Each league's ESPN team list, cached in `path` and fetched again once a day."""
+    try:
+        cached = json.loads(path.read_text())
+    except FileNotFoundError:
+        cached = {}
+    except ValueError:
+        log.warning("team list cache %s is unreadable, starting fresh", path.name)
+        cached = {}
+
+    @cache  # one lookup per league per run
+    def teams(league):
+        entry = cached.get(league)
+        if entry and now - datetime.fromisoformat(entry["fetched"]) < timedelta(days=1):
+            return set(entry["teams"])
+        try:
+            found = espn.teams(league)
+        except EspnError as e:
+            if not entry:
+                raise
+            # An old list still knows the followed teams; only no list at all counts as ESPN down.
+            log.warning("%s team list: %s; using the cached list", league, e)
+            return set(entry["teams"])
+        cached[league] = {"fetched": now.isoformat(timespec="seconds"), "teams": sorted(found)}
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(cached))
+        return found
+
+    return teams
 
 
 def _check_team(teams, league, abbr):

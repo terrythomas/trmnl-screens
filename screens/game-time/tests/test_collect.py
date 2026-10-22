@@ -1,6 +1,6 @@
 import importlib
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -25,6 +25,7 @@ class EmptyEspn:
 @pytest.fixture(autouse=True)
 def state_dir(monkeypatch, tmp_path):
     monkeypatch.setenv("STATE_DIR", str(tmp_path))
+    return tmp_path
 
 
 def test_collect_builds_the_payload_from_the_followed_teams(monkeypatch, tmp_path):
@@ -130,11 +131,58 @@ def test_an_unknown_team_is_reported_and_the_others_keep_working(monkeypatch):
     assert payload["errors"] == [{"source": "unknown-team:nba:xyz", "since": payload["updated_at"]}]
 
 
-def test_a_failing_team_list_is_an_espn_failure_not_an_unknown_team(monkeypatch):
-    class NoTeamsEspn(TonightEspn):
-        def teams(self, league):
-            raise espn.EspnError("ESPN returned HTTP 503")
+class CountingEspn(TonightEspn):
+    """Counts team-list requests; fails them when `teams_down` is set."""
+    teams_asked = 0
+    teams_down = False
 
+    def teams(self, league):
+        type(self).teams_asked += 1
+        if self.teams_down:
+            raise espn.EspnError("ESPN returned HTTP 503")
+        return super().teams(league)
+
+
+@pytest.fixture
+def counting(monkeypatch):
     monkeypatch.setenv("GAME_TIME_TEAMS", "nba:hbr")
-    monkeypatch.setattr(game_time, "EspnSource", NoTeamsEspn)
+    monkeypatch.setattr(game_time, "EspnSource", CountingEspn)
+    monkeypatch.setattr(CountingEspn, "teams_asked", 0)
+    return CountingEspn
+
+
+def cache_teams(state_dir, age, teams):
+    fetched = (datetime.now().astimezone() - age).isoformat(timespec="seconds")
+    path = state_dir / "game-time" / "teams.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"nba": {"fetched": fetched, "teams": teams}}))
+
+
+def test_a_fresh_team_list_is_read_from_the_cache(counting):
+    screen.collect()
+    payload = screen.collect()
+    assert counting.teams_asked == 1
+    assert payload["errors"] == []
+
+
+def test_an_expired_team_list_is_fetched_again(counting, state_dir):
+    cache_teams(state_dir, timedelta(days=1, minutes=1), ["MSA"])
+    payload = screen.collect()
+    assert counting.teams_asked == 1
+    assert payload["errors"] == []  # the new list has HBR
+    assert sorted(json.loads((state_dir / "game-time" / "teams.json").read_text())["nba"]["teams"]) == ["HBR", "MSA"]
+
+
+def test_a_failed_refresh_keeps_using_the_cached_team_list(counting, state_dir, monkeypatch):
+    cache_teams(state_dir, timedelta(days=3), ["HBR"])
+    monkeypatch.setattr(CountingEspn, "teams_down", True)
+    payload = screen.collect()
+    assert counting.teams_asked == 1
+    assert payload["errors"] == []
+    assert [g["stale"] for g in payload["games"]] == [False]
+
+
+def test_a_failed_refresh_with_no_cache_reports_the_league_down(counting, monkeypatch):
+    monkeypatch.setattr(CountingEspn, "teams_down", True)
+    # ESPN being down doesn't make the team unknown
     assert [e["source"] for e in screen.collect()["errors"]] == ["espn-nba"]
