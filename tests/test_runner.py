@@ -1,3 +1,7 @@
+import logging
+
+import pytest
+
 from collector.config import Config
 from collector.runner import enabled_screens, run_forever, run_tick
 
@@ -79,6 +83,41 @@ def test_a_failing_screen_asks_for_nothing():
     run_tick({"media": lambda: {}}, CONFIG, FakePush(fail_for=["media-uuid"]),
              next_runs={"media": lambda payload: 5}, sooner=sooner)
     assert sooner == {}
+
+
+@pytest.mark.parametrize("answer", [0, -5, "5", True, float("nan")])
+def test_a_bad_answer_keeps_the_interval_and_is_logged(answer, caplog):
+    sooner = {}
+    results = run_tick({"media": lambda: {}}, CONFIG, FakePush(), next_runs={"media": lambda payload: answer},
+                       sooner=sooner)
+    assert results == {"media": True}
+    assert sooner == {}
+    assert [r.levelname for r in caplog.records if "next_run_minutes" in r.getMessage()] == ["WARNING"]
+
+
+def test_no_answer_keeps_the_interval_without_a_warning(caplog):
+    sooner = {}
+    run_tick({"media": lambda: {}}, CONFIG, FakePush(), next_runs={"media": lambda payload: None}, sooner=sooner)
+    assert sooner == {}
+    assert not [r for r in caplog.records if r.levelno >= logging.WARNING]
+
+
+def test_an_answer_under_a_minute_is_raised_to_a_minute():
+    sooner = {}
+    run_tick({"media": lambda: {}}, CONFIG, FakePush(), next_runs={"media": lambda payload: 0.01}, sooner=sooner)
+    assert sooner == {"media": 60}
+
+
+def test_a_failing_hook_keeps_the_interval_and_the_push_counts(caplog):
+    def broken(payload):
+        raise KeyError("games")
+
+    push, sooner = FakePush(), {}
+    results = run_tick({"media": lambda: {}}, CONFIG, push, next_runs={"media": broken}, sooner=sooner)
+    assert results == {"media": True}
+    assert len(push.calls) == 1
+    assert sooner == {}
+    assert any("next_run_minutes" in r.getMessage() and r.exc_info for r in caplog.records)
 
 
 def test_a_screen_without_a_webhook_is_logged_once_as_off(caplog):

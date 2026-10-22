@@ -12,6 +12,9 @@ log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
+# The soonest a screen can ask to run again, so a bad answer can't keep the runner busy.
+MIN_NEXT_RUN_MINUTES = 1
+
 
 def enabled_screens(screens: dict[str, T], config: Config) -> dict[str, T]:
     """Keep the screens that have a webhook. A screen is opt-in: no webhook UUID means off."""
@@ -35,7 +38,7 @@ def run_tick(
     """Run each screen once. A failing screen is logged and never blocks the others.
 
     A screen with a next_runs entry is asked, after a successful push, when it wants to
-    run next; an answer in minutes goes into sooner, in seconds, for run_forever.
+    run next; a valid answer in minutes goes into sooner, in seconds, for run_forever.
     """
     merge_strategies = merge_strategies or {}
     next_runs = next_runs or {}
@@ -49,7 +52,6 @@ def run_tick(
         try:
             payload = collect()
             push(url, payload, merge_strategies.get(name))
-            minutes = next_runs[name](payload) if next_runs.get(name) else None
         except Exception:
             # A failed push is retried on the next tick (spec: empty and failure behaviour).
             log.exception("screen %s: collect or push failed", name)
@@ -57,9 +59,27 @@ def run_tick(
         else:
             log.info("screen %s: pushed", name)
             results[name] = True
-            if minutes is not None and sooner is not None:
-                sooner[name] = minutes * 60
+            if next_runs.get(name) and sooner is not None:
+                seconds = _asked_seconds(name, next_runs[name], payload)
+                if seconds is not None:
+                    sooner[name] = seconds
     return results
+
+
+def _asked_seconds(name: str, next_run: NextRun, payload: dict) -> float | None:
+    """The screen's answer in seconds, or None to keep its interval. Never fails the run."""
+    try:
+        minutes = next_run(payload)
+    except Exception:
+        log.exception("screen %s: next_run_minutes failed, keeping its interval", name)
+        return None
+    if minutes is None:
+        return None
+    # bool is an int, and "not > 0" also catches NaN.
+    if isinstance(minutes, bool) or not isinstance(minutes, (int, float)) or not minutes > 0:
+        log.warning("screen %s: next_run_minutes returned %r, keeping its interval", name, minutes)
+        return None
+    return max(minutes, MIN_NEXT_RUN_MINUTES) * 60
 
 
 def run_forever(
