@@ -139,6 +139,10 @@ _Avoid_: Lookahead, range
 One game on the screen: the followed team first, then "vs" (home) or "@" (away) and the opponent, with the start time and channels. When two followed teams meet, the game gets one row, away team "@" home team.
 _Avoid_: Matchup, card, fixture
 
+**Featured game**:
+A game shown large at the top of the screen on a quiet day (four games or fewer). One or two of today's games are featured: all of them if there are only one or two, otherwise the live ones, otherwise the next to start. A game tomorrow is never featured. On busier days every game is a game row.
+_Avoid_: Hero, spotlight game
+
 **Live**:
 A game that has started and is not yet final. It stays on the screen with its score and current period (quarter, half, inning, period, overtime) until the league calls it final; there is no assumed end time.
 _Avoid_: In progress, ongoing
@@ -164,7 +168,7 @@ A subscription that carries games outside a team's own market and blacks them ou
 _Avoid_: Streaming, league pass
 
 **Unknown channel**:
-A channel the screen has no icon for. Shown by name, and recorded once so an icon can be added later.
+A channel the screen doesn't recognise. Shown by name, and recorded once so it can be added later. A channel the screen knows but deliberately shows as text (one with no usable icon) is not unknown.
 _Avoid_: Missing logo
 
 ## Health
