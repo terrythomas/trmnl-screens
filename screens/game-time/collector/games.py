@@ -58,6 +58,7 @@ def _game(league: str, g: EspnGame, teams: set[str], tz: tzinfo | None) -> dict[
         "status": g.detail if state == "live" else None,
         "followed": _team(followed, scored),
         "opponent": _team(opponent, scored),
+        "both_followed": g.home.abbr in teams and g.away.abbr in teams,
         # shortcut: ESPN's names in source order, radio included; channel selection replaces this (#55).
         "channels": [] if state == "postponed" else [{"name": b.name, "icon": False} for b in g.broadcasts],
         "channels_incomplete": False,

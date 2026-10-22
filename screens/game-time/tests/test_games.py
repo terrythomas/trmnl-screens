@@ -70,6 +70,7 @@ def test_maps_a_scheduled_game_to_the_payload_contract():
         "status": None,
         "followed": {"abbr": "HBR", "name": "Hbr", "logo": None, "score": None, "home": False},
         "opponent": {"abbr": "MSA", "name": "Msa", "logo": None, "score": None, "home": True},
+        "both_followed": False,
         "channels": [{"name": "Harbor Sports Net", "icon": False}, {"name": "StreamCo", "icon": False}],
         "channels_incomplete": False,
         "stale": False,
@@ -108,6 +109,7 @@ def test_two_followed_teams_meeting_is_one_game_with_the_home_team_followed():
     [mapped] = run({("nba", TODAY): [meeting]}, {"nba": {"HBR", "PNE"}})
     assert (mapped["followed"]["abbr"], mapped["followed"]["home"]) == ("PNE", True)
     assert mapped["opponent"]["abbr"] == "HBR"
+    assert mapped["both_followed"] is True
 
 
 def test_a_game_on_two_scoreboards_is_one_game():

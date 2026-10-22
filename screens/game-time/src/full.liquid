@@ -97,14 +97,17 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
         {%- if g.followed.home -%}{%- assign sep = "vs" -%}{%- else -%}{%- assign sep = "@" -%}{%- endif -%}
         <div class="gt-row{% if g.state == 'final' %} gt-dim{% elsif g.state == 'live' %} live{% endif %}">
           <span class="gt-lg">{{ g.league }}</span>
-          <div class="gt-match"><span class="gt-abbr">{{ g.followed.abbr }}</span><span class="gt-sep">{{ sep }}</span><span class="gt-abbr">{{ g.opponent.abbr }}</span></div>
+          {%- comment -%} The row reads first, "vs" or "@", second. Two followed teams meeting read away "@" home; followed is the home team then. {%- endcomment -%}
+          {%- if g.both_followed -%}{%- assign a = g.opponent -%}{%- assign b = g.followed -%}{%- assign sep = "@" -%}
+          {%- else -%}{%- assign a = g.followed -%}{%- assign b = g.opponent -%}{%- endif -%}
+          <div class="gt-match"><span class="gt-abbr">{{ a.abbr }}</span><span class="gt-sep">{{ sep }}</span><span class="gt-abbr">{{ b.abbr }}</span></div>
           <div class="gt-stat">
             {%- case g.state -%}
             {%- when "scheduled" -%}<span class="gt-time">{{ g.start | date: "%s" | plus: off | date: "%-I:%M %p" }}</span>
             {%- when "postponed" -%}<span class="gt-pp">Postponed</span>
-            {%- when "live" -%}<span class="gt-score">{{ g.followed.score }}–{{ g.opponent.score }}</span>
+            {%- when "live" -%}<span class="gt-score">{{ a.score }}–{{ b.score }}</span>
               <span class="gt-sub"><span class="gt-live">LIVE</span>{% if age < 1200 %}{{ g.status }}{% endif %}</span>
-            {%- else -%}<span class="gt-score">{{ g.followed.score }}–{{ g.opponent.score }}</span><span class="gt-sub">Final</span>
+            {%- else -%}<span class="gt-score">{{ a.score }}–{{ b.score }}</span><span class="gt-sub">Final</span>
             {%- endcase -%}
           </div>
           <div class="gt-chs">{%- for c in g.channels -%}<span class="gt-chtxt">{{ c.name }}</span>{%- endfor -%}</div>

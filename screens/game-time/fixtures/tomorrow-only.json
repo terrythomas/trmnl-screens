@@ -22,6 +22,7 @@
         "score": null,
         "home": false
       },
+      "both_followed": false,
       "channels": [
         {
           "name": "Lakeshore TV",
@@ -52,6 +53,7 @@
         "score": null,
         "home": true
       },
+      "both_followed": false,
       "channels": [
         {
           "name": "National One",

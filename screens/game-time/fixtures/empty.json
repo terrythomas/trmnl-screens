@@ -22,6 +22,7 @@
         "score": 99,
         "home": false
       },
+      "both_followed": false,
       "channels": [
         {
           "name": "Regional Network",

@@ -22,6 +22,7 @@
         "score": 99,
         "home": false
       },
+      "both_followed": false,
       "channels": [
         {
           "name": "Regional Network",
@@ -52,6 +53,7 @@
         "score": 4,
         "home": true
       },
+      "both_followed": false,
       "channels": [
         {
           "name": "Harbor Sports Net",
@@ -82,6 +84,7 @@
         "score": null,
         "home": false
       },
+      "both_followed": false,
       "channels": [
         {
           "name": "Lakeshore TV",
@@ -112,6 +115,7 @@
         "score": null,
         "home": true
       },
+      "both_followed": false,
       "channels": [
         {
           "name": "StreamCo",
@@ -142,6 +146,7 @@
         "score": null,
         "home": false
       },
+      "both_followed": false,
       "channels": [
         {
           "name": "National One",
