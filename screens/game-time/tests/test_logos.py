@@ -1,19 +1,16 @@
 import base64
-import importlib.util
+import importlib
 import io
 import logging
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
 import httpx
 from PIL import Image, ImageDraw
 
-# Loaded by path: the logo store has no imports from the rest of the collector package.
-_spec = importlib.util.spec_from_file_location(
-    "game_time_logos", Path(__file__).resolve().parent.parent / "collector" / "logos.py"
-)
-logos = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(logos)
+from collector.discovery import discover_screens
+
+discover_screens()  # registers the screen packages so their submodules can be imported
+logos = importlib.import_module("trmnl_screens.game-time.collector.logos")
 
 NOW = datetime(2026, 1, 5, 12, 0, tzinfo=timezone.utc)
 URL = "https://img.example/team/aaa.png?token=SECRET"
