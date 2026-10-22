@@ -21,7 +21,7 @@ The phone pushing the day's events to the Calendar screen. Unlike a collector, i
 _Avoid_: Collector, companion
 
 **Device**:
-A physical TRMNL display: the **X** (large, 16 grays) or the **OG** (small, 1–2 bit). Each screen picks its primary device; the Media screen targets the X, the Calendar screen the OG.
+A physical TRMNL display: the **X** (large, 16 grays) or the **OG** (small, 1–2 bit). Every screen supports both. Each screen still picks its primary device, the one its design starts from; the Media screen targets the X, the Calendar screen the OG.
 
 ## Media screen
 
@@ -124,6 +124,52 @@ The hours free blocks are found in, 9:00 to 17:00 by default; both ends are plug
 **Free block**:
 A gap of more than 30 minutes with no events, between now and the end of the workday.
 _Avoid_: Free time, gap, availability
+
+## Game Time screen
+
+**Followed team**:
+A team the screen tracks, chosen in the collector's settings. Only games involving a followed team are shown.
+_Avoid_: Favorite team, my team
+
+**Game window**:
+Today and tomorrow, each from midnight to midnight in local time. A game belongs to the day it starts. The screen shows a Today section and a Tomorrow section, hides whichever is empty, and leaves the playlist when both are. A game that starts before midnight and is still live after it stays in Today.
+_Avoid_: Lookahead, range
+
+**Game row**:
+One game on the screen: the followed team first, then "vs" (home) or "@" (away) and the opponent, with the start time and channels. When two followed teams meet, the game gets one row, away team "@" home team.
+_Avoid_: Matchup, card, fixture
+
+**Featured game**:
+A game shown large at the top of the screen on a quiet day (four games or fewer). One or two of today's games are featured: all of them if there are only one or two, otherwise the live ones, otherwise the next to start. A game tomorrow is never featured. On busier days every game is a game row.
+_Avoid_: Hero, spotlight game
+
+**Live**:
+A game that has started and is not yet final. It stays on the screen with its score and current period (quarter, half, inning, period, overtime) until the league calls it final; there is no assumed end time.
+_Avoid_: In progress, ongoing
+
+**Final**:
+A game the league has called finished. Today's finals stay in the Today section with the final score.
+_Avoid_: Completed, result
+
+**Postponed**:
+A game in the game window that will not be played as scheduled. It stays in its section, marked postponed, with no channels.
+_Avoid_: Cancelled, delayed, rained out
+
+**Channel**:
+Anything a game can be watched on: a TV network, a streaming service or an out-of-market package. A game shows its local channels, or national channels when it has no local ones, plus any streaming; the opponent's local channels and out-of-market packages appear only when nothing else would.
+_Avoid_: Broadcast, network, station
+
+**Local channel**:
+A followed team's own channel, whichever side of the game the team is on. The other team's own channel is the opponent's local channel.
+_Avoid_: Regional, home channel
+
+**Out-of-market package**:
+A subscription that carries games outside a team's own market and blacks them out inside it, such as NBA League Pass or MLB.TV. Never counted as streaming.
+_Avoid_: Streaming, league pass
+
+**Unknown channel**:
+A channel the screen doesn't recognise. Shown by name, and recorded once so it can be added later. A channel the screen knows but deliberately shows as text (one with no usable icon) is not unknown.
+_Avoid_: Missing logo
 
 ## Health
 

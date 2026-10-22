@@ -1,3 +1,7 @@
+## Screens
+
+Every screen must work on both devices, the TRMNL X and the TRMNL OG. A screen can be designed X-first, but its OG layout is part of the same work, not a follow-up.
+
 ## Agent skills
 
 ### Issue tracker
