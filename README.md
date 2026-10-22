@@ -120,7 +120,7 @@ Deploy again after every update, in case the template changed. `latest` follows 
 Python 3.12 and [uv](https://docs.astral.sh/uv/):
 
 ```sh
-uv sync --extra dev
+uv sync --all-extras   # dev tools and every screen's extra
 uv run pytest
 uv run python -m collector --once   # one tick against the services in .env
 uv run scripts/deploy media         # deploy the template from your clone

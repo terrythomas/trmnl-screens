@@ -5,8 +5,9 @@ FROM python:3.14-slim
 COPY --from=ghcr.io/astral-sh/uv:0.13.0 /uv /bin/uv
 
 # tzdata makes TZ work: the collector reads "now" and "today" in local time.
+# libcairo2 is for cairosvg, which the Game Time screen uses to rasterise SVG channel icons.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends tzdata \
+    && apt-get install -y --no-install-recommends tzdata libcairo2 \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --uid 10001 --no-create-home collector \
     && mkdir /state && chown collector /state
