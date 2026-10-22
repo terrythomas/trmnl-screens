@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta, tzinfo
 from typing import Any, Protocol
 
+from .channels import select
 from .sources.espn import SPORTS, EspnGame, EspnTeam
 
 POSTPONED = {"STATUS_POSTPONED", "STATUS_CANCELED", "STATUS_SUSPENDED"}
@@ -59,8 +60,10 @@ def _game(league: str, g: EspnGame, teams: set[str], tz: tzinfo | None) -> dict[
         "followed": _team(followed, scored),
         "opponent": _team(opponent, scored),
         "both_followed": g.home.abbr in teams and g.away.abbr in teams,
-        # shortcut: ESPN's names in source order, radio included; channel selection replaces this (#55).
-        "channels": [] if state == "postponed" else [{"name": b.name, "icon": False} for b in g.broadcasts],
+        "channels": [] if state == "postponed" else [
+            {"name": name, "icon": False}  # the logo store sets icon (#60)
+            for name in select(g.broadcasts, league, {"Home" if t.home else "Away" for t in (g.home, g.away) if t.abbr in teams})
+        ],
         "channels_incomplete": False,
         "stale": False,
         "featured": False,

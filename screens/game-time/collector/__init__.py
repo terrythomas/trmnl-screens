@@ -2,10 +2,12 @@
 
 import os
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
 
+from .channels import record_unknown
 from .games import games, parse_teams
 from .sources.espn import EspnSource
 
@@ -18,9 +20,11 @@ def collect() -> dict[str, Any]:
     load_dotenv("game-time.env")
     now = datetime.now().astimezone()
     followed = parse_teams(os.environ["GAME_TIME_TEAMS"])
+    found = games(EspnSource(), followed, now)
+    record_unknown(Path(os.environ.get("STATE_DIR") or "state") / "game-time" / "unknown-channels.json", found, now)
     return {
         "updated_at": now.isoformat(timespec="seconds"),
-        "games": games(EspnSource(), followed, now),
+        "games": found,
         "logos": {}, "logos1": {}, "logos1h": {},
         "icons": {}, "icons1": {}, "icons1h": {},
         "errors": [],

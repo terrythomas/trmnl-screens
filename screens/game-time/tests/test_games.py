@@ -71,7 +71,7 @@ def test_maps_a_scheduled_game_to_the_payload_contract():
         "followed": {"abbr": "HBR", "name": "Hbr", "logo": None, "score": None, "home": False},
         "opponent": {"abbr": "MSA", "name": "Msa", "logo": None, "score": None, "home": True},
         "both_followed": False,
-        "channels": [{"name": "Harbor Sports Net", "icon": False}, {"name": "StreamCo", "icon": False}],
+        "channels": [{"name": "StreamCo", "icon": False}],  # the home net is the opponent's
         "channels_incomplete": False,
         "stale": False,
         "featured": False,
