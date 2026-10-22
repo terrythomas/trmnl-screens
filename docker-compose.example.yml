@@ -3,7 +3,10 @@ services:
   collector:
     image: ghcr.io/terrythomas/trmnl-screens:latest
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - .env
+      - path: game-time.env  # followed teams for the Game Time screen
+        required: false
     environment:
       STATE_DIR: /state  # overrides .env: in the container, state lives on the volume
       RELEASE_COUNTRY: US  # two-letter country code whose theatrical dates In Theaters uses

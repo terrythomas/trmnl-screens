@@ -1,0 +1,32 @@
+{
+ "sports": [
+  {
+   "leagues": [
+    {
+     "teams": [
+      {
+       "team": {
+        "abbreviation": "HBR"
+       }
+      },
+      {
+       "team": {
+        "abbreviation": "MSA"
+       }
+      },
+      {
+       "team": {
+        "abbreviation": "PNE"
+       }
+      },
+      {
+       "team": {
+        "abbreviation": "LKS"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

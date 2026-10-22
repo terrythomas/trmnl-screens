@@ -29,12 +29,12 @@ class Config:
         )
 
     def webhook_url(self, screen: str) -> str | None:
-        uuid = self.webhook_uuids.get(screen)
+        uuid = self.webhook_uuids.get(_key(screen))
         return f"{self.larapaper_url}/api/custom_plugins/{uuid}" if uuid else None
 
     def interval_minutes_for(self, screen: str, default: int | None) -> int:
         """The screen's own setting, then the global one, then the screen's default, then 15."""
-        for minutes in (self.screen_intervals.get(screen), self.interval_minutes, default):
+        for minutes in (self.screen_intervals.get(_key(screen)), self.interval_minutes, default):
             if minutes is not None:
                 return minutes
         return 15
@@ -47,3 +47,8 @@ def _per_screen(env: Mapping[str, str], suffix: str) -> dict[str, str]:
         for key, value in env.items()
         if key.endswith(suffix) and value
     }
+
+
+def _key(screen: str) -> str:
+    # Variable names can't hold "-", so the game-time screen reads GAME_TIME_*.
+    return screen.replace("-", "_")

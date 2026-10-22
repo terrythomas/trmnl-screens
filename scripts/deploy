@@ -36,7 +36,7 @@ def main(screen: str) -> int:
         headers={"Authorization": f"Bearer {os.environ['LARAPAPER_API_TOKEN']}", "Accept": "application/json"},
         timeout=60,
     )
-    id_key = f"{screen.upper()}_PLUGIN_ID"
+    id_key = f"{screen.upper().replace('-', '_')}_PLUGIN_ID"
     plugin_id = os.environ.get(id_key)
     created = not plugin_id
     if created:
@@ -48,7 +48,7 @@ def main(screen: str) -> int:
     ).raise_for_status()
     print(f"deployed {screen}")
 
-    webhook_key = f"{screen.upper()}_WEBHOOK_UUID"
+    webhook_key = f"{screen.upper().replace('-', '_')}_WEBHOOK_UUID"
     if created or not os.environ.get(webhook_key):
         print(
             f"\nFirst deploy. Add to .env:\n  {id_key}={plugin_id}\n"

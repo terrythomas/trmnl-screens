@@ -1,0 +1,168 @@
+{
+  "preview_now": "2026-10-24T00:40:00-04:00",
+  "updated_at": "2026-10-24T00:38:00-04:00",
+  "games": [
+    {
+      "league": "nba",
+      "start": "2026-10-23T19:30:00-04:00",
+      "local_date": "2026-10-23",
+      "state": "final",
+      "status": null,
+      "followed": {
+        "abbr": "RVT",
+        "name": "Barges",
+        "logo": null,
+        "score": 104,
+        "home": true
+      },
+      "opponent": {
+        "abbr": "SLT",
+        "name": "Comets",
+        "logo": null,
+        "score": 99,
+        "home": false
+      },
+      "both_followed": false,
+      "channels": [
+        {
+          "name": "Regional Network",
+          "icon": false
+        }
+      ],
+      "channels_incomplete": false,
+      "stale": false,
+      "featured": false
+    },
+    {
+      "league": "mlb",
+      "start": "2026-10-23T22:10:00-04:00",
+      "local_date": "2026-10-23",
+      "state": "live",
+      "status": "Bot 11th",
+      "followed": {
+        "abbr": "PNE",
+        "name": "Owls",
+        "logo": null,
+        "score": 4,
+        "home": false
+      },
+      "opponent": {
+        "abbr": "LKS",
+        "name": "Herons",
+        "logo": null,
+        "score": 4,
+        "home": true
+      },
+      "both_followed": false,
+      "channels": [
+        {
+          "name": "Harbor Sports Net",
+          "icon": false
+        }
+      ],
+      "channels_incomplete": false,
+      "stale": false,
+      "featured": false
+    },
+    {
+      "league": "nhl",
+      "start": "2026-10-24T15:00:00-04:00",
+      "local_date": "2026-10-24",
+      "state": "scheduled",
+      "status": null,
+      "followed": {
+        "abbr": "NRT",
+        "name": "Foxes",
+        "logo": null,
+        "score": null,
+        "home": true
+      },
+      "opponent": {
+        "abbr": "DSR",
+        "name": "Hawks",
+        "logo": null,
+        "score": null,
+        "home": false
+      },
+      "both_followed": false,
+      "channels": [
+        {
+          "name": "Lakeshore TV",
+          "icon": false
+        }
+      ],
+      "channels_incomplete": false,
+      "stale": false,
+      "featured": false
+    },
+    {
+      "league": "mls",
+      "start": "2026-10-24T19:30:00-04:00",
+      "local_date": "2026-10-24",
+      "state": "scheduled",
+      "status": null,
+      "followed": {
+        "abbr": "GRB",
+        "name": "Rams",
+        "logo": null,
+        "score": null,
+        "home": false
+      },
+      "opponent": {
+        "abbr": "CPT",
+        "name": "Pilots",
+        "logo": null,
+        "score": null,
+        "home": true
+      },
+      "both_followed": false,
+      "channels": [
+        {
+          "name": "StreamCo",
+          "icon": false
+        }
+      ],
+      "channels_incomplete": false,
+      "stale": false,
+      "featured": false
+    },
+    {
+      "league": "nfl",
+      "start": "2026-10-24T20:20:00-04:00",
+      "local_date": "2026-10-24",
+      "state": "scheduled",
+      "status": null,
+      "followed": {
+        "abbr": "HBR",
+        "name": "Gulls",
+        "logo": null,
+        "score": null,
+        "home": true
+      },
+      "opponent": {
+        "abbr": "MSA",
+        "name": "Coyotes",
+        "logo": null,
+        "score": null,
+        "home": false
+      },
+      "both_followed": false,
+      "channels": [
+        {
+          "name": "National One",
+          "icon": false
+        }
+      ],
+      "channels_incomplete": false,
+      "stale": false,
+      "featured": false
+    }
+  ],
+  "logos": {},
+  "logos1": {},
+  "logos1h": {},
+  "icons": {},
+  "icons1": {},
+  "icons1h": {},
+  "errors": []
+}

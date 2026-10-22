@@ -1,0 +1,217 @@
+{
+ "events": [
+  {
+   "id": "1001",
+   "date": "2026-10-23T23:00Z",
+   "status": {
+    "type": {
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "shortDetail": "10/23 - 7:00 PM EDT"
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "0",
+       "team": {
+        "abbreviation": "HBR",
+        "name": "Gulls",
+        "logo": "https://logos.example/hbr.png"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "0",
+       "team": {
+        "abbreviation": "MSA",
+        "name": "Coyotes",
+        "logo": "https://logos.example/msa.png"
+       }
+      }
+     ],
+     "geoBroadcasts": [
+      {
+       "type": {
+        "shortName": "TV"
+       },
+       "market": {
+        "type": "Home"
+       },
+       "media": {
+        "shortName": "Harbor Sports Net"
+       }
+      },
+      {
+       "type": {
+        "shortName": "TV"
+       },
+       "market": {
+        "type": "National"
+       },
+       "media": {
+        "shortName": "National One"
+       }
+      },
+      {
+       "type": {
+        "shortName": "Streaming"
+       },
+       "market": {
+        "type": "National"
+       },
+       "media": {
+        "shortName": "StreamCo"
+       }
+      },
+      {
+       "type": {
+        "shortName": "Radio"
+       },
+       "market": {
+        "type": "Home"
+       },
+       "media": {
+        "shortName": "Harbor 101 FM"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "1002",
+   "date": "2026-10-23T22:30Z",
+   "status": {
+    "type": {
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "shortDetail": "5:12 - 3rd"
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "66",
+       "team": {
+        "abbreviation": "PNE",
+        "name": "Owls",
+        "logo": "https://logos.example/pne.png"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "71",
+       "team": {
+        "abbreviation": "LKS",
+        "name": "Herons",
+        "logo": "https://logos.example/lks.png"
+       }
+      }
+     ],
+     "geoBroadcasts": [
+      {
+       "type": {
+        "shortName": "TV"
+       },
+       "market": {
+        "type": "Away"
+       },
+       "media": {
+        "shortName": "Lakeshore TV"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "1003",
+   "date": "2026-10-23T17:00Z",
+   "status": {
+    "type": {
+     "name": "STATUS_FINAL",
+     "state": "post",
+     "shortDetail": "Final"
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "98",
+       "team": {
+        "abbreviation": "RVT",
+        "name": "Barges",
+        "logo": "https://logos.example/rvt.png"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "102",
+       "team": {
+        "abbreviation": "SLT",
+        "name": "Comets",
+        "logo": "https://logos.example/slt.png"
+       }
+      }
+     ],
+     "geoBroadcasts": []
+    }
+   ]
+  },
+  {
+   "id": "1004",
+   "date": "2026-10-24T00:00Z",
+   "status": {
+    "type": {
+     "name": "STATUS_POSTPONED",
+     "state": "post",
+     "shortDetail": "Postponed"
+    }
+   },
+   "competitions": [
+    {
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "0",
+       "team": {
+        "abbreviation": "GRB",
+        "name": "Rams",
+        "logo": "https://logos.example/grb.png"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "0",
+       "team": {
+        "abbreviation": "CPT",
+        "name": "Pilots",
+        "logo": "https://logos.example/cpt.png"
+       }
+      }
+     ],
+     "geoBroadcasts": [
+      {
+       "type": {
+        "shortName": "TV"
+       },
+       "market": {
+        "type": "National"
+       },
+       "media": {
+        "shortName": "National One"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

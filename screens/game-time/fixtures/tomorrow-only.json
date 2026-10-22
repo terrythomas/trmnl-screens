@@ -1,0 +1,79 @@
+{
+  "preview_now": "2026-10-23T09:00:00-04:00",
+  "updated_at": "2026-10-23T09:00:00-04:00",
+  "games": [
+    {
+      "league": "nhl",
+      "start": "2026-10-24T13:00:00-04:00",
+      "local_date": "2026-10-24",
+      "state": "scheduled",
+      "status": null,
+      "followed": {
+        "abbr": "NRT",
+        "name": "Foxes",
+        "logo": null,
+        "score": null,
+        "home": true
+      },
+      "opponent": {
+        "abbr": "DSR",
+        "name": "Hawks",
+        "logo": null,
+        "score": null,
+        "home": false
+      },
+      "both_followed": false,
+      "channels": [
+        {
+          "name": "Lakeshore TV",
+          "icon": false
+        }
+      ],
+      "channels_incomplete": false,
+      "stale": false,
+      "featured": false
+    },
+    {
+      "league": "nfl",
+      "start": "2026-10-24T20:15:00-04:00",
+      "local_date": "2026-10-24",
+      "state": "scheduled",
+      "status": null,
+      "followed": {
+        "abbr": "HBR",
+        "name": "Gulls",
+        "logo": null,
+        "score": null,
+        "home": false
+      },
+      "opponent": {
+        "abbr": "BLF",
+        "name": "Bisons",
+        "logo": null,
+        "score": null,
+        "home": true
+      },
+      "both_followed": false,
+      "channels": [
+        {
+          "name": "National One",
+          "icon": false
+        },
+        {
+          "name": "StreamCo",
+          "icon": false
+        }
+      ],
+      "channels_incomplete": false,
+      "stale": false,
+      "featured": false
+    }
+  ],
+  "logos": {},
+  "logos1": {},
+  "logos1h": {},
+  "icons": {},
+  "icons1": {},
+  "icons1h": {},
+  "errors": []
+}

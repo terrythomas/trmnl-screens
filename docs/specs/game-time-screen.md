@@ -103,6 +103,7 @@ The flag is set at push time, but the sections are grouped at render time, so th
       "status": "Q3 5:12",
       "followed": { "abbr": "BOS", "name": "Celtics", "logo": "nba-bos", "score": 71, "home": true },
       "opponent": { "abbr": "CHI", "name": "Bulls", "logo": "nba-chi", "score": 66, "home": false },
+      "both_followed": false,
       "channels": [
         { "name": "Regional Network", "icon": true },
         { "name": "Streaming Service", "icon": false }
@@ -122,7 +123,7 @@ The flag is set at push time, but the sections are grouped at render time, so th
 }
 ```
 
-- `followed` is the followed team. When both teams are followed, `followed` is the home team, and the row reads away "@" home.
+- `followed` is the followed team. When both teams are followed, `both_followed` is true, `followed` is the home team, and the row reads away "@" home, with the score in the same order. Otherwise `both_followed` is false.
 - `score` is null for scheduled and postponed games; `status` is null unless live.
 - The template derives "vs" or "@" from `followed.home`.
 - Images are kept in shared tables so a team or channel that appears in several games is sent once:
