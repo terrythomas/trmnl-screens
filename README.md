@@ -129,7 +129,7 @@ docker build -t trmnl-screens:dev . && scripts/check-image trmnl-screens:dev
 
 ### Adding a screen
 
-A screen is a folder under `screens/` with a `collector` package whose `__init__.py` defines `collect()`, which returns the payload for the screen's LaraPaper webhook. It can also set `INTERVAL_MINUTES`, its default schedule. The collector finds screens by folder name and imports only the enabled ones, so a screen that isn't enabled never loads.
+A screen is a folder under `screens/` with a `collector` package whose `__init__.py` defines `collect()`, which returns the payload for the screen's LaraPaper webhook. It can also set `INTERVAL_MINUTES`, its default schedule. To run sooner than that for a while, such as during a live event, it can define `next_run_minutes(payload)`: after each successful push the collector passes it the payload just pushed, and it returns the minutes until the screen's next run, or `None` to keep the interval. An answer later than the interval doesn't delay the run, one under a minute counts as a minute, and anything that isn't a positive number, or an error in the function, keeps the interval and is logged. The collector finds screens by folder name and imports only the enabled ones, so a screen that isn't enabled never loads.
 
 If a screen needs Python packages that the others don't, list them in `pyproject.toml` as an optional extra named after the screen, then run `uv lock`:
 

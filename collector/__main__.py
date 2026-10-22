@@ -40,11 +40,17 @@ def main() -> int:
                 raise
             parser.error(f"screen {name} needs {e.name}: install it with pip install '.[{name}]'")
 
-    def tick(names):
+    def tick(names, sooner=None):
         return run_tick(
             {name: screens[name].collect for name in names}, config, push,
             {name: screens[name].merge_strategy for name in names},
+            {name: screens[name].next_run_minutes for name in names}, sooner,
         )
+
+    def run(names):
+        sooner = {}
+        tick(names, sooner)
+        return sooner
 
     if args.once:
         return 0 if all(tick(list(screens)).values()) else 1
@@ -53,7 +59,7 @@ def main() -> int:
         minutes = config.interval_minutes_for(name, screen.interval_minutes)
         logging.info("screen %s: every %d minutes", name, minutes)
         intervals[name] = minutes * 60
-    run_forever(intervals, tick)
+    run_forever(intervals, run)
     return 0
 
 

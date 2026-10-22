@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Any, Callable
 
 Collect = Callable[[], dict[str, Any]]
+# Given the payload just collected, the minutes until the screen's next run, or None for its interval.
+NextRun = Callable[[dict[str, Any]], float | None]
 
 SCREENS_DIR = Path(__file__).resolve().parent.parent / "screens"
 
@@ -19,6 +21,8 @@ class Screen:
     interval_minutes: int | None = None
     # MERGE_STRATEGY in its collector package; None replaces the stored data on each push.
     merge_strategy: str | None = None
+    # next_run_minutes(payload) in its collector package, to run sooner than its interval.
+    next_run_minutes: NextRun | None = None
 
 
 def find_screens(screens_dir: Path = SCREENS_DIR) -> dict[str, Path]:
@@ -33,7 +37,12 @@ def find_screens(screens_dir: Path = SCREENS_DIR) -> dict[str, Path]:
 def load_screen(name: str, init: Path) -> Screen:
     """Import one screen's collector. Raises ModuleNotFoundError if its dependencies are missing."""
     module = _load(name, init)
-    return Screen(module.collect, getattr(module, "INTERVAL_MINUTES", None), getattr(module, "MERGE_STRATEGY", None))
+    return Screen(
+        module.collect,
+        getattr(module, "INTERVAL_MINUTES", None),
+        getattr(module, "MERGE_STRATEGY", None),
+        getattr(module, "next_run_minutes", None),
+    )
 
 
 def discover_screens(screens_dir: Path = SCREENS_DIR) -> dict[str, Screen]:

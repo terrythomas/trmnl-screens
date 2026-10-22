@@ -75,3 +75,13 @@ def test_a_missing_module_of_the_screens_own_is_not_blamed_on_an_extra(run):
 
     with pytest.raises(ModuleNotFoundError):
         run(["--once"], {"MEDIA_WEBHOOK_UUID": "media-uuid"}, load=load)
+
+
+def test_hands_run_forever_each_screens_request_to_run_sooner(run, monkeypatch):
+    asked = []
+    monkeypatch.setattr(entry, "run_forever", lambda intervals, tick: asked.append(tick(["media"])))
+    screen = Screen(lambda: {"live": True}, next_run_minutes=lambda payload: 5 if payload["live"] else None)
+
+    run([], {"MEDIA_WEBHOOK_UUID": "media-uuid"}, load=lambda name, init: screen)
+
+    assert asked == [{"media": 300}]
