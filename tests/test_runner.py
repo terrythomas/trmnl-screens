@@ -65,6 +65,22 @@ def test_only_screens_with_a_webhook_are_enabled():
     assert screens == {"media": media}
 
 
+def test_a_screen_can_ask_for_its_next_run_in_seconds_from_its_payload():
+    seen, sooner = [], {}
+    run_tick({"media": lambda: {"live": True}, "other": lambda: {}}, CONFIG, FakePush(),
+             next_runs={"media": lambda payload: seen.append(payload) or 5, "other": lambda payload: None},
+             sooner=sooner)
+    assert seen == [{"live": True}]
+    assert sooner == {"media": 300}
+
+
+def test_a_failing_screen_asks_for_nothing():
+    sooner = {}
+    run_tick({"media": lambda: {}}, CONFIG, FakePush(fail_for=["media-uuid"]),
+             next_runs={"media": lambda payload: 5}, sooner=sooner)
+    assert sooner == {}
+
+
 def test_a_screen_without_a_webhook_is_logged_once_as_off(caplog):
     caplog.set_level("INFO")
     enabled_screens({"unknown": lambda: {}}, CONFIG)
@@ -94,13 +110,15 @@ class FakeClock:
             raise StopLoop
 
 
-def run_schedule(intervals, stop_after, run_seconds=0.0):
+def run_schedule(intervals, stop_after, run_seconds=0.0, asks=lambda at, names: {}):
     clock = FakeClock(stop_after)
     runs = []
 
     def run(names):
         runs.append((clock.now, names))
+        at = clock.now
         clock.now += run_seconds
+        return asks(at, names)
 
     try:
         run_forever(intervals, run, clock=clock, sleep=clock.sleep)
@@ -122,6 +140,33 @@ def test_every_screen_runs_at_startup_then_on_its_own_interval():
 def test_each_interval_starts_when_the_run_ends():
     runs = run_schedule({"media": 900}, stop_after=1900, run_seconds=10)
     assert [at for at, _ in runs] == [0, 910, 1820]
+
+
+def test_a_screen_that_asks_sooner_runs_sooner_until_it_stops_asking():
+    # "live" asks for 5 minutes while its game is on, from 0 to 600 seconds.
+    runs = run_schedule(
+        {"live": 3600, "media": 900}, stop_after=3600,
+        asks=lambda at, names: {"live": 300} if "live" in names and at < 600 else {},
+    )
+    assert runs == [
+        (0, ["live", "media"]),
+        (300, ["live"]),
+        (600, ["live"]),
+        (900, ["media"]),
+        (1800, ["media"]),
+        (2700, ["media"]),
+        (3600, ["media"]),
+    ]
+
+
+def test_a_sooner_request_counts_from_the_end_of_the_run():
+    runs = run_schedule({"live": 3600}, stop_after=700, run_seconds=10, asks=lambda at, names: {"live": 300})
+    assert [at for at, _ in runs] == [0, 310, 620]
+
+
+def test_a_request_later_than_the_interval_does_not_delay_the_run():
+    runs = run_schedule({"media": 900}, stop_after=1800, asks=lambda at, names: {"media": 7200})
+    assert [at for at, _ in runs] == [0, 900, 1800]
 
 
 def test_run_forever_lets_unexpected_errors_escape():

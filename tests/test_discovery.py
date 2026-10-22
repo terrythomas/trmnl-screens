@@ -38,6 +38,20 @@ def test_a_screen_can_declare_its_default_interval(tmp_path):
     assert discover_screens(tmp_path)["slow"].interval_minutes == 60
 
 
+def test_a_screen_can_ask_to_run_sooner(tmp_path):
+    pkg = tmp_path / "live" / "collector"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text(
+        "def collect():\n    return {}\n\ndef next_run_minutes(payload):\n    return 5\n"
+    )
+
+    assert discover_screens(tmp_path)["live"].next_run_minutes({}) == 5
+
+
+def test_screens_that_do_not_ask_keep_their_schedules():
+    assert all(screen.next_run_minutes is None for screen in discover_screens().values())
+
+
 def test_the_calendar_screen_only_refreshes_what_the_phone_pushed():
     calendar = discover_screens()["calendar"]
     assert calendar.merge_strategy == "deep_merge"
