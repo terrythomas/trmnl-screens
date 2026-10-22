@@ -1,7 +1,7 @@
 """Game Time screen collector: builds the payload described in docs/specs/game-time-screen.md."""
 
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from dotenv import load_dotenv
@@ -25,3 +25,13 @@ def collect() -> dict[str, Any]:
         "icons": {}, "icons1": {}, "icons1h": {},
         "errors": [],
     }
+
+
+def next_run_minutes(payload: dict[str, Any]) -> int | None:
+    """5 while any game is live or starts within 5 minutes (spec: Schedule), else the interval."""
+    soon = datetime.fromisoformat(payload["updated_at"]) + timedelta(minutes=5)
+    for game in payload["games"]:
+        # A scheduled game past its start, such as a delayed one, counts as starting soon.
+        if game["state"] == "live" or game["state"] == "scheduled" and datetime.fromisoformat(game["start"]) <= soon:
+            return 5
+    return None

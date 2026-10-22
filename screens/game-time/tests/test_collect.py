@@ -42,3 +42,27 @@ def test_fixtures_match_the_payload_contract():
             assert g["followed"].keys() == g["opponent"].keys() == {"abbr", "name", "logo", "score", "home"}
             # Fixtures are invented: no logos or icons, ever (ADR-0009).
             assert g["followed"]["logo"] is None and g["opponent"]["logo"] is None, fixture.name
+
+
+NOW = "2026-10-23T19:00:00-04:00"
+
+
+def payload(*games):
+    return {"updated_at": NOW, "games": [{"start": start, "state": state} for start, state in games]}
+
+
+def test_runs_every_5_minutes_from_5_minutes_before_a_start():
+    assert screen.next_run_minutes(payload(("2026-10-23T19:05:00-04:00", "scheduled"))) == 5
+    assert screen.next_run_minutes(payload(("2026-10-23T19:06:00-04:00", "scheduled"))) is None
+
+
+def test_runs_every_5_minutes_while_a_game_is_live():
+    assert screen.next_run_minutes(payload(("2026-10-23T18:00:00-04:00", "live"))) == 5
+
+
+def test_keeps_the_interval_after_the_final():
+    assert screen.next_run_minutes(payload(("2026-10-23T16:00:00-04:00", "final"))) is None
+
+
+def test_keeps_the_interval_with_no_games():
+    assert screen.next_run_minutes(payload()) is None
