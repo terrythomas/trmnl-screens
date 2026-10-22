@@ -36,3 +36,9 @@ def test_interval_falls_back_to_15_minutes():
 def test_empty_interval_values_are_ignored():
     c = config(INTERVAL_MINUTES="", MEDIA_INTERVAL_MINUTES="")
     assert c.interval_minutes_for("media", default=60) == 60
+
+
+def test_a_hyphenated_screen_reads_underscored_variables():
+    c = config(GAME_TIME_WEBHOOK_UUID="abc", GAME_TIME_INTERVAL_MINUTES="30")
+    assert c.webhook_url("game-time") == "http://x.example/api/custom_plugins/abc"
+    assert c.interval_minutes_for("game-time", default=60) == 30

@@ -1,0 +1,121 @@
+{%- comment -%}
+Game Time. Payload contract: docs/specs/game-time-screen.md. Vocabulary: CONTEXT.md.
+Games are grouped into Today and Tomorrow against the render time (preview_now in fixtures), so the
+screen changes sections and leaves the playlist on the clock without a new push. Games arrive sorted by start.
+Every size is calc(var(--z) * Npx): --k scales rows by game count, --u by device.
+{%- endcomment -%}
+{%- assign now_s = preview_now | default: "now" | date: "%s" | plus: 0 -%}
+{%- assign upd_s = updated_at | date: "%s" | plus: 0 -%}
+{%- comment -%} Local time is the offset updated_at carries ("-04:00"), else the LaraPaper user's. {%- endcomment -%}
+{%- assign off = trmnl.user.utc_offset | default: 0 | plus: 0 -%}
+{%- assign tz = updated_at | slice: -6, 6 -%}
+{%- assign tz_sign = tz | slice: 0 -%}
+{%- if tz_sign == "-" or tz_sign == "+" -%}
+  {%- assign tz_h = tz | slice: 1, 2 | plus: 0 -%}{%- assign tz_m = tz | slice: 4, 2 | plus: 0 -%}
+  {%- assign off = tz_h | times: 3600 -%}{%- assign tz_m = tz_m | times: 60 -%}{%- assign off = off | plus: tz_m -%}
+  {%- if tz_sign == "-" -%}{%- assign off = off | times: -1 -%}{%- endif -%}
+{%- endif -%}
+{%- assign local_s = now_s | plus: off -%}
+{%- assign today = local_s | date: "%Y-%m-%d" -%}
+{%- assign yesterday = local_s | minus: 86400 | date: "%Y-%m-%d" -%}
+{%- assign tomorrow = local_s | plus: 86400 | date: "%Y-%m-%d" -%}
+{%- comment -%} A live game's status text is trusted for 20 minutes after the push; then it reads plain "LIVE". {%- endcomment -%}
+{%- assign age = now_s | minus: upd_s -%}
+{%- comment -%}
+Today: games starting today, plus any still live that started yesterday. Tomorrow: games starting tomorrow.
+Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the last comma, so loops skip it.
+{%- endcomment -%}
+{%- assign t_ids = "" -%}{%- assign m_ids = "" -%}{%- assign t_n = 0 -%}{%- assign m_n = 0 -%}
+{%- for g in games -%}
+  {%- if g.local_date == today or g.local_date == yesterday and g.state == "live" -%}
+    {%- assign t_ids = t_ids | append: forloop.index0 | append: "," -%}{%- assign t_n = t_n | plus: 1 -%}
+  {%- elsif g.local_date == tomorrow -%}
+    {%- assign m_ids = m_ids | append: forloop.index0 | append: "," -%}{%- assign m_n = m_n | plus: 1 -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign total = t_n | plus: m_n -%}
+{%- if total == 0 -%}<script>window.TRMNL_SKIP_DISPLAY = true</script>{%- endif -%}
+{%- comment -%} Rows grow to fill the height: k = 1.25 - 0.1 x (games - 5), never above 1.25. {%- endcomment -%}
+{%- assign k = total | minus: 5 | times: 0.1 -%}{%- assign k = 1.25 | minus: k -%}{%- if k > 1.25 -%}{%- assign k = 1.25 -%}{%- endif -%}
+<style>
+  .gt { --u: 1; --z: calc(var(--k) * var(--u)); display: flex; flex-direction: column; gap: calc(var(--z) * 16px); width: 100%; height: 100%; padding: 4px 6px 0; }
+  .gt, .gt * { font-family: var(--title-font-family); }
+  .gt-sec { display: flex; flex-direction: column; min-height: 0; flex: var(--n) 1 0; }
+  .gt-head { display: flex; align-items: baseline; gap: 12px; border-bottom: calc(var(--u) * 3px) solid #000; padding-bottom: 4px; }
+  .gt-head b { font-size: calc(var(--z) * 22px); letter-spacing: .06em; text-transform: uppercase; }
+  .gt-head span { font-size: calc(var(--z) * 17px); color: #555; font-weight: 700; }
+  .gt-list { display: flex; flex-direction: column; flex: 1; }
+
+  /* A game row: league | followed team, vs or @, opponent | time or score | channels */
+  .gt-row { flex: 1; display: grid; grid-template-columns: calc(var(--z) * 40px) calc(var(--z) * 300px) minmax(0, 1fr) calc(var(--z) * 300px); align-items: center; gap: calc(var(--z) * 12px); padding: calc(var(--z) * 10px) 0; }
+  .gt-row + .gt-row { border-top: 1.5px solid #bbb; }
+  .gt-lg { font-size: calc(var(--z) * 13px); font-weight: 700; letter-spacing: .08em; color: #555; text-transform: uppercase; }
+  .gt-match { display: flex; align-items: center; gap: calc(var(--z) * 12px); min-width: 0; }
+  .gt-abbr { font-size: calc(var(--z) * 30px); font-weight: 700; min-width: 2.6em; }
+  .gt-sep { font-size: calc(var(--z) * 20px); font-weight: 700; color: #666; padding: 0 4px; }
+  .gt-stat { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
+  .gt-time, .gt-score { font-size: calc(var(--z) * 30px); font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .gt-sub { font-size: calc(var(--z) * 16px); font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 8px; margin-top: 3px; }
+  .gt-live { background: #000; color: #fff; border-radius: 4px; padding: 0 6px; font-size: .8em; letter-spacing: .08em; }
+  .gt-pp { font-size: calc(var(--z) * 22px); font-weight: 700; color: #555; font-style: italic; }
+  .gt-chs { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px calc(var(--z) * 14px); }
+  .gt-chtxt { white-space: nowrap; font-size: calc(var(--z) * 16px); font-weight: 700; border: 2px solid #000; border-radius: 6px; padding: 2px 8px; }
+  .gt-dim { opacity: .55; }
+  /* A live game is framed, with a larger score, so it stands out */
+  .gt-row.live { border: calc(var(--u) * 3px) solid #000 !important; border-radius: calc(var(--u) * 10px); padding-inline: calc(var(--z) * 10px); }
+  .gt-row.live + .gt-row { border-top: 0; }
+  .gt-row.live .gt-score { font-size: calc(var(--z) * 36px); }
+  .gt-row.live .gt-sub { font-size: calc(var(--z) * 20px); }
+
+  /* The OG (1- and 2-bit, per ADR-0005): smaller, no gray, nothing under 10px */
+  :is(.screen--1bit, .screen--2bit) .gt { --u: .58; padding: 0; }
+  :is(.screen--1bit, .screen--2bit) :is(.gt-lg, .gt-head span, .gt-sep, .gt-pp) { color: #000; }
+  :is(.screen--1bit, .screen--2bit) :is(.gt-lg, .gt-chtxt) { font-size: max(10px, calc(var(--z) * 14px)); }
+  :is(.screen--1bit, .screen--2bit) .gt-sub { font-size: max(11px, calc(var(--z) * 16px)); }
+  :is(.screen--1bit, .screen--2bit) .gt-sub .gt-live { font-size: 10px; }
+  :is(.screen--1bit, .screen--2bit) .gt-row + .gt-row { border-top: 1px solid #000; }
+  /* The OG is too narrow for wrapped channels: they keep one line and take the width that's left */
+  :is(.screen--1bit, .screen--2bit) .gt-row { grid-template-columns: calc(var(--z) * 40px) calc(var(--z) * 300px) calc(var(--z) * 200px) minmax(0, 1fr); min-height: 0; overflow: hidden; }
+  :is(.screen--1bit, .screen--2bit) .gt-chs { flex-wrap: nowrap; overflow: hidden; gap: 6px; }
+  :is(.screen--1bit, .screen--2bit) .gt-list { min-height: 0; overflow: hidden; }
+  /* 1-bit has no gray: finals drop to regular weight instead of dimming */
+  :is(.screen--1bit, .screen--2bit) .gt-dim { opacity: 1; }
+  :is(.screen--1bit, .screen--2bit) .gt-dim :is(.gt-abbr, .gt-score, .gt-sub) { font-weight: 400; }
+</style>
+
+<div class="view view--full">
+<div class="layout"><div class="gt" style="--k: {{ k }}">
+  {%- for sec in (1..2) -%}
+    {%- if sec == 1 -%}{%- assign ids = t_ids | split: "," -%}{%- assign n = t_n -%}{%- assign label = "Today" -%}{%- assign day_s = local_s -%}
+    {%- else -%}{%- assign ids = m_ids | split: "," -%}{%- assign n = m_n -%}{%- assign label = "Tomorrow" -%}{%- assign day_s = local_s | plus: 86400 -%}{%- endif -%}
+    {%- if n == 0 -%}{%- continue -%}{%- endif -%}
+    <section class="gt-sec" style="--n: {{ n }}">
+      <div class="gt-head"><b>{{ label }}</b><span>{{ day_s | date: "%a, %b %-d" }}</span></div>
+      <div class="gt-list">
+      {%- for id in ids -%}{%- if id == "" -%}{%- continue -%}{%- endif -%}
+        {%- assign i = id | plus: 0 -%}{%- assign g = games[i] -%}
+        {%- if g.followed.home -%}{%- assign sep = "vs" -%}{%- else -%}{%- assign sep = "@" -%}{%- endif -%}
+        <div class="gt-row{% if g.state == 'final' %} gt-dim{% elsif g.state == 'live' %} live{% endif %}">
+          <span class="gt-lg">{{ g.league }}</span>
+          <div class="gt-match"><span class="gt-abbr">{{ g.followed.abbr }}</span><span class="gt-sep">{{ sep }}</span><span class="gt-abbr">{{ g.opponent.abbr }}</span></div>
+          <div class="gt-stat">
+            {%- case g.state -%}
+            {%- when "scheduled" -%}<span class="gt-time">{{ g.start | date: "%s" | plus: off | date: "%-I:%M %p" }}</span>
+            {%- when "postponed" -%}<span class="gt-pp">Postponed</span>
+            {%- when "live" -%}<span class="gt-score">{{ g.followed.score }}–{{ g.opponent.score }}</span>
+              <span class="gt-sub"><span class="gt-live">LIVE</span>{% if age < 1200 %}{{ g.status }}{% endif %}</span>
+            {%- else -%}<span class="gt-score">{{ g.followed.score }}–{{ g.opponent.score }}</span><span class="gt-sub">Final</span>
+            {%- endcase -%}
+          </div>
+          <div class="gt-chs">{%- for c in g.channels -%}<span class="gt-chtxt">{{ c.name }}</span>{%- endfor -%}</div>
+        </div>
+      {%- endfor -%}
+      </div>
+    </section>
+  {%- endfor -%}
+</div></div>
+<div class="title_bar">
+  <span class="title" style="display:flex;align-items:center;gap:8px"><svg viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.2em"><path d="M8 3v3M16 3v3"/><rect x="2.5" y="6" width="19" height="14" rx="2.5"/><path d="M12 9.5v7"/><path d="M7 10v6"/><rect x="15" y="10" width="3" height="6" rx="1.2"/></svg> Game Time</span>
+  <span class="instance">updated {{ upd_s | plus: off | date: "%-I:%M %p" }}</span>
+</div>
+</div>

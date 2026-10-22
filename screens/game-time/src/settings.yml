@@ -1,0 +1,9 @@
+---
+name: Game Time
+description: Today's and tomorrow's games for followed teams, with the channels to watch them on
+strategy: webhook
+refresh_interval: 60
+no_screen_padding: 'no'
+dark_mode: 'no'
+static_data: ''
+framework_version: latest

@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+game-time.env
 
 # Collector state (last good data per screen)
 state/
