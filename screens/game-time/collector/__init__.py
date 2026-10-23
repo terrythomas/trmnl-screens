@@ -16,6 +16,7 @@ from .channels import icon_url, record_unknown
 from .games import games, parse_teams
 from .logos import LogoStore
 from .sources.espn import EspnError, EspnSource
+from .sources.mlb import MlbSource
 from .sources.nba import NbaSource
 
 log = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ def collect() -> dict[str, Any]:
     state_dir = Path(os.environ.get("STATE_DIR") or "state")
     espn = EspnSource()
     teams = _team_lists(espn, state_dir / "game-time" / "teams.json", now)
-    sources = {"nba": NbaSource(state_dir / "game-time" / "nba.json", now)}
+    sources = {"nba": NbaSource(state_dir / "game-time" / "nba.json", now), "mlb": MlbSource(now)}
     # One section per league, so a failing league shows its last good games while the others stay fresh.
     sections = {
         league: Section(f"espn-{league}", lambda league=league, abbrs=abbrs: _league(espn, league, abbrs, now, sources))

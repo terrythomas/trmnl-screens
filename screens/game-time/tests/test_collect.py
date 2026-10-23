@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import httpx
 import pytest
 from PIL import Image, ImageDraw
 
@@ -290,3 +291,63 @@ def test_a_failed_image_falls_back_to_text_without_stale_or_unknown_channel(imag
     logged = [r.getMessage() for r in caplog.get_records("setup")]  # collect() ran in the fixture
     assert "logo for nba-msa skipped: ConnectionError" in logged
     assert "icon for Prime Video skipped: ConnectionError" in logged
+
+
+mlb = importlib.import_module("trmnl_screens.game-time.collector.sources.mlb")
+
+
+def mlb_tonight(monkeypatch, response):
+    """Serve `response` from the MLB Stats API, with HBR known to it."""
+    monkeypatch.setitem(mlb.TEAM_IDS, "HBR", 901)
+    monkeypatch.setitem(mlb.TEAM_IDS, "MSA", 902)
+    monkeypatch.setattr(game_time, "MlbSource",
+                        lambda now: mlb.MlbSource(now, transport=httpx.MockTransport(lambda request: response)))
+
+
+def mlb_schedule(*broadcasts, home="Hbr", away="Msa"):
+    """Tonight's game at the hour, as TonightEspn has it."""
+    start = datetime.now().astimezone().replace(minute=0, second=0, microsecond=0)
+    return httpx.Response(200, json={"dates": [{"games": [{
+        "gameDate": start.isoformat(),
+        "teams": {"home": {"team": {"teamName": home}}, "away": {"team": {"teamName": away}}},
+        "broadcasts": [{"name": n, "type": t, "isNational": side is None, "homeAway": side or "home"}
+                       for n, t, side in broadcasts],
+    }]}]})
+
+
+HOME_AWAY_NATIONAL = [("Harbor Sports Net", "TV", "home"), ("Mesa Channel 9", "TV", "away"),
+                      ("National One", "TV", None), ("Harbor 101 FM", "FM", "home")]
+
+
+@pytest.mark.parametrize("followed, shown", [("mlb:hbr", "Harbor Sports Net"), ("mlb:msa", "Mesa Channel 9")])
+def test_mlb_channels_come_from_the_mlb_stats_api(monkeypatch, followed, shown):
+    monkeypatch.setenv("GAME_TIME_TEAMS", followed)
+    monkeypatch.setattr(game_time, "EspnSource", TonightEspn)
+    mlb_tonight(monkeypatch, mlb_schedule(*HOME_AWAY_NATIONAL))
+    [game] = screen.collect()["games"]
+    # Each team sees its own local channel; national TV and the other side's channel give way to it.
+    assert (game["channels"], game["channels_incomplete"]) == ([{"name": shown, "icon": False}], False)
+
+
+def test_an_mlb_game_on_national_tv_only_shows_the_network_once(monkeypatch):
+    monkeypatch.setenv("GAME_TIME_TEAMS", "mlb:hbr")
+    monkeypatch.setattr(game_time, "EspnSource", TonightEspn)
+    # National games are listed once per side.
+    mlb_tonight(monkeypatch, mlb_schedule(("National One", "TV", None), ("National One", "TV", None)))
+    [game] = screen.collect()["games"]
+    assert (game["channels"], game["channels_incomplete"]) == ([{"name": "National One", "icon": False}], False)
+
+
+@pytest.mark.parametrize("response, logged", [
+    (mlb_schedule(*HOME_AWAY_NATIONAL, away="Pines"), "no match"),
+    (httpx.Response(503), "MLB Stats API returned HTTP 503"),
+])
+def test_an_unmatched_or_failed_mlb_lookup_falls_back_to_espn(monkeypatch, caplog, response, logged):
+    monkeypatch.setenv("GAME_TIME_TEAMS", "mlb:hbr")
+    monkeypatch.setattr(game_time, "EspnSource", TonightEspn)
+    mlb_tonight(monkeypatch, response)
+    payload = screen.collect()
+    [game] = payload["games"]
+    assert (game["channels"], game["channels_incomplete"]) == ([], True)
+    assert logged in caplog.text
+    assert payload["errors"] == []  # never the error banner

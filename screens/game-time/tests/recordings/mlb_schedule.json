@@ -1,0 +1,45 @@
+{
+ "dates": [
+  {
+   "games": [
+    {
+     "gameDate": "2026-09-12T23:05:00Z",
+     "teams": {
+      "away": {"team": {"teamName": "Coyotes"}},
+      "home": {"team": {"teamName": "Gulls"}}
+     },
+     "broadcasts": [
+      {"name": "Harbor Sports Net", "type": "TV", "isNational": false, "homeAway": "home"},
+      {"name": "Mesa Channel 9", "type": "TV", "isNational": false, "homeAway": "away"},
+      {"name": "National One", "type": "TV", "isNational": true, "homeAway": "home"},
+      {"name": "National One", "type": "TV", "isNational": true, "homeAway": "away"},
+      {"name": "Harbor 101 FM", "type": "FM", "isNational": false, "homeAway": "home"},
+      {"name": "Mesa 1400 AM", "type": "AM", "isNational": false, "homeAway": "away"}
+     ]
+    },
+    {
+     "gameDate": "2026-09-13T00:15:00Z",
+     "teams": {
+      "away": {"team": {"teamName": "Pines"}},
+      "home": {"team": {"teamName": "Larks"}}
+     },
+     "broadcasts": [
+      {"name": "StreamCo", "type": "TV", "isNational": true, "homeAway": "home"},
+      {"name": "StreamCo", "type": "TV", "isNational": true, "homeAway": "away"}
+     ]
+    }
+   ]
+  },
+  {
+   "games": [
+    {
+     "gameDate": "2026-09-13T17:35:00Z",
+     "teams": {
+      "away": {"team": {"teamName": "Gulls"}},
+      "home": {"team": {"teamName": "Pines"}}
+     }
+    }
+   ]
+  }
+ ]
+}
