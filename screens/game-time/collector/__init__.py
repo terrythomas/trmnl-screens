@@ -15,6 +15,7 @@ from collector.sections import Section, collect_sections
 from .channels import record_unknown
 from .games import games, parse_teams
 from .sources.espn import EspnError, EspnSource
+from .sources.nba import NbaSource
 
 log = logging.getLogger(__name__)
 
@@ -30,9 +31,10 @@ def collect() -> dict[str, Any]:
     state_dir = Path(os.environ.get("STATE_DIR") or "state")
     espn = EspnSource()
     teams = _team_lists(espn, state_dir / "game-time" / "teams.json", now)
+    sources = {"nba": NbaSource(state_dir / "game-time" / "nba.json", now)}
     # One section per league, so a failing league shows its last good games while the others stay fresh.
     sections = {
-        league: Section(f"espn-{league}", lambda league=league, abbrs=abbrs: _league(espn, league, abbrs, now))
+        league: Section(f"espn-{league}", lambda league=league, abbrs=abbrs: _league(espn, league, abbrs, now, sources))
         for league, abbrs in followed.items()
     }
     # One per entry, so an unknown team gets a banner entry with a since, like a failing source.
@@ -67,8 +69,8 @@ def next_run_minutes(payload: dict[str, Any]) -> int | None:
     return None
 
 
-def _league(espn, league, abbrs, now):
-    found = games(espn, {league: abbrs}, now)
+def _league(espn, league, abbrs, now, sources):
+    found = games(espn, {league: abbrs}, now, sources=sources)
     return {"games": found} if found else None
 
 

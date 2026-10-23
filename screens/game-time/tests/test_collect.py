@@ -186,3 +186,25 @@ def test_a_failed_refresh_with_no_cache_reports_the_league_down(counting, monkey
     monkeypatch.setattr(CountingEspn, "teams_down", True)
     # ESPN being down doesn't make the team unknown
     assert [e["source"] for e in screen.collect()["errors"]] == ["espn-nba"]
+
+
+class FakeNba:
+    """Every followed team's season: tonight's HBR game on Harbor Sports Net."""
+
+    def __init__(self, path, now):
+        self.path = path
+
+    def season(self, team):
+        start = datetime.now().astimezone().replace(minute=0, second=0, microsecond=0)
+        return [league.LeagueGame(start, "Hbr", "Msa", (espn.EspnBroadcast("Harbor Sports Net", "TV", "Home"),))]
+
+
+league = importlib.import_module("trmnl_screens.game-time.collector.sources")
+
+
+def test_nba_channels_come_from_nba_com(monkeypatch, state_dir):
+    monkeypatch.setenv("GAME_TIME_TEAMS", "nba:hbr")
+    monkeypatch.setattr(game_time, "EspnSource", TonightEspn)
+    monkeypatch.setattr(game_time, "NbaSource", FakeNba)
+    [game] = screen.collect()["games"]
+    assert (game["channels"], game["channels_incomplete"]) == ([{"name": "Harbor Sports Net", "icon": False}], False)

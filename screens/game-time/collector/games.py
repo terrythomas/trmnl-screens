@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, tzinfo
 from typing import Any, Protocol
 
 from .channels import select
+from .local_channels import LeagueSource, local_channels
 from .sources.espn import SPORTS, EspnGame, EspnTeam
 
 POSTPONED = {"STATUS_POSTPONED", "STATUS_CANCELED", "STATUS_SUSPENDED"}
@@ -25,8 +26,12 @@ def parse_teams(value: str) -> dict[str, set[str]]:
     return followed
 
 
-def games(espn: Scoreboard, followed: dict[str, set[str]], now: datetime, tz: tzinfo | None = None) -> list[dict[str, Any]]:
-    """The followed teams' games in the game window, sorted by start. tz None is the system's zone."""
+def games(espn: Scoreboard, followed: dict[str, set[str]], now: datetime, tz: tzinfo | None = None,
+          sources: dict[str, LeagueSource] | None = None) -> list[dict[str, Any]]:
+    """The followed teams' games in the game window, sorted by start. tz None is the system's zone.
+
+    `sources` maps a league to the league source whose TV channels replace ESPN's.
+    """
     today = now.date()
     yesterday, tomorrow = today - timedelta(days=1), today + timedelta(days=1)
     found: dict[tuple[str, str], tuple[datetime, dict[str, Any]]] = {}
@@ -34,8 +39,11 @@ def games(espn: Scoreboard, followed: dict[str, set[str]], now: datetime, tz: tz
         for day in (yesterday, today, tomorrow):
             for g in espn.scoreboard(league, day):
                 if g.home.abbr in teams or g.away.abbr in teams:
+                    incomplete = False
+                    if sources and league in sources:
+                        g, incomplete = local_channels(sources[league], league, g, teams)
                     # Keyed by event, so a game on two days' scoreboards is one game.
-                    found[league, g.id] = g.start, _game(league, g, teams, tz)
+                    found[league, g.id] = g.start, _game(league, g, teams, tz) | {"channels_incomplete": incomplete}
     window = {today.isoformat(), tomorrow.isoformat()}
     return [
         game for _, game in sorted(found.values(), key=lambda pair: pair[0])
