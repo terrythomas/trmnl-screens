@@ -135,6 +135,7 @@ The flag is set at push time, but the sections are grouped at render time, so th
   - a missing `logos1` or `logos1h` entry means the OG shows the gray logo and the device dithers it;
   - a missing `icons1` or `icons1h` entry means the OG shows the channel's name.
 - `featured` is false unless the featured-games rule picks the game.
+- An `errors` entry's `source` is `espn-<league>` for a failing league, or `unknown-team:<league>:<abbr>` for a `GAME_TIME_TEAMS` entry that matches no team. `since` is the first run it failed on, kept until it recovers.
 - **Size:** LaraPaper accepts webhooks up to about 5 MB ([ADR-0002](../adr/0002-posters-inlined-as-data-uris.md)), but the trmnlp preview rejects payloads over 100 KB. Fixtures must stay under 100 KB so they can be previewed: a nine-game fixture with 200 px, 8-gray logos is about 92 KB. If fixtures outgrow that, shrink the logos rather than trimming the fixtures.
 
 ## Repo structure
