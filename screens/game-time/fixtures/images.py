@@ -23,7 +23,7 @@ convert = importlib.import_module("trmnl_screens.game-time.collector.logos").con
 HERE = Path(__file__).parent
 NO_LOGO = {"QRY", "ORC", "CPT"}  # the logo couldn't be fetched: the abbreviation stands alone
 SHADED = {"LKS"}  # built from mid-tones: no 1-bit logo, so the OG dithers the gray one
-TEXT_ONLY = {"StreamCo"}  # no icon source in the channel map
+TEXT_ONLY = {"StreamCo", "Lakeside Community Access", "Valley Public Sports"}  # no icon source in the channel map
 NO_ONEBIT_ICON = {"Sportsline Plus"}  # forced to fall back: the OG shows its name
 
 

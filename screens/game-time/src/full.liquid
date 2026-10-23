@@ -45,20 +45,20 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
 <style>
   .gt { --u: 1; --z: calc(var(--k) * var(--u)); display: flex; flex-direction: column; gap: calc(var(--z) * 16px); width: 100%; height: 100%; padding: 4px 6px 0; }
   .gt, .gt * { font-family: var(--title-font-family); }
-  .gt-sec { display: flex; flex-direction: column; min-height: 0; flex: var(--n) 1 0; }
+  .gt-sec { display: flex; flex-direction: column; min-height: 0; flex: var(--n) 1 auto; }
   .gt-head { display: flex; align-items: baseline; gap: 12px; border-bottom: calc(var(--u) * 3px) solid #000; padding-bottom: 4px; }
   .gt-head b { font-size: calc(var(--z) * 22px); letter-spacing: .06em; text-transform: uppercase; }
   .gt-head span { font-size: calc(var(--z) * 17px); color: #555; font-weight: 700; }
   .gt-list { display: flex; flex-direction: column; flex: 1; }
 
   /* A game row: league | followed team, vs or @, opponent | time or score | channels */
-  .gt-row { flex: 1; display: grid; grid-template-columns: calc(var(--z) * 40px) calc(var(--z) * 390px) minmax(0, 1fr) calc(var(--z) * 260px); align-items: center; gap: calc(var(--z) * 12px); padding: calc(var(--z) * 10px) 0; }
+  .gt-row { flex: 1; display: grid; grid-template-columns: calc(var(--z) * 40px) calc(var(--z) * 350px) minmax(0, 1fr) calc(var(--z) * 260px); align-items: center; gap: calc(var(--z) * 12px); padding: calc(var(--z) * 10px) 0; }
   .gt-row + .gt-row { border-top: 1.5px solid #bbb; }
   .gt-lg { font-size: calc(var(--z) * 13px); font-weight: 700; letter-spacing: .08em; color: #555; text-transform: uppercase; }
   .gt-match { display: flex; align-items: center; gap: calc(var(--z) * 12px); min-width: 0; }
   .gt-abbr { font-size: calc(var(--z) * 30px); font-weight: 700; min-width: 2.6em; }
   .gt-logo { width: calc(var(--z) * 50px); height: calc(var(--z) * 50px); object-fit: contain; flex-shrink: 0; }
-  .gt-ch { height: calc(var(--z) * 36px); max-width: calc(var(--z) * 110px); object-fit: contain; }
+  .gt-ch { height: var(--ch); max-width: calc(var(--z) * 110px); object-fit: contain; }
   .gt-sep { font-size: calc(var(--z) * 20px); font-weight: 700; color: #666; padding: 0 4px; }
   .gt-stat { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
   .gt-time, .gt-score { font-size: calc(var(--z) * 30px); font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -66,7 +66,10 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
   .gt-live { background: #000; color: #fff; border-radius: 4px; padding: 0 6px; font-size: .8em; letter-spacing: .08em; }
   .gt-pp { font-size: calc(var(--z) * 22px); font-weight: 700; color: #555; font-style: italic; }
   .gt-chs { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px calc(var(--z) * 14px); }
-  .gt-chtxt { white-space: nowrap; font-size: calc(var(--z) * 16px); font-weight: 700; border: 2px solid #000; border-radius: 6px; padding: 2px 8px; }
+  /* Channels keep their order and drop what doesn't fit: two lines on the X, one on the OG. A name wider than the column is cut short. */
+  /* Every channel is one icon high, so the cap falls between lines */
+  .gt-chs { --ch: calc(var(--z) * 36px); max-height: calc(var(--ch) * 2 + 8px); overflow: hidden; align-content: flex-start; }
+  .gt-chtxt { box-sizing: border-box; height: var(--ch); line-height: calc(var(--ch) - 4px); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: calc(var(--z) * 16px); font-weight: 700; border: 2px solid #000; border-radius: 6px; padding: 0 8px; }
   .gt-dim { opacity: .55; }
   /* Error banner: one black pill per failing source, as on the Media screen */
   .gt-errs { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -92,8 +95,8 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
   :is(.screen--1bit, .screen--2bit) .gt-stale { font-size: 10px; border-width: 1px; border-radius: 3px; margin-top: 1px; padding: 0 4px; }
   :is(.screen--1bit, .screen--2bit) .gt-row + .gt-row { border-top: 1px solid #000; }
   /* The OG is too narrow for wrapped channels: they keep one line and take the width that's left */
-  :is(.screen--1bit, .screen--2bit) .gt-row { grid-template-columns: calc(var(--z) * 40px) calc(var(--z) * 390px) calc(var(--z) * 200px) minmax(0, 1fr); min-height: 0; overflow: hidden; }
-  :is(.screen--1bit, .screen--2bit) .gt-chs { flex-wrap: nowrap; overflow: hidden; gap: 6px; }
+  :is(.screen--1bit, .screen--2bit) .gt-row { grid-template-columns: calc(var(--z) * 40px) calc(var(--z) * 350px) calc(var(--z) * 200px) minmax(0, 1fr); min-height: 0; overflow: hidden; }
+  :is(.screen--1bit, .screen--2bit) .gt-chs { --ch: 20px; max-height: var(--ch); gap: 6px; }
   :is(.screen--1bit, .screen--2bit) .gt-list { min-height: 0; overflow: hidden; }
   /* 1-bit has no gray: finals drop to regular weight instead of dimming */
   :is(.screen--1bit, .screen--2bit) .gt-dim { opacity: 1; }
