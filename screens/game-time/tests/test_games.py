@@ -68,8 +68,9 @@ def test_maps_a_scheduled_game_to_the_payload_contract():
         "local_date": "2026-10-23",
         "state": "scheduled",
         "status": None,
-        "followed": {"abbr": "HBR", "name": "Hbr", "logo": None, "score": None, "home": False},
-        "opponent": {"abbr": "MSA", "name": "Msa", "logo": None, "score": None, "home": True},
+        # collect() swaps each logo URL for its key in the logos table
+        "followed": {"abbr": "HBR", "name": "Hbr", "logo": "https://logos.example/HBR.png", "score": None, "home": False},
+        "opponent": {"abbr": "MSA", "name": "Msa", "logo": "https://logos.example/MSA.png", "score": None, "home": True},
         "both_followed": False,
         "channels": [{"name": "StreamCo", "icon": False}],  # the home net is the opponent's
         "channels_incomplete": False,
