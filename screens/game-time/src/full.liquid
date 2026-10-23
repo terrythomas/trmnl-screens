@@ -2,7 +2,7 @@
 Game Time. Payload contract: docs/specs/game-time-screen.md. Vocabulary: CONTEXT.md.
 Games are grouped into Today and Tomorrow against the render time (preview_now in fixtures), so the
 screen changes sections and leaves the playlist on the clock without a new push. Games arrive sorted by start.
-Every size is calc(var(--z) * Npx): --k scales rows by game count, --u by device.
+Every size is calc(var(--z) * Npx): --k scales rows by game count, --u by device; the big view uses --hz (--hk x --hu).
 {%- endcomment -%}
 {%- assign now_s = preview_now | default: "now" | date: "%s" | plus: 0 -%}
 {%- assign upd_s = updated_at | date: "%s" | plus: 0 -%}
@@ -42,6 +42,19 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
 {%- if total == 0 and err_up < 86400 -%}<script>window.TRMNL_SKIP_DISPLAY = true</script>{%- endif -%}
 {%- comment -%} Rows grow to fill the height: k = 1.25 - 0.1 x (games - 5), never above 1.25. {%- endcomment -%}
 {%- assign k = total | minus: 5 | times: 0.1 -%}{%- assign k = 1.25 | minus: k -%}{%- if k > 1.25 -%}{%- assign k = 1.25 -%}{%- endif -%}
+{%- comment -%}
+Spotlight, for 4 games or fewer: today's featured games in the big view, then the other games as rows at their own height.
+The big view shrinks (--hk) as it shares the height with rows. With nothing featured, the rows fill the height as in Rows.
+{%- endcomment -%}
+{%- assign h = 0 -%}{%- assign hk = 1 -%}
+{%- if total <= 4 -%}
+  {%- assign ids = t_ids | split: "," -%}
+  {%- for id in ids -%}{%- if id == "" -%}{%- continue -%}{%- endif -%}{%- assign i = id | plus: 0 -%}{%- if games[i].featured -%}{%- assign h = h | plus: 1 -%}{%- endif -%}{%- endfor -%}
+  {%- assign r = total | minus: h -%}
+  {%- if h >= 2 -%}{%- if r == 0 -%}{%- assign hk = 0.8 -%}{%- elsif r == 1 -%}{%- assign hk = 0.68 -%}{%- else -%}{%- assign hk = 0.54 -%}{%- endif -%}
+  {%- elsif r <= 1 -%}{%- assign hk = 1 -%}{%- elsif r == 2 -%}{%- assign hk = 0.85 -%}{%- else -%}{%- assign hk = 0.75 -%}{%- endif -%}
+  {%- if h > 0 -%}{%- assign k = 1 -%}{%- endif -%}
+{%- endif -%}
 <style>
   .gt { --u: 1; --z: calc(var(--k) * var(--u)); display: flex; flex-direction: column; gap: calc(var(--z) * 16px); width: 100%; height: 100%; padding: 4px 6px 0; }
   .gt, .gt * { font-family: var(--title-font-family); }
@@ -81,34 +94,69 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
   .gt-row.live + .gt-row { border-top: 0; }
   .gt-row.live .gt-score { font-size: calc(var(--z) * 36px); }
   .gt-row.live .gt-sub { font-size: calc(var(--z) * 20px); }
+  /* Spotlight: the big view fills what the rows leave. League, then logo, "vs" or "@" (the score once started), logo, then one line */
+  .gt { --hu: 1; --hz: calc(var(--hk) * var(--hu)); }
+  .gt-spot :is(.gt-sec, .gt-row) { flex: 0 0 auto; }
+  .gt-spot .gt-sec.feat { flex: 1 1 0; }
+  .gt-hero { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: calc(var(--hz) * 22px); padding: calc(var(--hz) * 14px) 0; }
+  .gt-hero + .gt-hero { border-top: calc(var(--u) * 3px) solid #000; }
+  .gt-hero + .gt-row { border-top: 1.5px solid #bbb; }
+  .gt-hlg { font-size: calc(var(--hz) * 26px); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  .gt-hface { display: grid; grid-template-columns: 1fr minmax(calc(var(--hz) * 300px), auto) 1fr; justify-items: center; align-items: center; row-gap: calc(var(--hz) * 10px); width: 100%; }
+  .gt-hface > * { grid-row: 1; }
+  .gt-hface .a { grid-column: 1; }
+  .gt-hface .b { grid-column: 3; }
+  .gt-hface :is(.gt-abbr, .gt-hsep) { grid-row: 2; }
+  .gt-hside { display: flex; align-items: center; }
+  .gt-hero .gt-logo { width: calc(var(--hz) * 160px); height: calc(var(--hz) * 160px); }
+  .gt-hero .gt-abbr { font-size: calc(var(--hz) * 42px); min-width: 0; }
+  .gt-hab { font-size: calc(var(--hz) * 90px); font-weight: 700; line-height: 1; }
+  .gt-hmid { grid-column: 2; font-size: calc(var(--hz) * 120px); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .gt-hmid.sep { font-size: calc(var(--hz) * 104px); font-weight: 400; }
+  .gt-hsep { grid-column: 2; font-size: calc(var(--hz) * 34px); color: #555; }
+  .gt-hline { --ch: calc(var(--hz) * 58px); display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: calc(var(--hz) * 12px) calc(var(--hz) * 18px); font-size: calc(var(--hz) * 52px); font-weight: 700; line-height: 1.1; }
+  .gt-hline .gt-on { font-weight: 400; color: #555; }
+  .gt-hline .gt-live { font-size: .62em; padding: 2px 10px; border-radius: 6px; }
+  .gt-hline .gt-ch { max-width: calc(var(--hz) * 220px); }
+  .gt-hline .gt-chtxt { font-size: calc(var(--hz) * 30px); padding: 0 12px; }
+  .gt-hline .gt-stale { font-size: .45em; margin: 0; }
   /* Images made for the OG (gt-og) replace the X's 8-gray ones (gt-xo) there */
   .gt-og { display: none; }
 
   /* The OG (1- and 2-bit, per ADR-0005): smaller, no gray, nothing under 10px */
-  :is(.screen--1bit, .screen--2bit) .gt { --u: .58; padding: 0; }
-  :is(.screen--1bit, .screen--2bit) :is(.gt-lg, .gt-head span, .gt-sep, .gt-pp) { color: #000; }
+  :is(.screen--1bit, .screen--2bit) .gt { --u: .58; --hu: .58; padding: 0; }
+  :is(.screen--1bit, .screen--2bit) :is(.gt-lg, .gt-head span, .gt-sep, .gt-pp, .gt-hsep, .gt-on) { color: #000; }
   :is(.screen--1bit, .screen--2bit) :is(.gt-lg, .gt-chtxt) { font-size: max(10px, calc(var(--z) * 14px)); }
   :is(.screen--1bit, .screen--2bit) .gt-sub { font-size: max(11px, calc(var(--z) * 16px)); }
   :is(.screen--1bit, .screen--2bit) .gt-sub .gt-live { font-size: 10px; }
   :is(.screen--1bit, .screen--2bit) .gt-errs { gap: 6px; }
   :is(.screen--1bit, .screen--2bit) .gt-err { font-size: 14px; gap: 6px; border-radius: 6px; padding: 2px 10px 3px 8px; }
   :is(.screen--1bit, .screen--2bit) .gt-stale { font-size: 10px; border-width: 1px; border-radius: 3px; margin-top: 1px; padding: 0 4px; }
-  :is(.screen--1bit, .screen--2bit) .gt-row + .gt-row { border-top: 1px solid #000; }
+  :is(.screen--1bit, .screen--2bit) :is(.gt-row, .gt-hero) + .gt-row { border-top: 1px solid #000; }
   /* The OG is too narrow for wrapped channels: they keep one line and take the width that's left */
   :is(.screen--1bit, .screen--2bit) .gt-row { grid-template-columns: calc(var(--z) * 40px) calc(var(--z) * 350px) calc(var(--z) * 200px) minmax(0, 1fr); min-height: 0; overflow: hidden; }
   :is(.screen--1bit, .screen--2bit) .gt-chs { --ch: 20px; max-height: var(--ch); gap: 6px; }
   :is(.screen--1bit, .screen--2bit) .gt-list { min-height: 0; overflow: hidden; }
   /* 1-bit has no gray: finals drop to regular weight instead of dimming */
   :is(.screen--1bit, .screen--2bit) .gt-dim { opacity: 1; }
-  :is(.screen--1bit, .screen--2bit) .gt-dim :is(.gt-abbr, .gt-score, .gt-sub) { font-weight: 400; }
-  /* 1-bit logos and icons are made at their exact pixel size (32 and 20 px), so they are never scaled */
+  :is(.screen--1bit, .screen--2bit) .gt-dim :is(.gt-abbr, .gt-score, .gt-sub, .gt-hmid, .gt-hline) { font-weight: 400; }
+  /* The big view's 1-bit logos and icons are 64 and 30 px; a gray logo takes the same box */
+  :is(.screen--1bit, .screen--2bit) .gt-hero .gt-logo { width: 64px; height: 64px; }
+  /* Those sizes don't shrink with --hk, so the OG's big view keeps its gaps tight to leave the rows room */
+  :is(.screen--1bit, .screen--2bit) .gt-hero { gap: calc(var(--hz) * 12px); padding: calc(var(--hz) * 6px) 0; }
+  :is(.screen--1bit, .screen--2bit) .gt-hface { row-gap: 2px; }
+  :is(.screen--1bit, .screen--2bit) :is(.gt-hlg, .gt-hero .gt-abbr) { line-height: 1; }
+  :is(.screen--1bit, .screen--2bit) .gt-hline { --ch: 30px; }
+  :is(.screen--1bit, .screen--2bit) .gt-hline .gt-chtxt { font-size: max(10px, calc(var(--hz) * 30px)); }
+  :is(.screen--1bit, .screen--2bit) .gt-hlg { font-size: max(10px, calc(var(--hz) * 26px)); }
+  /* 1-bit logos and icons are made at their exact pixel size (32 and 20 px in rows), so they are never scaled */
   :is(.screen--1bit, .screen--2bit) .gt-xo { display: none; }
   :is(.screen--1bit, .screen--2bit) .gt-og { display: inline-block; }
   :is(.screen--1bit, .screen--2bit) img.gt-og { width: auto; height: auto; max-width: none; flex-shrink: 0; image-rendering: pixelated; }
 </style>
 
 <div class="view view--full">
-<div class="layout"><div class="gt" style="--k: {{ k }}">
+<div class="layout"><div class="gt{% if h > 0 %} gt-spot{% endif %}" style="--k: {{ k }}; --hk: {{ hk }}">
   {%- assign err_n = errors | size -%}
   {%- if err_n > 0 -%}
   <div class="gt-errs">
@@ -130,17 +178,60 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
     {%- if sec == 1 -%}{%- assign ids = t_ids | split: "," -%}{%- assign n = t_n -%}{%- assign label = "Today" -%}{%- assign day_s = local_s -%}
     {%- else -%}{%- assign ids = m_ids | split: "," -%}{%- assign n = m_n -%}{%- assign label = "Tomorrow" -%}{%- assign day_s = local_s | plus: 86400 -%}{%- endif -%}
     {%- if n == 0 -%}{%- continue -%}{%- endif -%}
-    <section class="gt-sec" style="--n: {{ n }}">
+    <section class="gt-sec{% if sec == 1 and h > 0 %} feat{% endif %}" style="--n: {{ n }}">
       <div class="gt-head"><b>{{ label }}</b><span>{{ day_s | date: "%a, %b %-d" }}</span></div>
       <div class="gt-list">
+      {%- comment -%} Two passes over the section: the big view first (today's featured games in Spotlight), then the rows. {%- endcomment -%}
+      {%- for pass in (1..2) -%}
       {%- for id in ids -%}{%- if id == "" -%}{%- continue -%}{%- endif -%}
         {%- assign i = id | plus: 0 -%}{%- assign g = games[i] -%}
+        {%- assign want = 2 -%}{%- if sec == 1 and h > 0 and g.featured -%}{%- assign want = 1 -%}{%- endif -%}
+        {%- if want != pass -%}{%- continue -%}{%- endif -%}
         {%- if g.followed.home -%}{%- assign sep = "vs" -%}{%- else -%}{%- assign sep = "@" -%}{%- endif -%}
+        {%- comment -%} A game reads first, "vs" or "@", second. Two followed teams meeting read away "@" home; followed is the home team then. {%- endcomment -%}
+        {%- if g.both_followed -%}{%- assign a = g.opponent -%}{%- assign b = g.followed -%}{%- assign sep = "@" -%}
+        {%- else -%}{%- assign a = g.followed -%}{%- assign b = g.opponent -%}{%- endif -%}
+        {%- if pass == 1 -%}
+        <div class="gt-hero{% if g.state == 'final' %} gt-dim{% endif %}">
+          <span class="gt-hlg">{{ g.league }}</span>
+          <div class="gt-hface">
+            {%- for side in (1..2) -%}
+              {%- if side == 1 -%}{%- assign t = a -%}{%- assign col = "a" -%}{%- else -%}{%- assign t = b -%}{%- assign col = "b" -%}{%- endif -%}
+              {%- comment -%} The OG takes the big 1-bit logo, else dithers the gray one; a team with no logo is its abbreviation, set large. {%- endcomment -%}
+              <span class="gt-hside {{ col }}">
+              {%- if t.logo -%}{%- assign one = logos1h[t.logo] -%}
+                <img class="gt-logo{% if one %} gt-xo{% endif %}" src="{{ logos[t.logo] }}" alt="">
+                {%- if one -%}<img class="gt-og" src="{{ one }}" alt="">{%- endif -%}
+              {%- else -%}<span class="gt-hab">{{ t.abbr }}</span>{%- endif -%}
+              </span>
+              {%- if t.logo -%}<span class="gt-abbr {{ col }}">{{ t.abbr }}</span>{%- endif -%}
+            {%- endfor -%}
+            {%- if g.state == "live" or g.state == "final" -%}<span class="gt-hmid">{{ a.score }}–{{ b.score }}</span><span class="gt-hsep">{{ sep }}</span>
+            {%- else -%}<span class="gt-hmid sep">{{ sep }}</span>{%- endif -%}
+          </div>
+          <div class="gt-hline">
+            {%- case g.state -%}
+            {%- when "scheduled" -%}<span>{{ g.start | date: "%s" | plus: off | date: "%-I:%M %p" }}</span>
+            {%- when "live" -%}<span class="gt-live">LIVE</span>{% if age < 1200 and g.stale != true %}<span>{{ g.status }}</span>{% endif %}
+            {%- when "postponed" -%}<span>Postponed</span>
+            {%- else -%}<span>Final</span>
+            {%- endcase -%}
+            {%- assign ch_n = g.channels | size -%}
+            {%- if ch_n > 0 -%}{%- if g.state == "scheduled" or g.state == "live" -%}<span class="gt-on">on</span>
+              {%- for c in g.channels -%}
+                {%- if c.icon -%}{%- assign one = icons1h[c.name] -%}
+                  <img class="gt-ch gt-xo" src="{{ icons[c.name] }}" alt="{{ c.name }}">
+                  {%- if one -%}<img class="gt-og" src="{{ one }}" alt="{{ c.name }}">{%- else -%}<span class="gt-chtxt gt-og">{{ c.name }}</span>{%- endif -%}
+                {%- else -%}<span class="gt-chtxt">{{ c.name }}</span>{%- endif -%}
+              {%- endfor -%}
+            {%- endif -%}{%- endif -%}
+            {%- if g.stale -%}<span class="gt-stale">stale</span>{%- endif -%}
+          </div>
+        </div>
+        {%- continue -%}
+        {%- endif -%}
         <div class="gt-row{% if g.state == 'final' %} gt-dim{% elsif g.state == 'live' %} live{% endif %}">
           <span class="gt-lg">{{ g.league }}</span>
-          {%- comment -%} The row reads first, "vs" or "@", second. Two followed teams meeting read away "@" home; followed is the home team then. {%- endcomment -%}
-          {%- if g.both_followed -%}{%- assign a = g.opponent -%}{%- assign b = g.followed -%}{%- assign sep = "@" -%}
-          {%- else -%}{%- assign a = g.followed -%}{%- assign b = g.opponent -%}{%- endif -%}
           <div class="gt-match">
             {%- for side in (1..2) -%}
               {%- if side == 1 -%}{%- assign t = a -%}{%- else -%}<span class="gt-sep">{{ sep }}</span>{%- assign t = b -%}{%- endif -%}
@@ -173,6 +264,7 @@ Each list is game indexes ("0,3,"); LaraPaper keeps the empty item after the las
             {%- endfor -%}
           </div>
         </div>
+      {%- endfor -%}
       {%- endfor -%}
       </div>
     </section>
