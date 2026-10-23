@@ -8,7 +8,7 @@ from collector.discovery import discover_screens
 discover_screens()  # registers the screen packages so their submodules can be imported
 espn = importlib.import_module("trmnl_screens.game-time.collector.sources.espn")
 games_module = importlib.import_module("trmnl_screens.game-time.collector.games")
-games, parse_teams = games_module.games, games_module.parse_teams
+games, parse_teams, feature = games_module.games, games_module.parse_teams, games_module.feature
 
 TZ = timezone(timedelta(hours=-4))
 NOW = datetime(2026, 10, 23, 20, 5, tzinfo=TZ)
@@ -142,3 +142,56 @@ def test_games_are_sorted_by_start_across_leagues():
     assert [g["start"] for g in result] == [
         "2026-10-23T12:00:00-04:00", "2026-10-23T19:00:00-04:00", "2026-10-24T13:00:00-04:00",
     ]
+
+
+def slate(*games):
+    """Payload games from (local date, hour, state), each with a distinct followed team."""
+    return [
+        {"followed": {"abbr": f"T{i}"}, "local_date": day.isoformat(), "start": at(day, hour).astimezone(TZ).isoformat(),
+         "state": state, "featured": False}
+        for i, (day, hour, state) in enumerate(games)
+    ]
+
+
+def featured(*games):
+    return [g["followed"]["abbr"] for g in feature(slate(*games), TODAY) if g["featured"]]
+
+
+def test_one_game_today_is_featured():
+    assert featured((TODAY, 19, "scheduled")) == ["T0"]
+
+
+def test_two_games_today_are_both_featured_whatever_their_state():
+    assert featured((TODAY, 13, "final"), (TODAY, 19, "postponed"), (TOMORROW, 19, "scheduled")) == ["T0", "T1"]
+
+
+@pytest.mark.parametrize("tomorrow", [0, 1])
+def test_three_or_four_games_today_feature_the_live_ones(tomorrow):
+    today = [(TODAY, 13, "final"), (TODAY, 19, "live"), (TODAY, 20, "scheduled")]
+    assert featured(*today, *[(TOMORROW, 19, "scheduled")] * tomorrow) == ["T1"]
+    assert featured(*today, (TODAY, 21, "scheduled")) == ["T1"]
+
+
+def test_with_none_live_the_next_game_to_start_is_featured():
+    assert featured((TODAY, 13, "final"), (TODAY, 19, "scheduled"), (TODAY, 20, "scheduled"), (TODAY, 21, "postponed")) == ["T1"]
+
+
+def test_games_tied_on_the_next_start_are_all_featured():
+    assert featured((TODAY, 13, "final"), (TODAY, 19, "scheduled"), (TODAY, 19, "scheduled")) == ["T1", "T2"]
+
+
+def test_at_most_two_games_are_featured():
+    assert featured(*[(TODAY, 19, "live")] * 4) == ["T0", "T1"]
+    assert featured(*[(TODAY, 19, "scheduled")] * 3) == ["T0", "T1"]
+
+
+def test_a_game_live_from_yesterday_counts_as_today():
+    assert featured((YESTERDAY, 22, "live"), (TODAY, 13, "scheduled"), (TODAY, 19, "scheduled")) == ["T0"]
+
+
+def test_tomorrows_games_are_never_featured():
+    assert featured((TOMORROW, 13, "scheduled"), (TOMORROW, 19, "scheduled")) == []
+
+
+def test_nothing_is_featured_with_five_or_more_games():
+    assert featured((TODAY, 19, "scheduled"), *[(TOMORROW, 19, "scheduled")] * 4) == []
