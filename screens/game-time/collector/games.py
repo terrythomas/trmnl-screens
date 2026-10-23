@@ -1,6 +1,6 @@
 """Followed teams and the games in the game window (spec: Followed teams, Games)."""
 
-from datetime import datetime, timedelta, tzinfo
+from datetime import date, datetime, timedelta, tzinfo
 from typing import Any, Protocol
 
 from .channels import select
@@ -50,6 +50,21 @@ def games(espn: Scoreboard, followed: dict[str, set[str]], now: datetime, tz: tz
         if game["local_date"] in window
         or game["local_date"] == yesterday.isoformat() and game["state"] == "live"
     ]
+
+
+def feature(found: list[dict[str, Any]], today: date) -> list[dict[str, Any]]:
+    """The games with `featured` set on those the Spotlight layout shows big (spec: Featured games)."""
+    if len(found) >= 5:
+        return found
+    # The window holds only today, tomorrow and yesterday's live games, so anything before tomorrow is today's.
+    picks = [g for g in found if g["local_date"] <= today.isoformat()]
+    if len(picks) > 2:
+        start = lambda g: datetime.fromisoformat(g["start"])
+        scheduled = [g for g in picks if g["state"] == "scheduled"]
+        nxt = min(map(start, scheduled), default=None)
+        picks = [g for g in picks if g["state"] == "live"] or [g for g in scheduled if start(g) == nxt]
+    chosen = [id(g) for g in picks[:2]]
+    return [{**g, "featured": id(g) in chosen} for g in found]
 
 
 def _game(league: str, g: EspnGame, teams: set[str], tz: tzinfo | None) -> dict[str, Any]:

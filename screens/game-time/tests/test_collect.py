@@ -123,6 +123,12 @@ def test_a_failing_league_keeps_its_last_good_games_marked_stale(monkeypatch):
     assert second["errors"] == first["errors"] == [{"source": "espn-nba", "since": first["updated_at"]}]
 
 
+def test_todays_only_game_is_featured(monkeypatch):
+    monkeypatch.setenv("GAME_TIME_TEAMS", "nba:hbr")
+    monkeypatch.setattr(game_time, "EspnSource", TonightEspn)
+    assert [g["featured"] for g in screen.collect()["games"]] == [True]
+
+
 def test_a_recovered_league_clears_its_banner_entry(monkeypatch):
     monkeypatch.setenv("GAME_TIME_TEAMS", "nba:hbr")
     monkeypatch.setattr(game_time, "EspnSource", TonightEspn)

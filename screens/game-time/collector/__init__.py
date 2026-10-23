@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from collector.sections import Section, collect_sections
 
 from .channels import icon_url, record_unknown
-from .games import games, parse_teams
+from .games import feature, games, parse_teams
 from .logos import LogoStore
 from .sources.espn import EspnError, EspnSource
 from .sources.nba import NbaSource
@@ -50,6 +50,7 @@ def collect() -> dict[str, Any]:
         for league in followed if league in payload for g in payload[league]["games"]
     ]
     found.sort(key=lambda g: datetime.fromisoformat(g["start"]))
+    found = feature(found, now.date())
     record_unknown(state_dir / "game-time" / "unknown-channels.json", found, now)
     found, tables = _images(found, LogoStore(state_dir / "game-time" / "logos"))
     return {"updated_at": now.isoformat(timespec="seconds"), "games": found, **tables, "errors": payload["errors"]}
