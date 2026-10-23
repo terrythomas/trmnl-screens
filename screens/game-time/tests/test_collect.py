@@ -16,8 +16,9 @@ class EmptyEspn:
         return []
 
 
-def test_collect_builds_the_payload_from_the_followed_teams(monkeypatch):
+def test_collect_builds_the_payload_from_the_followed_teams(monkeypatch, tmp_path):
     monkeypatch.setenv("GAME_TIME_TEAMS", "nba:hbr")
+    monkeypatch.setenv("STATE_DIR", str(tmp_path))
     monkeypatch.setattr(game_time, "EspnSource", EmptyEspn)
     payload = screen.collect()
     assert datetime.fromisoformat(payload["updated_at"]).utcoffset() is not None
@@ -25,6 +26,7 @@ def test_collect_builds_the_payload_from_the_followed_teams(monkeypatch):
         "updated_at": None, "games": [], "errors": [],
         "logos": {}, "logos1": {}, "logos1h": {}, "icons": {}, "icons1": {}, "icons1h": {},
     }
+    assert json.loads((tmp_path / "game-time" / "unknown-channels.json").read_text()) == []
 
 
 def test_runs_hourly_by_default():
