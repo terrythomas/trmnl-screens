@@ -129,6 +129,16 @@ def test_a_screen_without_a_webhook_is_logged_once_as_off(caplog):
     assert caplog.records[0].levelname == "INFO"
 
 
+def test_names_a_dashed_screen_s_variable_as_config_reads_it(caplog):
+    caplog.set_level("INFO")
+    enabled_screens({"game-time": lambda: {}}, CONFIG)
+    run_tick({"game-time": lambda: {}}, CONFIG, FakePush())
+    assert [r.getMessage() for r in caplog.records] == [
+        "screen game-time: off (set GAME_TIME_WEBHOOK_UUID to enable it)",
+        "screen game-time: no GAME_TIME_WEBHOOK_UUID set, skipping",
+    ]
+
+
 class StopLoop(Exception):
     pass
 

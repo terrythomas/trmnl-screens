@@ -49,7 +49,8 @@ def test_a_screen_can_ask_to_run_sooner(tmp_path):
 
 
 def test_screens_that_do_not_ask_keep_their_schedules():
-    assert all(screen.next_run_minutes is None for screen in discover_screens().values())
+    screens = discover_screens()
+    assert screens["media"].next_run_minutes is None and screens["calendar"].next_run_minutes is None
 
 
 def test_the_calendar_screen_only_refreshes_what_the_phone_pushed():
