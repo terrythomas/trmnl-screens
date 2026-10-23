@@ -257,7 +257,7 @@ These don't block the issues:
 
 ## Open items to verify early
 
-1. Whether every NBA team's nba.com schedule page has the same embedded data as the one checked.
+1. ~~Whether every NBA team's nba.com schedule page has the same embedded data as the one checked.~~ Settled: several teams' pages carry the same data, served at `nba.com/team/<team id>/schedule` to a browser-like User-Agent; games are matched to ESPN by team name, since six tricodes differ from ESPN's abbreviations.
 2. Whether the MLB Stats API lists streaming exclusives, or those still come from ESPN.
 3. Whether ESPN throttles a client that polls every 5 minutes on busy evenings.
 4. ~~Where channel icons can come from for a public repository.~~ Settled: nothing is committed, and the collector fetches the artwork at runtime ([ADR-0009](../adr/0009-logos-fetched-at-runtime.md)).
