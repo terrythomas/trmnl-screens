@@ -1,9 +1,11 @@
 import importlib
+import io
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
+from PIL import Image, ImageDraw
 
 from collector.discovery import discover_screens
 
@@ -12,6 +14,7 @@ SCREEN = Path(__file__).resolve().parent.parent
 screen = discover_screens()["game-time"]
 game_time = importlib.import_module("trmnl_screens.game-time.collector")
 espn = importlib.import_module("trmnl_screens.game-time.collector.sources.espn")
+logos = importlib.import_module("trmnl_screens.game-time.collector.logos")
 
 
 class EmptyEspn:
@@ -54,8 +57,19 @@ def test_fixtures_match_the_payload_contract():
         for g in payload["games"]:
             assert g.keys() == game_keys, fixture.name
             assert g["followed"].keys() == g["opponent"].keys() == {"abbr", "name", "logo", "score", "home"}
-            # Fixtures are invented: no logos or icons, ever (ADR-0009).
-            assert g["followed"]["logo"] is None and g["opponent"]["logo"] is None, fixture.name
+        # Every reference has its image, and the tables hold nothing the games don't use.
+        teams = {t["logo"] for g in payload["games"] for t in (g["followed"], g["opponent"]) if t["logo"]}
+        icons = {c["name"] for g in payload["games"] for c in g["channels"] if c["icon"]}
+        assert set(payload["logos"]) == teams, fixture.name
+        assert set(payload["logos1"]) <= teams and set(payload["logos1h"]) <= teams, fixture.name
+        assert set(payload["icons"]) == icons, fixture.name
+        assert set(payload["icons1"]) <= icons and set(payload["icons1h"]) <= icons, fixture.name
+
+
+def test_the_nine_game_fixture_fits_the_preview_payload_limit():
+    # trmnlp rejects webhook payloads over 100 KB; scripts/preview-data wraps the fixture in merge_variables.
+    size = len(json.dumps({"merge_variables": json.loads((SCREEN / "fixtures" / "nine.json").read_text())}))
+    assert size < 100_000
 
 
 NOW = "2026-10-23T19:00:00-04:00"
@@ -208,3 +222,71 @@ def test_nba_channels_come_from_nba_com(monkeypatch, state_dir):
     monkeypatch.setattr(game_time, "NbaSource", FakeNba)
     [game] = screen.collect()["games"]
     assert (game["channels"], game["channels_incomplete"]) == ([{"name": "Harbor Sports Net", "icon": False}], False)
+
+
+def badge() -> bytes:
+    """An invented two-tone badge; no real logo or icon is used (ADR-0009)."""
+    im = Image.new("RGBA", (120, 80), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, 119, 79), fill=(20, 30, 90, 255))
+    d.rectangle((30, 20, 89, 59), fill=(255, 255, 255, 255))
+    out = io.BytesIO()
+    im.save(out, "PNG")
+    return out.getvalue()
+
+
+class ImagesEspn(EmptyEspn):
+    """HBR at home tonight and tomorrow. MSA's logo and the Prime Video icon fail to download."""
+
+    def scoreboard(self, league, day):
+        start = datetime.now().astimezone().replace(minute=0, second=0, microsecond=0)
+        team = lambda abbr, home: espn.EspnTeam(abbr, abbr.title(), f"https://logos.example/{abbr.lower()}.png", 0, home)
+        tv = lambda name, kind="TV", market="National": espn.EspnBroadcast(name, kind, market)
+        return [
+            espn.EspnGame("1", start, "STATUS_SCHEDULED", "pre", "", team("HBR", True), team("MSA", False),
+                          (tv("FOX"), tv("Peacock", "Streaming"), tv("Prime Video", "Streaming"))),
+            espn.EspnGame("2", start + timedelta(days=1), "STATUS_SCHEDULED", "pre", "", team("HBR", True), team("SLT", False),
+                          (tv("Truly Local 9", "TV", "Home"),)),
+        ]
+
+
+@pytest.fixture
+def images(monkeypatch):
+    def fetch(url):
+        if "msa" in url or "primevideo" in url:
+            raise ConnectionError("down")
+        return badge()
+
+    monkeypatch.setenv("GAME_TIME_TEAMS", "nba:hbr")
+    monkeypatch.setattr(game_time, "EspnSource", ImagesEspn)
+    monkeypatch.setattr(game_time, "LogoStore", lambda cache_dir: logos.LogoStore(cache_dir, fetch=fetch))
+    return screen.collect()
+
+
+def test_teams_and_channels_refer_to_shared_image_tables(images):
+    tonight, tomorrow = images["games"]
+    assert (tonight["followed"]["logo"], tonight["opponent"]["logo"], tomorrow["opponent"]["logo"]) == (
+        "nba-hbr", None, "nba-slt")
+    assert tonight["channels"] == [
+        {"name": "FOX", "icon": True}, {"name": "Peacock", "icon": False}, {"name": "Prime Video", "icon": False}]
+    assert tomorrow["channels"] == [{"name": "Truly Local 9", "icon": False}]
+    for table in ("logos", "logos1", "logos1h"):
+        assert set(images[table]) == {"nba-hbr", "nba-slt"}, table
+    for table in ("icons", "icons1", "icons1h"):
+        assert set(images[table]) == {"FOX"}, table
+    assert all(uri.startswith("data:image/png;base64,") for uri in images["logos"].values())
+
+
+def test_images_are_cached_in_the_state_directory(images, state_dir):
+    assert sorted(p.name for p in (state_dir / "game-time" / "logos").iterdir()) == [
+        "icon-fox.json", "logo-nba-hbr.json", "logo-nba-slt.json"]
+
+
+def test_a_failed_image_falls_back_to_text_without_stale_or_unknown_channel(images, state_dir, caplog):
+    assert images["errors"] == []
+    assert not any(g["stale"] for g in images["games"])
+    unknown = json.loads((state_dir / "game-time" / "unknown-channels.json").read_text())
+    assert [e["name"] for e in unknown] == ["Truly Local 9"]
+    logged = [r.getMessage() for r in caplog.get_records("setup")]  # collect() ran in the fixture
+    assert "logo for nba-msa skipped: ConnectionError" in logged
+    assert "icon for Prime Video skipped: ConnectionError" in logged

@@ -201,7 +201,6 @@ The rejected alternatives were Columns, Big rows and Split days.
 These don't block the issues:
 - On text-only OG rows, the league label sits right against the team abbreviation.
 - On busy days, the error banner (black, rounded) and the outlined channel-name boxes could become a ruled strip and plain text.
-- 1-bit team logos on the OG are proven on a test sheet but not yet drawn in the template.
 
 ## Testing
 

@@ -14,35 +14,40 @@ from .sources.espn import EspnBroadcast
 
 log = logging.getLogger(__name__)
 
-# Normalised name → entry. {} is a known channel; {"text_only": True} is one deliberately shown by name.
-# Each entry gains its icon source with the logo store (#60).
+# Icon sources, pinned so a change upstream can't change the screen: Simple Icons where it has the
+# mark, since it stays cleanest at 1-bit, else the tv-logos collection.
+SIMPLE_ICONS = "https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/{}.svg"
+TV_LOGOS = "https://cdn.jsdelivr.net/gh/tv-logo/tv-logos@d32e347bb7c4c640dceec23957802ad9182f58a6/countries/united-states/{}.png"
+
+# Normalised name → entry: its icon's slug in "simple_icons" or "tv_logos", or {"text_only": True} for
+# a channel deliberately shown by name. {} is a known channel with no icon source yet.
 CHANNELS: dict[str, dict[str, Any]] = {
-    "ABC": {},
-    "CBS": {},
-    "ESPN": {},
-    "ESPN2": {},
-    "ESPNU": {},
-    "FOX": {},
-    "FS1": {},
-    "NBC": {},
-    "TNT": {},
-    "TBS": {},
-    "truTV": {},
-    "NBA TV": {},
-    "NFL Network": {},
-    "MLB Network": {},
-    "NHL Network": {},
-    "ESPN+": {},
-    "Prime Video": {},
-    "Apple TV": {},
-    "Paramount+": {},
-    "Max": {},
-    "YouTube TV": {},
+    "ABC": {"tv_logos": "abc-us"},
+    "CBS": {"simple_icons": "cbs"},
+    "ESPN": {"tv_logos": "espn-us"},
+    "ESPN2": {"tv_logos": "espn-2-us"},
+    "ESPNU": {"tv_logos": "espn-u-us"},
+    "FOX": {"simple_icons": "fox"},
+    "FS1": {"tv_logos": "fox-sports-1-us"},
+    "NBC": {"simple_icons": "nbc"},
+    "TNT": {"tv_logos": "tnt-us"},
+    "TBS": {"tv_logos": "tbs-us"},
+    "truTV": {"tv_logos": "tru-tv-us"},
+    "NBA TV": {"tv_logos": "nba-tv-us"},
+    "NFL Network": {"tv_logos": "nfl-network-us"},
+    "MLB Network": {"tv_logos": "mlb-network-us"},
+    "NHL Network": {"tv_logos": "nhl-network-us"},
+    "ESPN+": {"tv_logos": "espn-plus-us"},
+    "Prime Video": {"simple_icons": "primevideo"},
+    "Apple TV": {"simple_icons": "appletv"},
+    "Paramount+": {"simple_icons": "paramountplus"},
+    "Max": {"simple_icons": "max"},
+    "YouTube TV": {"simple_icons": "youtubetv"},
     "Peacock": {"text_only": True},
-    "MLB.TV": {},
-    "NBA League Pass": {},
-    "NFL Sunday Ticket": {},
-    "NHL Center Ice": {},
+    "MLB.TV": {"text_only": True},
+    "NBA League Pass": {"tv_logos": "nba-league-pass-us"},
+    "NFL Sunday Ticket": {"text_only": True},
+    "NHL Center Ice": {"tv_logos": "nhl-center-ice-us"},
 }
 
 # Other source spellings, matched case-insensitively, → the name in CHANNELS.
@@ -72,6 +77,16 @@ _NAMES = {name.casefold(): name for name in CHANNELS} | {s.casefold(): name for 
 def normalise(name: str) -> str:
     name = name.strip()
     return _NAMES.get(name.casefold(), name)
+
+
+def icon_url(name: str) -> str | None:
+    """Where a channel's icon comes from; None for a text-only or unknown channel."""
+    entry = CHANNELS.get(name, {})
+    if "simple_icons" in entry:
+        return SIMPLE_ICONS.format(entry["simple_icons"])
+    if "tv_logos" in entry:
+        return TV_LOGOS.format(entry["tv_logos"])
+    return None
 
 
 def select(broadcasts: Iterable[EspnBroadcast], league: str, local_markets: set[str]) -> list[str]:

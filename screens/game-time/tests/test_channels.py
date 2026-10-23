@@ -145,3 +145,20 @@ def test_an_unreadable_file_starts_fresh(tmp_path):
     path.write_text("{not json")
     channels.record_unknown(path, [game("mlb", "Harbor Sports Net")], NOW)
     assert [e["times_seen"] for e in read(path)] == [1]
+
+
+def test_icons_come_from_pinned_simple_icons_first_then_tv_logos():
+    assert channels.icon_url("FOX") == "https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/fox.svg"
+    assert channels.icon_url("ESPN").startswith("https://cdn.jsdelivr.net/gh/tv-logo/tv-logos@")
+    assert channels.icon_url("ESPN").endswith("/countries/united-states/espn-us.png")
+
+
+def test_text_only_and_unknown_channels_have_no_icon():
+    assert channels.icon_url("Peacock") is None
+    assert channels.icon_url("Truly Local 9") is None
+
+
+def test_a_channel_has_at_most_one_icon_source_and_text_only_has_none():
+    for name, entry in channels.CHANNELS.items():
+        sources = {"simple_icons", "tv_logos"} & entry.keys()
+        assert len(sources) <= (0 if entry.get("text_only") else 1), name

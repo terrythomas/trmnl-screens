@@ -12,8 +12,9 @@ from dotenv import load_dotenv
 
 from collector.sections import Section, collect_sections
 
-from .channels import record_unknown
+from .channels import icon_url, record_unknown
 from .games import games, parse_teams
+from .logos import LogoStore
 from .sources.espn import EspnError, EspnSource
 from .sources.nba import NbaSource
 
@@ -50,13 +51,8 @@ def collect() -> dict[str, Any]:
     ]
     found.sort(key=lambda g: datetime.fromisoformat(g["start"]))
     record_unknown(state_dir / "game-time" / "unknown-channels.json", found, now)
-    return {
-        "updated_at": now.isoformat(timespec="seconds"),
-        "games": found,
-        "logos": {}, "logos1": {}, "logos1h": {},
-        "icons": {}, "icons1": {}, "icons1h": {},
-        "errors": payload["errors"],
-    }
+    found, tables = _images(found, LogoStore(state_dir / "game-time" / "logos"))
+    return {"updated_at": now.isoformat(timespec="seconds"), "games": found, **tables, "errors": payload["errors"]}
 
 
 def next_run_minutes(payload: dict[str, Any]) -> int | None:
@@ -67,6 +63,33 @@ def next_run_minutes(payload: dict[str, Any]) -> int | None:
         if game["state"] == "live" or game["state"] == "scheduled" and datetime.fromisoformat(game["start"]) <= soon:
             return 5
     return None
+
+
+def _images(found, store):
+    """The games with logo keys and icon flags, and the image tables holding only what they use.
+    A logo or icon that fails is logged by the store and shown as text."""
+    tables = {name: {} for name in ("logos", "logos1", "logos1h", "icons", "icons1", "icons1h")}
+
+    def add(names, key, images):
+        for name, uri in zip(names, images or ()):
+            if uri:
+                tables[name][key] = uri
+        return images is not None
+
+    def team(league, t):
+        key = f"{league}-{t['abbr'].lower()}"
+        found = t["logo"] and add(("logos", "logos1", "logos1h"), key, store.logo(key, t["logo"]))
+        return {**t, "logo": key if found else None}
+
+    def channel(c):
+        url = icon_url(c["name"])
+        return {**c, "icon": bool(url) and add(("icons", "icons1", "icons1h"), c["name"], store.icon(c["name"], url))}
+
+    return [
+        {**g, "followed": team(g["league"], g["followed"]), "opponent": team(g["league"], g["opponent"]),
+         "channels": [channel(c) for c in g["channels"]]}
+        for g in found
+    ], tables
 
 
 def _league(espn, league, abbrs, now, sources):

@@ -69,7 +69,7 @@ def _game(league: str, g: EspnGame, teams: set[str], tz: tzinfo | None) -> dict[
         "opponent": _team(opponent, scored),
         "both_followed": g.home.abbr in teams and g.away.abbr in teams,
         "channels": [] if state == "postponed" else [
-            {"name": name, "icon": False}  # the logo store sets icon (#60)
+            {"name": name, "icon": False}  # collect() sets icon once the icon is fetched
             for name in select(g.broadcasts, league, {"Home" if t.home else "Away" for t in (g.home, g.away) if t.abbr in teams})
         ],
         "channels_incomplete": False,
@@ -82,7 +82,7 @@ def _team(team: EspnTeam, scored: bool) -> dict[str, Any]:
     return {
         "abbr": team.abbr,
         "name": team.name,
-        "logo": None,  # the logo store fills this in (#60)
+        "logo": team.logo_url,  # collect() swaps the URL for its key in the logos table
         "score": team.score if scored else None,
         "home": team.home,
     }
