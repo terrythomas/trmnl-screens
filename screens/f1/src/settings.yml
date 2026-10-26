@@ -1,0 +1,9 @@
+---
+name: F1
+description: The Grand Prix weekend's circuit and session times, with no results
+strategy: webhook
+refresh_interval: 60
+no_screen_padding: 'no'
+dark_mode: 'no'
+static_data: ''
+framework_version: latest
