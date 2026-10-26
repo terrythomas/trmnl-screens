@@ -63,12 +63,21 @@ class OutlineStore:
 
     def _draw(self, lat, lon, year):
         if year not in self._locations:
-            self._locations[year] = json.loads(self.fetch(f"{BASE}/championships/f1-locations-{year}.json"))
+            self._locations[year] = json.loads(self._locations_file(year))
         nearest = min(self._locations[year], key=lambda loc: _km(lat, lon, loc["lat"], loc["lon"]))
         if _km(lat, lon, nearest["lat"], nearest["lon"]) > MAX_KM:
             raise LookupError("no outline nearby")
         geojson = json.loads(self.fetch(f"{BASE}/circuits/{nearest['id']}.geojson"))
         return svg_uri(geojson["features"][0]["geometry"]["coordinates"])
+
+    def _locations_file(self, year):
+        try:
+            return self.fetch(f"{BASE}/championships/f1-locations-{year}.json")
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code != 404:
+                raise
+            # bacinger publishes a season's file some time after Jolpica lists the season.
+            return self.fetch(f"{BASE}/championships/f1-locations-{year - 1}.json")
 
 
 def _km(lat1, lon1, lat2, lon2):

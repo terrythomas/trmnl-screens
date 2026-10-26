@@ -45,7 +45,8 @@ def store(tmp_path, files=FILES):
     def fetch(url):
         calls.append(url)
         if url not in files:
-            raise httpx.ConnectError(f"cannot reach {url}")
+            request = httpx.Request("GET", url)
+            raise httpx.HTTPStatusError(f"not found: {url}", request=request, response=httpx.Response(404, request=request))
         return files[url]
 
     s = outlines.OutlineStore(tmp_path / "outlines", fetch=fetch)
@@ -109,8 +110,15 @@ def test_a_failed_outline_only_logs_and_hides_the_url(tmp_path, caplog):
     files = {k: v for k, v in FILES.items() if "xx-1" not in k}
     with caplog.at_level(logging.WARNING):
         assert store(tmp_path, files).outline("square_ring", 60.0, 10.0, 2026, NOW) is None
-    assert "outline for square_ring skipped: ConnectError" in caplog.text
+    assert "outline for square_ring skipped: HTTP 404" in caplog.text
     assert "githubusercontent" not in caplog.text
+
+
+def test_a_new_season_without_a_locations_file_uses_the_previous_seasons(tmp_path):
+    files = {k.replace("2026", "2025"): v for k, v in FILES.items()}
+    s = store(tmp_path, files)
+    assert s.outline("square_ring", 60.0, 10.0, 2026, NOW)
+    assert s.calls[:2] == [f"{BASE}/championships/f1-locations-2026.json", f"{BASE}/championships/f1-locations-2025.json"]
 
 
 def test_a_circuit_far_from_every_outline_gets_none(tmp_path, caplog):

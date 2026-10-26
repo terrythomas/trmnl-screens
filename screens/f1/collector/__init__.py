@@ -25,29 +25,38 @@ NAMES = {
 def collect(now: datetime | None = None) -> dict[str, Any]:
     now = now or datetime.now().astimezone()
     state_dir = Path(os.environ.get("STATE_DIR") or "state") / "f1"
-    sections = {"schedule": Section("schedule", lambda: _schedule(JolpicaSource(), now.year))}
+    today = now.date().isoformat()
+    sections = {"schedule": Section("schedule", lambda: _schedule(JolpicaSource(), today))}
     payload = collect_sections(sections, state_dir / "schedule.json", now)
     # A stale schedule is filtered by today too, so it moves on to later Grands Prix.
-    season = payload.get("schedule", {}).get("grands_prix", [])
-    today = now.date().isoformat()
-    shown = [gp for gp in season if gp["sessions"][-1]["local_date"] >= today][:SHOWN]
+    shown = _upcoming(payload.get("schedule", {}).get("grands_prix", []), today)[:SHOWN]
     store = OutlineStore(state_dir / "outlines")
-    drawn = {gp["circuit"]: store.outline(gp["circuit"], gp["lat"], gp["lon"], now.year, now) for gp in shown}
+    drawn = {gp["circuit"]: store.outline(gp["circuit"], gp["lat"], gp["lon"], gp["season"], now) for gp in shown}
     return {
         "updated_at": now.isoformat(timespec="seconds"),
-        "grands_prix": [{k: v for k, v in gp.items() if k not in ("lat", "lon")} for gp in shown],
+        "grands_prix": [{k: v for k, v in gp.items() if k not in ("season", "lat", "lon")} for gp in shown],
         "outlines": {circuit: uri for circuit, uri in drawn.items() if uri},
         "errors": payload["errors"],
     }
 
 
-def _schedule(source, year):
-    """The whole season, kept with each circuit's coordinates for finding its outline."""
-    return {"grands_prix": [
-        {"round": gp.round, "name": gp.name, "location": gp.location, "circuit": gp.circuit,
-         "lat": gp.lat, "lon": gp.lon, "sessions": [_session(kind, start) for kind, start in gp.sessions]}
-        for gp in source.season(year)
-    ]}
+def _schedule(source, today):
+    """Jolpica's current season, and the next one when fewer than SHOWN Grands Prix are left.
+    Each is kept with its season and coordinates for finding its outline."""
+    season, found = source.season()
+    grands_prix = [_grand_prix(gp) for gp in found]
+    if len(_upcoming(grands_prix, today)) < SHOWN:
+        grands_prix += [_grand_prix(gp) for gp in source.season(season + 1)[1]]
+    return {"grands_prix": grands_prix}
+
+
+def _upcoming(grands_prix, today):
+    return [gp for gp in grands_prix if gp["sessions"][-1]["local_date"] >= today]
+
+
+def _grand_prix(gp):
+    return {"season": gp.season, "round": gp.round, "name": gp.name, "location": gp.location, "circuit": gp.circuit,
+            "lat": gp.lat, "lon": gp.lon, "sessions": [_session(kind, start) for kind, start in gp.sessions]}
 
 
 def _session(kind, start):

@@ -11,7 +11,21 @@ import pytest
 from collector.discovery import discover_screens
 
 SCREEN = Path(__file__).resolve().parent.parent
-SEASON = json.loads((SCREEN / "tests" / "recordings" / "jolpica_season.json").read_text())
+RECORDINGS = SCREEN / "tests" / "recordings"
+SEASON = json.loads((RECORDINGS / "jolpica_current.json").read_text())
+EMPTY = json.loads((RECORDINGS / "jolpica_empty_season.json").read_text())
+
+
+def next_season():
+    """The recording's first two Grands Prix moved a year on, standing in for a published 2027 season."""
+    body = json.loads(json.dumps(SEASON))
+    table = body["MRData"]["RaceTable"]
+    table["season"], table["Races"] = "2027", table["Races"][:2]
+    for race in table["Races"]:
+        race["season"] = "2027"
+        for entry in [race, *(v for v in race.values() if isinstance(v, dict) and "date" in v)]:
+            entry["date"] = entry["date"].replace("2026", "2027")
+    return body
 
 screen = discover_screens()["f1"]
 f1 = importlib.import_module("trmnl_screens.f1.collector")
@@ -32,20 +46,32 @@ def new_york(monkeypatch, tmp_path):
     time.tzset()
 
 
-def serve(monkeypatch, response):
-    monkeypatch.setattr(f1, "JolpicaSource",
-                        lambda: jolpica.JolpicaSource(transport=httpx.MockTransport(lambda request: response)))
+def serve(monkeypatch, current, following=None):
+    """Answer /current.json with `current` and /2027.json with `following`; return the paths asked for."""
+    asked = []
+
+    def handler(request):
+        asked.append(request.url.path)
+        return current if request.url.path.endswith("/current.json") else following
+
+    monkeypatch.setattr(f1, "JolpicaSource", lambda: jolpica.JolpicaSource(transport=httpx.MockTransport(handler)))
+    return asked
 
 
 @pytest.fixture
 def drawn(monkeypatch):
-    """Outlines drawn from an invented line (ADR-0010), except Interlagos's, which fails to download."""
+    """Outlines drawn from an invented line (ADR-0010), except Interlagos's, which fails to download.
+    Returns the (circuit, season) pairs asked for."""
+    asked = []
+
     def outline(self, circuit, lat, lon, year, now=None):
+        asked.append((circuit, year))
         if circuit == "interlagos":
             return None
         return f"data:image/svg+xml;base64,{circuit}"
 
     monkeypatch.setattr(outlines.OutlineStore, "outline", outline)
+    return asked
 
 
 def test_collect_builds_the_payload_from_the_season(monkeypatch, drawn):
@@ -79,6 +105,30 @@ def test_at_most_three_grands_prix_from_the_one_with_a_session_today_or_later(mo
     # The US Grand Prix's race is on the evening of the 25th, so it stays until that day ends.
     assert rounds(datetime(2026, 10, 25, 23, 59, tzinfo=NY)) == [18, 19, 20]
     assert rounds(MONDAY) == [19, 20, 21]
+
+
+def test_three_left_in_the_season_needs_no_next_season(monkeypatch, drawn):
+    asked = serve(monkeypatch, httpx.Response(200, json=SEASON))
+    screen.collect(MONDAY)
+    assert asked == ["/ergast/f1/current.json"]
+
+
+def test_the_next_season_fills_in_when_fewer_than_three_are_left(monkeypatch, drawn):
+    asked = serve(monkeypatch, httpx.Response(200, json=SEASON), httpx.Response(200, json=next_season()))
+    payload = screen.collect(datetime(2026, 11, 10, 9, 0, tzinfo=NY))
+
+    assert asked == ["/ergast/f1/current.json", "/ergast/f1/2027.json"]
+    assert [(gp["round"], gp["sessions"][-1]["local_date"]) for gp in payload["grands_prix"]] == [
+        (21, "2026-11-21"), (17, "2027-10-11"), (18, "2027-10-25")]
+    # Each outline is looked up in its own Grand Prix's season.
+    assert drawn == [("vegas", 2026), ("marina_bay", 2027), ("americas", 2027)]
+
+
+def test_an_unpublished_next_season_is_not_an_error(monkeypatch, drawn):
+    serve(monkeypatch, httpx.Response(200, json=SEASON), httpx.Response(200, json=EMPTY))
+    payload = screen.collect(datetime(2026, 11, 10, 9, 0, tzinfo=NY))
+    assert [gp["round"] for gp in payload["grands_prix"]] == [21]
+    assert payload["errors"] == []
 
 
 def test_a_session_belongs_to_the_local_day_it_starts_on(monkeypatch, drawn):

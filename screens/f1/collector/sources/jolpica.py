@@ -18,6 +18,7 @@ SESSIONS = {
 
 @dataclass(frozen=True)
 class GrandPrix:
+    season: int
     round: int
     name: str
     location: str
@@ -35,11 +36,13 @@ class JolpicaSource:
     def __init__(self, transport: httpx.BaseTransport | None = None):
         self._client = httpx.Client(base_url="https://api.jolpi.ca/ergast/f1", timeout=30, transport=transport)
 
-    def season(self, year: int) -> list[GrandPrix]:
+    def season(self, year: int | str = "current") -> tuple[int, list[GrandPrix]]:
+        """The season's year, as Jolpica names it, and its Grands Prix; none for a season not yet published."""
         try:
             response = self._client.get(f"/{year}.json")
             response.raise_for_status()
-            return [_grand_prix(r) for r in response.json()["MRData"]["RaceTable"]["Races"]]
+            table = response.json()["MRData"]["RaceTable"]
+            return int(table["season"]), [_grand_prix(r) for r in table["Races"]]
         except httpx.HTTPStatusError as e:
             raise JolpicaError(f"Jolpica returned HTTP {e.response.status_code}") from None
         except httpx.HTTPError as e:
@@ -54,6 +57,7 @@ def _grand_prix(r: dict) -> GrandPrix:
     sessions = [(kind, _start(r[key])) for key, kind in SESSIONS.items() if key in r]
     sessions.append(("race", _start(r)))
     return GrandPrix(
+        season=int(r["season"]),
         round=int(r["round"]),
         name=r["raceName"],
         location=f"{place['locality']}, {place['country']}",
