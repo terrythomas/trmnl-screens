@@ -1,6 +1,6 @@
 # Spec: F1 screen (v1)
 
-Status: requirements and sources settled; design in mock-ups
+Status: requirements, sources and design settled; payload contract settled, `fixtures/sample.json` to follow
 Glossary: [CONTEXT.md](../../CONTEXT.md) · Decisions: [docs/adr/](../adr/)
 
 ## Problem
@@ -44,9 +44,18 @@ The primary **Device** is the TRMNL X; the OG renders the same template ([ADR-00
 ### Circuit outline
 - Each Grand Prix shows its circuit's outline, large.
 - No outline artwork is committed to the repository, including tests and fixtures, in the spirit of [ADR-0009](../adr/0009-logos-fetched-at-runtime.md). The collector gets the outline at runtime and caches it in `STATE_DIR/f1/`.
-- The collector picks the outline whose location is nearest the circuit's coordinates in bacinger's current-season file, so a new circuit needs no code change. It projects the GeoJSON line to an SVG path, north-up.
+- The collector picks the outline whose location is nearest the circuit's coordinates in bacinger's current-season file, so a new circuit needs no code change. It projects the GeoJSON line to an SVG path, scaling longitude by the cosine of the latitude so the shape is true.
 - The outline is a plain line drawing, so the X and OG can use the same drawing; the OG needs no gray.
 - A missing outline falls back to the circuit name in its place. It never marks the screen stale.
+
+### Outline angle and north arrow (collector)
+The outline is turned to fill its space ([ADR-0011](../adr/0011-outlines-rotate-to-fit.md)). One fixed rule decides the angle for every circuit, so no circuit, season or new track needs a choice by hand.
+- The collector tries every whole-degree angle from 90° anticlockwise to 90° clockwise, so no outline is ever more than a quarter-turn from north-up.
+- At each angle it scales the outline as large as it fits in the **outline area** on each device: anchored to the area's bottom-right corner and kept clear of the **name block** in its top-left corner (see Design). The score is the X scale times the OG scale, so one angle serves both devices.
+- It keeps the best angle only if that draws the outline at least 20% larger than north-up, averaged over the two devices (the score is at least 1.2² times north-up's). Otherwise the outline stays north-up. Ties go to the angle nearest north-up.
+- The name block is sized to the Grand Prix's own name, so a long name pushes the outline down instead of running into it. The collector estimates the name's width from its letters, with a margin.
+- The **north arrow** is shown on every Grand Prix, rotated or not, so the orientation is always readable. The collector places it per device: outside the circuit (never inside its loop), clear of the line and the name block by a fixed gap, and as close to the line as that allows.
+- The angle, the outline's width on each device and the arrow's position depend only on the outline, the name and the layout, so the collector works them out once and caches them with the outline. The cache key includes a layout version; changing the Poster's layout numbers means bumping it.
 
 ### Failure behaviour
 - If the schedule source fails, the collector pushes its last good schedule, marked stale, and raises the error banner naming the source and since when, as on the other screens.
@@ -54,7 +63,7 @@ The primary **Device** is the TRMNL X; the OG renders the same template ([ADR-00
 
 ## Payload contract (F1 screen)
 
-Draft; `fixtures/sample.json` must match it once settled.
+`fixtures/sample.json` must match it.
 
 ```json
 {
@@ -70,22 +79,34 @@ Draft; `fixtures/sample.json` must match it once settled.
       ]
     }
   ],
-  "outlines": { "example-circuit": "data:image/svg+xml;base64,…" },
+  "outlines": {
+    "example-circuit": {
+      "d": "M0 412L38 380…Z", "w": 1000, "h": 618, "angle": 57,
+      "x": { "width": 88.5, "north": [94.1, 81.7] },
+      "og": { "width": 67.6, "north": [95.7, 80.2] }
+    }
+  },
   "errors": [{ "source": "schedule", "since": "2026-10-23T18:00:00-04:00" }]
 }
 ```
 
 - `grands_prix` holds the Grands Prix whose last session starts today or later, at most 3, so the template can pick the right one at render time and a stopped collector still covers a triple-header.
 - `outlines` only holds entries used by `grands_prix`. A circuit missing from it shows its name instead.
+- An outline is an SVG path already turned to `angle`, scaled so its longer side is 1000, with its width `w` and height `h` in the same units. The template draws it inline, so the stroke is set in CSS and stays the same thickness at any size.
+- `angle` is in degrees, clockwise positive, from −90 to 90; 0 is north-up. The north arrow is turned by the same angle.
+- Per device (`x`, `og`): `width` is the outline's width as a percentage of the outline area's width, and `north` is the arrow's centre as percentages of the area's width and height.
 - `kind` is one of `practice_1`, `practice_2`, `practice_3`, `sprint_qualifying`, `sprint`, `qualifying`, `race`.
+- The outline adds about 2 KB per circuit, so three stay far under the 100 KB payload limit.
 
 ## Design (template)
 
-To be decided in mock-ups, X first, then OG.
-- The circuit outline is the largest element; the schedule sits beside it on the X and under or beside it on the OG, whichever reads better at 800×480.
-- The title shows the Grand Prix name and location.
-- Struck-through sessions stay legible at 1-bit: strike-through in regular weight, the next session in bold.
-- OG text is never smaller than 10 px.
+The **Poster** layout, chosen from four themes in mock-ups. Sizes are CSS px at the X's logical width (about 1040 px; the framework scales by about 1.8) and at the OG's 800×480.
+- **Name block** (top-left): the words before "Grand Prix" in heavy capitals (Inter 900; 104 px X, 68 px OG); "Grand Prix" and any words after it on a smaller line beneath; a short heavy rule; then the location.
+- **Outline area**: everything above the tickets. The outline is a thick black line (14 px X, 9 px OG) with round joins, placed and turned as the payload says.
+- **North arrow**: a plain "N" with a straight arrow pointing north, about the height of the "Grand Prix" line, in the spot the payload gives. The arrow turns with the outline; the "N" stays upright.
+- **Tickets** (bottom): the five sessions as equal tickets in start order, each with the day, start time and session name. A session that is over is struck through (gray on the X, black on the OG). The next session is a solid black ticket with white text.
+- OG small text uses the framework's NicoClean pixel face at 16 px; no OG text is smaller than 10 px.
+- Framework fonts only.
 
 ## Configuration
 
@@ -107,4 +128,4 @@ To be decided in mock-ups, X first, then OG.
 - **Schedule:** Jolpica `/ergast/f1/<year>.json` lists every session's start in UTC, with `circuitId`, name and coordinates. No key; 500 requests an hour. OpenF1 has cancellation flags but no circuit ids, mixes in testing days and allows 30 requests a minute.
 - **Outlines:** see ADR-0010.
 - **Session lengths:** real lengths are about 35 min for the Sprint, 44 for Sprint Qualifying and 1h35 for the race, so the fixed lengths strike a session through a little late, never early.
-- **Orientation:** north-up by default; the mock-ups compare one rotated-to-fit variant.
+- **Orientation:** across the 2026 calendar, the fit rule turns 14 of 23 outlines (from 18° to 90°), and the rest stay north-up. The largest gains are about 2× (Australia on the X, Canada on the OG); Canada, Monza and Madrid gain about 1.6× on the X and 2× on the OG.

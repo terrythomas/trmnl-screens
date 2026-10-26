@@ -197,8 +197,12 @@ A local date on which at least one session starts. The F1 screen is in the playl
 _Avoid_: Race week, race weekend
 
 **Circuit outline**:
-The line drawing of the track the shown Grand Prix runs on.
+The line drawing of the track the shown Grand Prix runs on, turned by up to 90° when that draws it noticeably larger.
 _Avoid_: Track map, layout
+
+**North arrow**:
+The "N" and arrow beside the circuit outline, pointing to north. Shown on every Grand Prix, whether or not the outline is turned.
+_Avoid_: Compass
 
 **Spoiler**:
 Anything that could reveal how a session went: results, positions, the grid, standings or live status. The F1 screen never shows one, because the household often watches delayed.
