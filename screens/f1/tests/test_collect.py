@@ -131,6 +131,14 @@ def test_an_unpublished_next_season_is_not_an_error(monkeypatch, drawn):
     assert payload["errors"] == []
 
 
+def test_a_failed_next_season_only_logs(monkeypatch, drawn, caplog):
+    serve(monkeypatch, httpx.Response(200, json=SEASON), httpx.Response(503))
+    payload = screen.collect(datetime(2026, 11, 10, 9, 0, tzinfo=NY))
+    assert [gp["round"] for gp in payload["grands_prix"]] == [21]
+    assert payload["errors"] == []
+    assert "next season skipped: Jolpica returned HTTP 503" in caplog.text
+
+
 def test_a_session_belongs_to_the_local_day_it_starts_on(monkeypatch, drawn):
     serve(monkeypatch, httpx.Response(200, json=SEASON))
     vegas = screen.collect(MONDAY)["grands_prix"][2]

@@ -1,5 +1,6 @@
 """F1 screen collector: builds the payload described in docs/specs/f1-screen.md."""
 
+import logging
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -8,7 +9,9 @@ from typing import Any
 from collector.sections import Section, collect_sections
 
 from .outlines import OutlineStore
-from .sources.jolpica import JolpicaSource
+from .sources.jolpica import JolpicaError, JolpicaSource
+
+log = logging.getLogger(__name__)
 
 # Default minutes between runs; F1_INTERVAL_MINUTES or INTERVAL_MINUTES override it.
 INTERVAL_MINUTES = 60
@@ -46,7 +49,11 @@ def _schedule(source, today):
     season, found = source.season()
     grands_prix = [_grand_prix(gp) for gp in found]
     if len(_upcoming(grands_prix, today)) < SHOWN:
-        grands_prix += [_grand_prix(gp) for gp in source.season(season + 1)[1]]
+        try:
+            grands_prix += [_grand_prix(gp) for gp in source.season(season + 1)[1]]
+        except JolpicaError as e:
+            # Only fills in the last weeks of a season, so it never marks the schedule stale.
+            log.warning("next season skipped: %s", e)
     return {"grands_prix": grands_prix}
 
 
