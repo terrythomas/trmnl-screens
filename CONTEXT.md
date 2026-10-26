@@ -174,7 +174,7 @@ _Avoid_: Missing logo
 ## F1 screen
 
 **Grand Prix**:
-One round of the Formula 1 championship and its weekend of sessions. The F1 screen shows one at a time: the one with a session starting that day.
+One round of the Formula 1 championship and its weekend of sessions. The F1 screen shows one at a time: the one with a session starting that day. Pre-season testing is not a Grand Prix.
 _Avoid_: Race weekend, event, round
 
 **Session**:
@@ -185,7 +185,7 @@ _Avoid_: Event, run
 A session's start plus a fixed length: 1 hour for every session except the race, which gets 2. Delays and red flags are ignored.
 
 **Over**:
-A session whose session end has passed, or that was cancelled. Over sessions stay on the schedule, struck through.
+A session whose session end has passed. Over sessions stay on the schedule, struck through.
 _Avoid_: Finished, completed, done
 
 **Next session**:

@@ -1,6 +1,6 @@
 # Spec: F1 screen (v1)
 
-Status: requirements settled, design and sources still to verify
+Status: requirements and sources settled; design in mock-ups
 Glossary: [CONTEXT.md](../../CONTEXT.md) · Decisions: [docs/adr/](../adr/)
 
 ## Problem
@@ -9,7 +9,7 @@ The household follows Formula 1 but usually watches sessions delayed, especially
 
 ## Solution
 
-A new **Screen**, **F1**, in `screens/f1/`, fed by a **Collector** like the other screens ([ADR-0001](../adr/0001-collector-pushes-to-larapaper.md)). The collector reads free public sources only, with no keys or accounts. It pushes the season's schedule and the circuit outlines it needs. The template picks the **Grand Prix** and works out the visibility and **session** states from the render time, so the screen appears, strikes through finished sessions and leaves the playlist on the clock, without a fetch.
+A new **Screen**, **F1**, in `screens/f1/`, fed by a **Collector** like the other screens ([ADR-0001](../adr/0001-collector-pushes-to-larapaper.md)). The collector reads free public sources only, with no keys or accounts: the season schedule from Jolpica (the Ergast successor) and circuit outlines from the bacinger/f1-circuits GeoJSON set ([ADR-0010](../adr/0010-circuit-outlines-drawn-from-geojson.md)). It pushes the season's schedule and the circuit outlines it needs. The template picks the **Grand Prix** and works out the visibility and **session** states from the render time, so the screen appears, strikes through finished sessions and leaves the playlist on the clock, without a fetch.
 
 The primary **Device** is the TRMNL X; the OG renders the same template ([ADR-0005](../adr/0005-one-template-per-screen-across-devices.md)) and is part of the same work.
 
@@ -21,7 +21,7 @@ The primary **Device** is the TRMNL X; the OG renders the same template ([ADR-00
   - **Sprint weekend:** Practice 1, Sprint Qualifying, Sprint, Qualifying, Race.
 - Each session has a start time from the source. Its **session end** is the start plus a fixed length: 1 hour for practice, qualifying and Sprint Qualifying sessions, 1 hour for the Sprint, and 2 hours for the race. Delays and red flags are ignored; the screen shows nothing live.
 - A session is **over** once its session end has passed.
-- A session the source marks as cancelled is over from the start, and shown as cancelled.
+- Jolpica has no cancellation flags. A cancelled Grand Prix drops out of its schedule; a single cancelled session is struck through at its normal end.
 
 ### Session days and visibility (template)
 - A **session day** is a local date (`TZ`) on which at least one session starts. A session belongs to the local day it starts on, so Japan's Friday practice at 11:30 JST is a Thursday-evening session day in the US.
@@ -34,7 +34,7 @@ The primary **Device** is the TRMNL X; the OG renders the same template ([ADR-00
 
 ### Schedule (template)
 - The schedule lists all five sessions of the Grand Prix in start order, each with its local day and start time, e.g. "Fri 7:30 AM".
-- Sessions that are over stay in the list with their name and time struck through. A cancelled session is struck through and marked "Cancelled".
+- Sessions that are over stay in the list with their name and time struck through.
 - The **next session** is the first that is not over. It is set apart so it can be read at a glance. Once the race is over there is no next session, and the whole schedule is struck through until midnight.
 
 ### No spoilers
@@ -44,6 +44,7 @@ The primary **Device** is the TRMNL X; the OG renders the same template ([ADR-00
 ### Circuit outline
 - Each Grand Prix shows its circuit's outline, large.
 - No outline artwork is committed to the repository, including tests and fixtures, in the spirit of [ADR-0009](../adr/0009-logos-fetched-at-runtime.md). The collector gets the outline at runtime and caches it in `STATE_DIR/f1/`.
+- The collector picks the outline whose location is nearest the circuit's coordinates in bacinger's current-season file, so a new circuit needs no code change. It projects the GeoJSON line to an SVG path, north-up.
 - The outline is a plain line drawing, so the X and OG can use the same drawing; the OG needs no gray.
 - A missing outline falls back to the circuit name in its place. It never marks the screen stale.
 
@@ -65,7 +66,7 @@ Draft; `fixtures/sample.json` must match it once settled.
       "location": "Example City, Country",
       "circuit": "example-circuit",
       "sessions": [
-        { "kind": "practice_1", "name": "Practice 1", "start": "2026-10-23T12:30:00-04:00", "end": "2026-10-23T13:30:00-04:00", "local_date": "2026-10-23", "cancelled": false }
+        { "kind": "practice_1", "name": "Practice 1", "start": "2026-10-23T12:30:00-04:00", "end": "2026-10-23T13:30:00-04:00", "local_date": "2026-10-23" }
       ]
     }
   ],
@@ -74,7 +75,7 @@ Draft; `fixtures/sample.json` must match it once settled.
 }
 ```
 
-- `grands_prix` holds the Grands Prix with a session from yesterday onward, up to a small limit, so the template can pick the right one at render time.
+- `grands_prix` holds the Grands Prix whose last session starts today or later, at most 3, so the template can pick the right one at render time and a stopped collector still covers a triple-header.
 - `outlines` only holds entries used by `grands_prix`. A circuit missing from it shows its name instead.
 - `kind` is one of `practice_1`, `practice_2`, `practice_3`, `sprint_qualifying`, `sprint`, `qualifying`, `race`.
 
@@ -98,9 +99,12 @@ To be decided in mock-ups, X first, then OG.
 - Mashup layouts.
 - Other series (F2, F3, F1 Academy).
 - Integration with the Game Time screen.
+- Pre-season testing.
+- Cancelled-session marking, turn numbers and broadcast rotation (OpenF1 and MultiViewer could add these later).
 
-## Open items to verify early
+## Settled source checks (2026-10-26)
 
-- **Schedule source:** Jolpica (the Ergast successor) lists every session's start time in UTC and needs no key; OpenF1 is the alternative. Check which one reports cancelled or rescheduled sessions, and how quickly.
-- **Outline source and licence:** options include drawing the outline from public circuit coordinates (for example OpenF1 car position data from a past session) or fetching an existing SVG set. Check the licence before choosing, as for ADR-0009. If the choice is significant, record it as an ADR.
-- **Sprint length:** confirm the fixed 1-hour Sprint length is close enough to strike it through at a sensible time.
+- **Schedule:** Jolpica `/ergast/f1/<year>.json` lists every session's start in UTC, with `circuitId`, name and coordinates. No key; 500 requests an hour. OpenF1 has cancellation flags but no circuit ids, mixes in testing days and allows 30 requests a minute.
+- **Outlines:** see ADR-0010.
+- **Session lengths:** real lengths are about 35 min for the Sprint, 44 for Sprint Qualifying and 1h35 for the race, so the fixed lengths strike a session through a little late, never early.
+- **Orientation:** north-up by default; the mock-ups compare one rotated-to-fit variant.
