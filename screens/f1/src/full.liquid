@@ -6,20 +6,20 @@ Every X size is calc(var(--u) * Npx); the OG sets its own sizes. The outline are
 match DEVICES in collector/fit.py, which places the outline and the north arrow for them.
 {%- endcomment -%}
 {%- assign now_s = preview_now | default: "now" | date: "%s" | plus: 0 -%}
-{%- comment -%} Local time is the offset updated_at carries ("-04:00"), else the LaraPaper user's. {%- endcomment -%}
-{%- assign off = trmnl.user.utc_offset | default: 0 | plus: 0 -%}
-{%- assign tz = updated_at | slice: -6, 6 -%}
-{%- assign tz_sign = tz | slice: 0 -%}
-{%- if tz_sign == "-" or tz_sign == "+" -%}
-  {%- assign tz_h = tz | slice: 1, 2 | plus: 0 -%}{%- assign tz_m = tz | slice: 4, 2 | plus: 0 -%}
-  {%- assign off = tz_h | times: 3600 -%}{%- assign tz_m = tz_m | times: 60 -%}{%- assign off = off | plus: tz_m -%}
-  {%- if tz_sign == "-" -%}{%- assign off = off | times: -1 -%}{%- endif -%}
-{%- endif -%}
-{%- assign today = now_s | plus: off | date: "%Y-%m-%d" -%}
+{%- comment -%}
+Never format a shifted epoch: LaraPaper's date filter prints epochs in its app time zone, trmnlp in UTC.
+Times are printed from the collector's ISO strings, and a session is today when the render time falls in
+its local day: midnight of its local_date at its own offset, compared as epochs.
+{%- endcomment -%}
 {%- comment -%} The Grand Prix with a session starting today; they arrive in race order, so the first wins a shared day. {%- endcomment -%}
 {%- assign gp = nil -%}
 {%- for g in grands_prix -%}
-  {%- for s in g.sessions -%}{%- if s.local_date == today -%}{%- assign gp = g -%}{%- break -%}{%- endif -%}{%- endfor -%}
+  {%- for s in g.sessions -%}
+    {%- assign tz = s.start | slice: -6, 6 -%}
+    {%- assign day_s = s.local_date | append: "T00:00:00" | append: tz | date: "%s" | plus: 0 -%}
+    {%- assign day_e = day_s | plus: 86400 -%}
+    {%- if now_s >= day_s and now_s < day_e -%}{%- assign gp = g -%}{%- break -%}{%- endif -%}
+  {%- endfor -%}
   {%- if gp -%}{%- break -%}{%- endif -%}
 {%- endfor -%}
 {%- comment -%} Not a session day: leave the playlist, unless the error banner has been up 24 hours, so a broken collector shows. {%- endcomment -%}
@@ -104,9 +104,8 @@ match DEVICES in collector/fit.py, which places the outline and the north arrow 
   {%- if err_n > 0 -%}
   <div class="f1-errs">
     {%- for e in errors -%}
-    {%- assign since_s = e.since | date: "%s" | plus: off -%}
     {%- assign up = e.since | date: "%s" | plus: 0 -%}{%- assign up = now_s | minus: up -%}
-    {%- if up < 86400 -%}{%- assign since = since_s | date: "%-I:%M %p" -%}{%- else -%}{%- assign since = since_s | date: "%a %-I:%M %p" -%}{%- endif -%}
+    {%- if up < 86400 -%}{%- assign since = e.since | date: "%-I:%M %p" -%}{%- else -%}{%- assign since = e.since | date: "%a %-I:%M %p" -%}{%- endif -%}
     <span class="f1-err"><svg viewBox="0 0 24 24" width="1.1em" height="1.1em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 3L2 20.5h20z"/><path d="M12 10v4.5M12 17.5v.5"/></svg>
       <span>{% if e.source == "schedule" %}Schedule{% else %}{{ e.source }}{% endif %} down since {{ since }}</span>
       {%- if e.source == "schedule" -%}<span class="why">· showing its last data</span>{%- endif -%}
@@ -133,8 +132,7 @@ match DEVICES in collector/fit.py, which places the outline and the north arrow 
   </div>
   <div class="f1-strip">
     {%- for s in gp.sessions -%}
-    {%- assign start_s = s.start | date: "%s" | plus: off -%}
-    <div class="f1-tk{% if next_i == -1 or forloop.index0 < next_i %} over{% elsif forloop.index0 == next_i %} next{% endif %}"><b>{{ start_s | date: "%A" }}</b><strong>{{ start_s | date: "%-I:%M %p" }}</strong><em>{{ s.name }}</em></div>
+    <div class="f1-tk{% if next_i == -1 or forloop.index0 < next_i %} over{% elsif forloop.index0 == next_i %} next{% endif %}"><b>{{ s.start | date: "%A" }}</b><strong>{{ s.start | date: "%-I:%M %p" }}</strong><em>{{ s.name }}</em></div>
     {%- endfor -%}
   </div>
   {%- endif -%}
