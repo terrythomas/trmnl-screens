@@ -23,6 +23,7 @@ class GrandPrix:
     name: str
     location: str
     circuit: str  # Jolpica's circuitId
+    circuit_name: str
     lat: float
     lon: float
     sessions: tuple[tuple[str, datetime], ...]  # (kind, start in UTC), in start order
@@ -62,6 +63,7 @@ def _grand_prix(r: dict) -> GrandPrix:
         name=r["raceName"],
         location=f"{place['locality']}, {place['country']}",
         circuit=circuit["circuitId"],
+        circuit_name=circuit["circuitName"],
         lat=float(place["lat"]),
         lon=float(place["long"]),
         sessions=tuple(sorted(sessions, key=lambda s: s[1])),

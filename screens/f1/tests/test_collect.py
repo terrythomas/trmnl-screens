@@ -84,6 +84,7 @@ def test_collect_builds_the_payload_from_the_season(monkeypatch, drawn):
     mexico = payload["grands_prix"][0]
     assert mexico == {
         "round": 19, "name": "Mexico City Grand Prix", "location": "Mexico City, Mexico", "circuit": "rodriguez",
+        "circuit_name": "Autódromo Hermanos Rodríguez",
         "sessions": [
             {"kind": "practice_1", "name": "Practice 1", "start": "2026-10-30T14:30:00-04:00",
              "end": "2026-10-30T15:30:00-04:00", "local_date": "2026-10-30"},
@@ -180,7 +181,7 @@ def test_fixtures_match_the_payload_contract():
         payload = json.loads(fixture.read_text())
         assert {"updated_at", "grands_prix", "outlines", "errors"} <= payload.keys(), fixture.name
         for gp in payload["grands_prix"]:
-            assert gp.keys() == {"round", "name", "location", "circuit", "sessions"}, fixture.name
+            assert gp.keys() == {"round", "name", "location", "circuit", "circuit_name", "sessions"}, fixture.name
             for s in gp["sessions"]:
                 assert s.keys() == {"kind", "name", "start", "end", "local_date"}, fixture.name
                 assert s["kind"] in jolpica.SESSIONS.values() or s["kind"] == "race", fixture.name

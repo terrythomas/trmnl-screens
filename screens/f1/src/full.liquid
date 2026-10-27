@@ -128,7 +128,7 @@ match DEVICES in collector/fit.py, which places the outline and the north arrow 
       {%- endif -%}
     </div>
     {%- else -%}
-    <div class="f1-area"><div class="f1-noline">{{ gp.circuit | replace: "_", " " | capitalize }}</div></div>
+    <div class="f1-area"><div class="f1-noline">{{ gp.circuit_name }}</div></div>
     {%- endif -%}
   </div>
   <div class="f1-strip">

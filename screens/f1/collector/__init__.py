@@ -64,6 +64,7 @@ def _upcoming(grands_prix, today):
 
 def _grand_prix(gp):
     return {"season": gp.season, "round": gp.round, "name": gp.name, "location": gp.location, "circuit": gp.circuit,
+            "circuit_name": gp.circuit_name,
             "lat": gp.lat, "lon": gp.lon, "sessions": [_session(kind, start) for kind, start in gp.sessions]}
 
 

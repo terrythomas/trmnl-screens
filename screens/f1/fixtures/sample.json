@@ -7,6 +7,7 @@
       "name": "Harbor Grand Prix",
       "location": "Harbor City, Examplia",
       "circuit": "harbor_street",
+      "circuit_name": "Harbor Street Circuit",
       "sessions": [
         {
           "kind": "practice_1",
@@ -50,6 +51,7 @@
       "name": "Mesa Grand Prix",
       "location": "Mesa, Examplia",
       "circuit": "mesa_ring",
+      "circuit_name": "Mesa Ring",
       "sessions": [
         {
           "kind": "practice_1",

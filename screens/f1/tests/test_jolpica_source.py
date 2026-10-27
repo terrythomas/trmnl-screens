@@ -57,6 +57,7 @@ def test_season_maps_a_conventional_weekend():
     brazil = source(replay(SEASON)).season()[1][3]
     assert brazil == jolpica.GrandPrix(
         season=2026, round=20, name="Brazilian Grand Prix", location="São Paulo, Brazil", circuit="interlagos",
+        circuit_name="Autódromo José Carlos Pace",
         lat=-23.7036, lon=-46.6997,
         sessions=(
             ("practice_1", utc(2026, 11, 6, 15, 30)),

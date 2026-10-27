@@ -74,6 +74,7 @@ The outline is turned to fill its space ([ADR-0011](../adr/0011-outlines-rotate-
       "name": "Example Grand Prix",
       "location": "Example City, Country",
       "circuit": "example-circuit",
+      "circuit_name": "Example Street Circuit",
       "sessions": [
         { "kind": "practice_1", "name": "Practice 1", "start": "2026-10-23T12:30:00-04:00", "end": "2026-10-23T13:30:00-04:00", "local_date": "2026-10-23" }
       ]
@@ -91,7 +92,7 @@ The outline is turned to fill its space ([ADR-0011](../adr/0011-outlines-rotate-
 ```
 
 - `grands_prix` holds the Grands Prix whose last session starts today or later, at most 3, so the template can pick the right one at render time and a stopped collector still covers a triple-header.
-- `outlines` only holds entries used by `grands_prix`. A circuit missing from it shows its name instead.
+- `outlines` only holds entries used by `grands_prix`. A circuit missing from it shows its `circuit_name` instead.
 - An outline is an SVG path already turned to `angle`, scaled so its longer side is 1000, with its width `w` and height `h` in the same units. The template draws it inline, so the stroke is set in CSS and stays the same thickness at any size.
 - `angle` is in degrees, clockwise positive, from −90 to 90; 0 is north-up. The north arrow is turned by the same angle.
 - Per device (`x`, `og`): `width` is the outline's width as a percentage of the outline area's width, and `north` is the arrow's centre as percentages of the area's width and height.
