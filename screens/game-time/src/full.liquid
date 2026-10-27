@@ -15,6 +15,13 @@ Every size is calc(var(--z) * Npx): --k scales rows by game count, --u by device
   {%- assign off = tz_h | times: 3600 -%}{%- assign tz_m = tz_m | times: 60 -%}{%- assign off = off | plus: tz_m -%}
   {%- if tz_sign == "-" -%}{%- assign off = off | times: -1 -%}{%- endif -%}
 {%- endif -%}
+{%- comment -%}
+The date filter prints epochs in the engine's own zone (LaraPaper: its app time zone; trmnlp: UTC), so off
+becomes the shift from that zone: the engine's offset is its printed clock read back as UTC, minus now.
+{%- endcomment -%}
+{%- comment -%} No "T" in the format: LaraPaper passes it to PHP date(), where it prints the zone name. {%- endcomment -%}
+{%- assign eng_s = now_s | date: "%Y-%m-%d %H:%M:%S" | append: " UTC" | date: "%s" | plus: 0 -%}
+{%- assign off = off | minus: eng_s | plus: now_s -%}
 {%- assign local_s = now_s | plus: off -%}
 {%- assign today = local_s | date: "%Y-%m-%d" -%}
 {%- assign yesterday = local_s | minus: 86400 | date: "%Y-%m-%d" -%}
