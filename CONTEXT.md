@@ -171,6 +171,42 @@ _Avoid_: Streaming, league pass
 A channel the screen doesn't recognise. Shown by name, and recorded once so it can be added later. A channel the screen knows but deliberately shows as text (one with no usable icon) is not unknown.
 _Avoid_: Missing logo
 
+## F1 screen
+
+**Grand Prix**:
+One round of the Formula 1 championship and its weekend of sessions. The F1 screen shows one at a time: the one with a session starting that day. Pre-season testing is not a Grand Prix.
+_Avoid_: Race weekend, event, round
+
+**Session**:
+One timed part of a Grand Prix: Practice 1–3, Sprint Qualifying, the Sprint, Qualifying or the Race. A conventional weekend has three practices; a sprint weekend has one practice plus Sprint Qualifying and the Sprint.
+_Avoid_: Event, run
+
+**Session end**:
+A session's start plus a fixed length: 1 hour for every session except the race, which gets 2. Delays and red flags are ignored.
+
+**Over**:
+A session whose session end has passed. Over sessions stay on the schedule, struck through.
+_Avoid_: Finished, completed, done
+
+**Next session**:
+The first session of the shown Grand Prix that is not over. There is none after the race.
+_Avoid_: Up next, current session
+
+**Session day**:
+A local date on which at least one session starts. The F1 screen is in the playlist only on session days, for the whole day.
+_Avoid_: Race week, race weekend
+
+**Circuit outline**:
+The line drawing of the track the shown Grand Prix runs on, turned by up to 90° when that draws it noticeably larger.
+_Avoid_: Track map, layout
+
+**North arrow**:
+The "N" and arrow beside the circuit outline, pointing to north. Shown on every Grand Prix, whether or not the outline is turned.
+_Avoid_: Compass
+
+**Spoiler**:
+Anything that could reveal how a session went: results, positions, the grid, standings or live status. The F1 screen never shows one, because the household often watches delayed.
+
 ## Health
 
 **Stale**:
