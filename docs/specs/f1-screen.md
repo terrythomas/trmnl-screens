@@ -53,7 +53,7 @@ The outline is turned to fill its space ([ADR-0011](../adr/0011-outlines-rotate-
 - The collector tries every whole-degree angle from 90° anticlockwise to 90° clockwise, so no outline is ever more than a quarter-turn from north-up.
 - At each angle it scales the outline as large as it fits in the **outline area** on each device: anchored to the area's bottom-right corner and kept clear of the **name block** in its top-left corner (see Design). The score is the X scale times the OG scale, so one angle serves both devices.
 - It keeps the best angle only if that draws the outline at least 20% larger than north-up, averaged over the two devices (the score is at least 1.2² times north-up's). Otherwise the outline stays north-up. Ties go to the angle nearest north-up.
-- The name block is sized to the Grand Prix's own name, so a long name pushes the outline down instead of running into it. The collector estimates the name's width from its letters, with a margin.
+- The name block is sized to the Grand Prix's own name and location, so a long name pushes the outline down instead of running into it. The collector estimates their widths from their letters, with a margin.
 - The **north arrow** is shown on every Grand Prix, rotated or not, so the orientation is always readable. The collector places it per device: outside the circuit (never inside its loop), clear of the line and the name block by a fixed gap, and as close to the line as that allows.
 - The angle, the outline's width on each device and the arrow's position depend only on the outline, the name and the layout, so the collector works them out once and caches them with the outline. The cache key includes a layout version; changing the Poster's layout numbers means bumping it.
 

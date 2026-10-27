@@ -31,6 +31,7 @@ screen = discover_screens()["f1"]
 f1 = importlib.import_module("trmnl_screens.f1.collector")
 jolpica = importlib.import_module("trmnl_screens.f1.collector.sources.jolpica")
 outlines = importlib.import_module("trmnl_screens.f1.collector.outlines")
+fit = importlib.import_module("trmnl_screens.f1.collector.fit")
 
 NY = ZoneInfo("America/New_York")
 MONDAY = datetime(2026, 10, 26, 9, 0, tzinfo=NY)
@@ -64,11 +65,11 @@ def drawn(monkeypatch):
     Returns the (circuit, season) pairs asked for."""
     asked = []
 
-    def outline(self, circuit, lat, lon, year, now=None):
+    def outline(self, circuit, lat, lon, year, name, location, now=None):
         asked.append((circuit, year))
         if circuit == "interlagos":
             return None
-        return f"data:image/svg+xml;base64,{circuit}"
+        return {"d": circuit, "name": name, "location": location}
 
     monkeypatch.setattr(outlines.OutlineStore, "outline", outline)
     return asked
@@ -149,8 +150,10 @@ def test_a_session_belongs_to_the_local_day_it_starts_on(monkeypatch, drawn):
 def test_outlines_hold_only_the_shown_circuits_that_were_drawn(monkeypatch, drawn):
     serve(monkeypatch, httpx.Response(200, json=SEASON))
     payload = screen.collect(MONDAY)
-    assert payload["outlines"] == {"rodriguez": "data:image/svg+xml;base64,rodriguez",
-                                   "vegas": "data:image/svg+xml;base64,vegas"}
+    # Each is laid out for its own Grand Prix's name and location.
+    assert payload["outlines"] == {
+        "rodriguez": {"d": "rodriguez", "name": "Mexico City Grand Prix", "location": "Mexico City, Mexico"},
+        "vegas": {"d": "vegas", "name": "Las Vegas Grand Prix", "location": "Las Vegas, USA"}}
     assert payload["errors"] == []  # a missing outline never raises the banner
 
 
@@ -182,4 +185,8 @@ def test_fixtures_match_the_payload_contract():
                 assert s.keys() == {"kind", "name", "start", "end", "local_date"}, fixture.name
                 assert s["kind"] in jolpica.SESSIONS.values() or s["kind"] == "race", fixture.name
         assert set(payload["outlines"]) <= {gp["circuit"] for gp in payload["grands_prix"]}, fixture.name
-        assert all(uri.startswith("data:image/svg+xml;base64,") for uri in payload["outlines"].values())
+        for outline in payload["outlines"].values():
+            assert outline.keys() == {"d", "w", "h", "angle", "x", "og"}, fixture.name
+            assert -fit.MAX_TURN <= outline["angle"] <= fit.MAX_TURN, fixture.name
+            for dev in ("x", "og"):
+                assert outline[dev].keys() == {"width", "north"}, fixture.name

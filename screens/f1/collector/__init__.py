@@ -34,11 +34,12 @@ def collect(now: datetime | None = None) -> dict[str, Any]:
     # A stale schedule is filtered by today too, so it moves on to later Grands Prix.
     shown = _upcoming(payload.get("schedule", {}).get("grands_prix", []), today)[:SHOWN]
     store = OutlineStore(state_dir / "outlines")
-    drawn = {gp["circuit"]: store.outline(gp["circuit"], gp["lat"], gp["lon"], gp["season"], now) for gp in shown}
+    drawn = {gp["circuit"]: store.outline(gp["circuit"], gp["lat"], gp["lon"], gp["season"], gp["name"], gp["location"], now)
+             for gp in shown}
     return {
         "updated_at": now.isoformat(timespec="seconds"),
         "grands_prix": [{k: v for k, v in gp.items() if k not in ("season", "lat", "lon")} for gp in shown],
-        "outlines": {circuit: uri for circuit, uri in drawn.items() if uri},
+        "outlines": {circuit: outline for circuit, outline in drawn.items() if outline},
         "errors": payload["errors"],
     }
 

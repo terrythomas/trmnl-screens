@@ -1,0 +1,7 @@
+# trmnlp dev server config (not uploaded). Load fixture data with scripts/preview-data.
+---
+watch:
+  - src
+custom_fields: {}
+variables:
+  trmnl: {}
