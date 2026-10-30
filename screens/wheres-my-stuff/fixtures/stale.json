@@ -1,0 +1,28 @@
+{
+  "updated_at": "2026-10-30T09:41:00-04:00",
+  "errors": [
+    {
+      "source": "parcel",
+      "since": "2026-10-30T07:15:00-04:00"
+    }
+  ],
+  "headline": "1 out for delivery · 1 coming",
+  "deliveries": [
+    {
+      "status": "out_for_delivery",
+      "description": "Coffee beans",
+      "carrier": "Amazon",
+      "when": "Today by 8 PM",
+      "location": "Dayton, OH"
+    },
+    {
+      "status": "on_the_way",
+      "description": "Laptop",
+      "carrier": "FedEx",
+      "when": "Wed",
+      "event": "Left FedEx origin facility",
+      "location": "Taoyuan, Taiwan"
+    }
+  ],
+  "stale": true
+}

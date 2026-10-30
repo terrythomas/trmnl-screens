@@ -1,0 +1,9 @@
+---
+name: Where's My Stuff?
+description: Deliveries tracked in Parcel, in the order you'd act on them
+strategy: webhook
+refresh_interval: 15
+no_screen_padding: 'no'
+dark_mode: 'no'
+static_data: ''
+framework_version: latest
