@@ -141,4 +141,4 @@ Confirm with real data before calling the screen done, then delete this section:
 - Whether `filter_mode=recent` returns Delivered deliveries. On 2026-10-30 `recent` and `active` both returned one in-transit delivery. If it doesn't, Delivered can't be shown, and the 36-hour rule needs another source.
 - What a Stuck delivery's response looks like, especially whether `date_expected` is kept.
 
-Settled: a wrong key gets HTTP 401 with `{"success": false, "error_message": "Account not found"}` (checked 2026-10-30), so it reads as "Parcel key rejected".
+Settled: a wrong key gets HTTP 401 with `{"success": false, "error_message": "Account not found"}` (checked 2026-10-30), so it reads as "Parcel key rejected". On LaraPaper (checked 2026-10-30), Liquid's `size` counts characters, so the headline shrink matches the preview, but `escape` turns "·" into `&middot;`: text is split on " · " before it is escaped.

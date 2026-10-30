@@ -177,7 +177,7 @@ Every size is calc(var(--z) * Npx): --k grows text when there are few deliveries
         <span class="ws-sub"><b>{{ d.carrier | escape }}</b>{% if d.event %} · {{ d.event | escape }}{% endif %}{% if d.location %} · {{ d.location | escape }}{% endif %}</span>
         {%- endif -%}
       </div>
-      <span class="ws-when{% if d.late %} late{% endif %}">{%- comment -%} A two-part "when" ("Missed delivery · Today") may only wrap at its dot. {%- endcomment -%}<span class="ws-wt">{% if d.when contains " · " %}<span class="np">{{ d.when | escape | replace: " · ", ' ·</span> <span class="np">' }}</span>{% else %}{{ d.when | escape }}{% endif %}</span>{% if stale %}<span class="ws-stale">stale</span>{% endif %}</span>
+      <span class="ws-when{% if d.late %} late{% endif %}">{%- comment -%} A two-part "when" ("Missed delivery · Today") may only wrap at its dot. Split before escaping: LaraPaper's escape turns "·" into &middot;. {%- endcomment -%}<span class="ws-wt">{% if d.when contains " · " %}{%- assign parts = d.when | split: " · " -%}{%- for part in parts -%}<span class="np">{{ part | escape }}{% unless forloop.last %} ·{% endunless %}</span>{% unless forloop.last %}{{ " " }}{% endunless %}{%- endfor -%}{% else %}{{ d.when | escape }}{% endif %}</span>{% if stale %}<span class="ws-stale">stale</span>{% endif %}</span>
     </div>
     {%- assign prev = d.status -%}
   {%- endfor -%}
