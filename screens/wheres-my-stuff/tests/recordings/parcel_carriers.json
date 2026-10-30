@@ -1,0 +1,17 @@
+{
+  "amzlus": {
+    "name": "Amazon"
+  },
+  "dhl": {
+    "name": "DHL"
+  },
+  "fedex": {
+    "name": "FedEx"
+  },
+  "ups": {
+    "name": "UPS"
+  },
+  "usps": {
+    "name": "USPS"
+  }
+}
