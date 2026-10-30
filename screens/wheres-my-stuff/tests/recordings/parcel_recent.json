@@ -1,0 +1,129 @@
+{
+  "success": true,
+  "deliveries": [
+    {
+      "carrier_code": "usps",
+      "description": "Mechanical keyboard",
+      "status_code": 0,
+      "tracking_number": "9400100000000000000001",
+      "events": [
+        {
+          "event": "Delivered, front door",
+          "date": "October 30, 2026 08:12",
+          "location": "Springfield, OH"
+        },
+        {
+          "event": "Out for delivery",
+          "date": "October 30, 2026 06:02",
+          "location": "Springfield, OH"
+        }
+      ]
+    },
+    {
+      "carrier_code": "ups",
+      "description": "Replacement charger",
+      "status_code": 1,
+      "tracking_number": "1Z999AA10123456784",
+      "events": [
+        {
+          "event": "Label created, awaiting item",
+          "date": "October 24, 2026 14:10"
+        }
+      ]
+    },
+    {
+      "carrier_code": "fedex",
+      "description": "Laptop",
+      "status_code": 2,
+      "tracking_number": "700000000001",
+      "events": [
+        {
+          "event": "Left FedEx origin facility",
+          "date": "October 29, 2026 22:27",
+          "location": "Taoyuan, Taiwan"
+        }
+      ],
+      "date_expected": "2026-11-04 12:00:00",
+      "date_expected_end": "2026-11-04 20:00:00"
+    },
+    {
+      "carrier_code": "fedex",
+      "description": "Camera lens",
+      "status_code": 3,
+      "tracking_number": "700000000002",
+      "events": [
+        {
+          "event": "Ready for pickup",
+          "date": "October 29, 2026 11:00",
+          "location": "FedEx Office, Columbus OH"
+        }
+      ],
+      "date_expected_end": "2026-11-06 18:00:00"
+    },
+    {
+      "carrier_code": "amzlus",
+      "description": "Coffee beans",
+      "status_code": 4,
+      "tracking_number": "TBA000000000001",
+      "events": [
+        {
+          "event": "Out for delivery",
+          "date": "October 30, 2026 07:40",
+          "location": "Dayton, OH"
+        }
+      ],
+      "date_expected": "2026-10-30 09:00:00",
+      "timestamp_expected": 1793365200,
+      "timestamp_expected_end": 1793404800
+    },
+    {
+      "carrier_code": "dhl",
+      "description": "Board game",
+      "status_code": 5,
+      "tracking_number": "JD000000000000000001"
+    },
+    {
+      "carrier_code": "ups",
+      "description": "Desk lamp",
+      "status_code": 6,
+      "tracking_number": "1Z999AA10123456785",
+      "events": [
+        {
+          "event": "Delivery attempted, no access",
+          "date": "October 30, 2026 07:50",
+          "location": "Springfield, OH"
+        }
+      ]
+    },
+    {
+      "carrier_code": "usps",
+      "description": "Phone case",
+      "status_code": 7,
+      "tracking_number": "9400100000000000000002",
+      "events": [
+        {
+          "event": "Delivery exception, address issue",
+          "date": "October 27, 2026 16:20",
+          "location": "Atlanta, GA"
+        }
+      ]
+    },
+    {
+      "carrier_code": "dhl",
+      "description": "Running shoes",
+      "status_code": 8,
+      "tracking_number": "JD000000000000000002",
+      "events": [
+        {
+          "event": "Shipment information received",
+          "date": "October 29, 2026 09:00"
+        }
+      ],
+      "date_expected": "2026-11-14 12:00:00"
+    },
+    {
+      "status_code": 2,
+      "tracking_number": "TN000000000000000001"
+    }
+  ]
+}

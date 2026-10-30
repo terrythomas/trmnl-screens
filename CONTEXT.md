@@ -13,7 +13,7 @@ The process that gathers a screen's data from its sources and pushes it to LaraP
 _Avoid_: Fetcher, poller, backend
 
 **Source**:
-A service a collector reads from (Plex, Sonarr, Radarr, TMDB).
+A service a collector reads from (Plex, Sonarr, Radarr, TMDB, Parcel).
 _Avoid_: Integration, provider
 
 **Calendar sync**:
@@ -206,6 +206,44 @@ _Avoid_: Compass
 
 **Spoiler**:
 Anything that could reveal how a session went: results, positions, the grid, standings or live status. The F1 screen never shows one, because the household often watches delayed.
+
+## Where's My Stuff? screen
+
+**Where's My Stuff?**:
+The screen showing what's on its way, as tracked in the Parcel app. Named for the question it answers, like the other screens' action-driven names.
+_Avoid_: Parcels screen, package tracker
+
+**Delivery**:
+One tracked item in Parcel: a description, a carrier, a tracking number and its tracking history. A shipment split across tracking numbers is several deliveries.
+_Avoid_: Package, parcel, shipment, order
+
+**Status**:
+Where a delivery stands, simplified from Parcel's own codes into one of: **Stuck**, **Delivered**, **Ready for pickup**, **Out for delivery**, **On the way** or **Not shipped yet**.
+_Avoid_: State, stage, progress
+
+**Stuck**:
+A delivery that needs you to investigate: Parcel has frozen it, a delivery attempt failed, or the carrier reports an exception. Its ticket says which: "No update since Oct 24", "Missed delivery · Today" or "Carrier problem · Today". The only status shown with its tracking number.
+_Avoid_: Frozen, lost, exception, problem
+
+**Not shipped yet**:
+A delivery the carrier hasn't started moving: a label exists but the carrier doesn't have the item, or the carrier doesn't recognise the tracking number yet.
+_Avoid_: Pending, info received, not found
+
+**Delivered**:
+A delivery the carrier reports as handed over. It stays on the screen for 36 hours after delivery, then drops off; deleting it in Parcel removes it sooner. Its ticket shows the delivery time, since its tab already says Delivered.
+_Avoid_: Completed, arrived, done
+
+**Headline**:
+The line above the tickets that answers the screen's question in counts, in action order: each of Stuck, Out for delivery, Delivered and Ready for pickup ("to pick up") by name, then On the way and Not shipped yet together as "coming", e.g. "1 out for delivery · 1 delivered · 1 coming". Every group with deliveries is named, so there are at most five counts and none is hidden.
+_Avoid_: Title, summary, banner
+
+**Late**:
+An Out for delivery, On the way or Not shipped yet delivery whose expected day has passed, such as yesterday's Out for delivery still shown while Parcel is down. Shown as "Late · was Mon" and ordered as if it were due today.
+_Avoid_: Overdue, delayed
+
+**Action order**:
+The order deliveries are shown in, by what you'd do next: Stuck, Out for delivery, Delivered, Ready for pickup, On the way, Not shipped yet. Within a status, soonest expected first; no estimate goes last. The screen shows at most eight tickets (seven on the X while the error banner is up). The rest are counted in a "+N more" footer; because of action order, the furthest-out On the way and Not shipped yet deliveries go first, and another status is only hidden when more deliveries than that need you. With no deliveries left to show, the screen leaves the playlist.
+_Avoid_: Priority, sort order
 
 ## Health
 

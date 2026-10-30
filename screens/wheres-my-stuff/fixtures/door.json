@@ -1,0 +1,30 @@
+{
+  "updated_at": "2026-10-30T09:41:00-04:00",
+  "errors": [],
+  "headline": "1 out for delivery · 1 delivered · 1 coming",
+  "deliveries": [
+    {
+      "status": "out_for_delivery",
+      "description": "Coffee beans",
+      "carrier": "Amazon",
+      "when": "Today by 8 PM",
+      "location": "Dayton, OH"
+    },
+    {
+      "status": "delivered",
+      "description": "Mechanical keyboard with walnut wrist rest",
+      "carrier": "USPS",
+      "when": "8:12 AM",
+      "event": "front door",
+      "location": "Springfield, OH"
+    },
+    {
+      "status": "on_the_way",
+      "description": "Laptop",
+      "carrier": "FedEx",
+      "when": "Wed",
+      "event": "Left FedEx origin facility",
+      "location": "Taoyuan, Taiwan"
+    }
+  ]
+}

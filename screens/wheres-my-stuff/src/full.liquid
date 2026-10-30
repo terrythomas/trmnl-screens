@@ -1,0 +1,192 @@
+{%- comment -%}
+Where's My Stuff?. Payload contract: docs/specs/wheres-my-stuff-screen.md. Vocabulary: CONTEXT.md.
+The collector sends deliveries already in action order, with their status and "when" text worked out,
+so the template only lays them out. Each delivery is a ticket: a boxed label with its status on a tab.
+The X lists up to 8 tickets as rows; 2–3 stand tall (tab on top, text wrapping) and fill the height.
+The OG is a grid of up to 8 tickets, filled row by row, one column for 1–3. A single delivery is a
+poster on both devices. The tail (the furthest-out deliveries) is cut and counted in a "+N more" line.
+Every size is calc(var(--z) * Npx): --k grows text when there are few deliveries, --u scales by device.
+{%- endcomment -%}
+{%- assign now_s = preview_now | default: "now" | date: "%s" | plus: 0 -%}
+{%- assign n = deliveries | size -%}
+{%- comment -%} No deliveries leaves the playlist, unless the error banner has been up 24 hours: then a broken collector shows. {%- endcomment -%}
+{%- assign err_up = 0 -%}
+{%- for e in errors -%}{%- assign up = e.since | date: "%s" | plus: 0 -%}{%- assign up = now_s | minus: up -%}{%- if up > err_up -%}{%- assign err_up = up -%}{%- endif -%}{%- endfor -%}
+{%- if n == 0 and err_up < 86400 -%}<script>window.TRMNL_SKIP_DISPLAY = true</script>{%- endif -%}
+{%- if n <= 1 -%}{%- assign k = 2 -%}{%- elsif n == 2 -%}{%- assign k = 1.6 -%}{%- elsif n == 3 -%}{%- assign k = 1.3 -%}{%- elsif n <= 5 -%}{%- assign k = 1.2 -%}{%- else -%}{%- assign k = 1 -%}{%- endif -%}
+{%- comment -%} The OG grid: one column for 1–3 deliveries, else two, with as many rows as it needs (at most 4); --ok grows text when there are few. {%- endcomment -%}
+{%- assign shown = n -%}{%- if shown > 8 -%}{%- assign shown = 8 -%}{%- endif -%}
+{%- if n <= 3 -%}{%- assign og_cols = 1 -%}{%- assign og_rows = n -%}{%- if n == 3 -%}{%- assign ok = 1.1 -%}{%- else -%}{%- assign ok = 1.6 -%}{%- endif -%}{%- else -%}{%- assign og_cols = 2 -%}{%- assign og_rows = shown | plus: 1 | divided_by: 2 -%}{%- if n <= 4 -%}{%- assign ok = 1.25 -%}{%- else -%}{%- assign ok = 1 -%}{%- endif -%}{%- endif -%}
+{%- assign more = n | minus: 8 -%}
+{%- comment -%} The error banner costs the X one row: eight rows under it clip their sub lines. The OG still fits eight. {%- endcomment -%}
+{%- assign x_lim = 8 -%}{%- assign err_n = errors | size -%}{%- if err_n > 0 -%}{%- assign x_lim = 7 -%}{%- endif -%}
+{%- assign more_x = n | minus: x_lim -%}
+{%- comment -%} Three tall tickets under the banner clip their "when" at k 1.3. {%- endcomment -%}
+{%- if err_n > 0 and n == 3 -%}{%- assign k = 1.15 -%}{%- endif -%}
+<style>
+  .ws { --u: 1; --z: calc(var(--k) * var(--u)); display: flex; flex-direction: column; gap: calc(var(--u) * 14px); width: 100%; height: 100%; padding: 4px 6px 0; }
+  .ws, .ws * { font-family: var(--title-font-family); }
+  .ws-head { font-size: calc(var(--u) * var(--hpx, 46px)); font-weight: 700; line-height: 1.1; padding-bottom: calc(var(--u) * 10px); border-bottom: calc(var(--u) * 3px) solid #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ws-list { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: calc(var(--z) * 8px); }
+
+  /* A ticket row: status tab | description over carrier and latest event | when */
+  .ws-card { flex: 1 1 auto; display: grid; grid-template-columns: calc(var(--u) * 240px) minmax(0, 1fr) auto; align-items: center; gap: calc(var(--z) * 16px); padding: 0 calc(var(--z) * 16px) 0 0; border: calc(var(--u) * 2.5px) solid #000; border-radius: calc(var(--u) * 10px); overflow: hidden; }
+  .ws-tag { align-self: stretch; display: flex; align-items: center; gap: calc(var(--u) * 8px); padding: calc(var(--u) * 10px) calc(var(--u) * 14px); border-right: calc(var(--u) * 2.5px) solid #000; font-size: calc(var(--u) * 17px); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
+  .ws-tag svg { width: calc(var(--u) * 26px); height: calc(var(--u) * 26px); flex-shrink: 0; }
+  /* Black tabs send you somewhere: investigate, or wait by the door. Delivered is outlined: it is here, nothing to worry about */
+  :is(.s-stuck, .s-out_for_delivery) .ws-tag { background: #000; color: #fff; }
+  .ws-tg { display: contents; }
+  /* On a tall ticket the tab is a full-width strip, so Delivered's outline hugs its icon and label instead of boxing the strip */
+  .screen--4bit .ws.ws--tall .s-delivered .ws-tag { box-shadow: none; }
+  .screen--4bit .ws--tall .s-delivered .ws-tg { display: inline-flex; align-items: center; gap: calc(var(--u) * 8px); box-shadow: 0 0 0 calc(var(--u) * 3px) #000; border-radius: calc(var(--u) * 6px); padding: calc(var(--u) * 3px) calc(var(--u) * 12px) calc(var(--u) * 3px) calc(var(--u) * 8px); margin-left: calc(var(--u) * -8px); }
+  .ws:not(.ws--poster) .s-delivered .ws-tag { box-shadow: inset 0 0 0 calc(var(--u) * 7px) #fff, inset 0 0 0 calc(var(--u) * 10px) #000; }
+  /* Stale data is marked on every ticket, not just in the banner */
+  .ws-stale { display: inline-block; vertical-align: middle; margin-left: calc(var(--z) * 10px); font-size: calc(var(--u) * 15px); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border: calc(var(--u) * 2px) solid #000; border-radius: calc(var(--u) * 5px); padding: 0 calc(var(--u) * 6px); }
+  .ws-main { display: flex; flex-direction: column; min-width: 0; gap: calc(var(--z) * 3px); padding: calc(var(--z) * 8px) 0; }
+  /* A long description wraps to a second line rather than losing its end */
+  .ws-desc { font-size: calc(var(--z) * 28px); font-weight: 700; line-height: 1.1; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+  .s-not_shipped .ws-desc { font-weight: 400; }
+  .ws-card .ws-desc { -webkit-line-clamp: 1; }
+  .ws:not(.ws--tall):not(.ws--poster) .ws-card.long .ws-desc { font-size: calc(var(--z) * 23px); }
+  .ws-sub { font-family: var(--description-font-family); font-size: calc(var(--z) * 17px); color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ws-sub b { font-family: var(--title-font-family); color: #000; }
+  .ws-when { font-size: calc(var(--z) * 26px); font-weight: 700; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; min-width: 0; max-width: calc(var(--u) * 460px); overflow: hidden; text-overflow: ellipsis; }
+  /* Late asks you to act too, so it reads in a black block */
+  .ws-when.late { background: #000; color: #fff; border-radius: calc(var(--z) * 6px); padding: calc(var(--z) * 3px) calc(var(--z) * 10px); }
+  .ws-trk { font-family: var(--description-font-family); font-variant-numeric: tabular-nums; letter-spacing: .04em; color: #000; font-weight: 700; }
+  /* X rows (4–8 deliveries) are read across a room: larger type, paid for with tighter gaps, never fewer rows */
+  .screen--4bit .ws:not(.ws--tall):not(.ws--poster) { gap: calc(var(--u) * 10px); }
+  .screen--4bit .ws:not(.ws--tall):not(.ws--poster) .ws-list { gap: calc(var(--z) * 5px); }
+  .screen--4bit .ws:not(.ws--tall):not(.ws--poster) .ws-main { padding: calc(var(--z) * 5px) 0; gap: calc(var(--z) * 2px); }
+  .screen--4bit .ws:not(.ws--tall):not(.ws--poster) .ws-desc { font-size: calc(var(--z) * 32px); }
+  .screen--4bit .ws:not(.ws--tall):not(.ws--poster) .ws-card.long .ws-desc { font-size: calc(var(--z) * 27px); }
+  .screen--4bit .ws:not(.ws--tall):not(.ws--poster) .ws-sub { font-size: calc(var(--z) * 19px); }
+  /* A long "when" (or its STALE mark) wraps onto the row's second line instead of squeezing the description */
+  .screen--4bit .ws:not(.ws--tall):not(.ws--poster) .ws-when { font-size: calc(var(--z) * 30px); white-space: normal; text-wrap: balance; line-height: 1.05; max-width: calc(var(--u) * 320px); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .ws-stale { white-space: nowrap; }
+  .ws-when.late .ws-stale { border-color: #fff; }
+  .np { white-space: nowrap; }
+  .screen--4bit .ws:not(.ws--tall):not(.ws--poster) .ws-tag { font-size: calc(var(--u) * 18px); letter-spacing: .03em; }
+  /* A run of one status names it once, then repeats only the icon, like a ditto mark */
+  .screen--4bit .ws:not(.ws--tall):not(.ws--poster) .ws-card.rep .ws-lbl { visibility: hidden; }
+  .screen--4bit .x-cut, .screen--4bit .og-only, :is(.screen--1bit, .screen--2bit) .x-only { display: none; }
+  .ws-more { font-size: calc(var(--u) * 20px); font-weight: 700; padding: calc(var(--u) * 6px) 0; border-top: 1.5px solid #000; }
+  .ws-errs { display: flex; gap: 12px; flex-wrap: wrap; }
+  .ws-err { display: inline-flex; gap: 10px; align-items: center; background: #000; color: #fff; font-size: 22px; font-weight: 700; border-radius: 9px; padding: 4px 16px 5px 12px; }
+  .ws-empty { margin: auto; font-size: calc(var(--u) * 34px); font-weight: 700; text-align: center; }
+  .ws-err .why { font-family: var(--description-font-family); font-weight: 400; }
+
+  /* Tall tickets on the X, for 2–3 deliveries: tab across the top; description, event and when centred together below it */
+  .screen--4bit .ws--tall .ws-card { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto auto 1fr; align-items: start; gap: 0; padding: 0; }
+  .screen--4bit .ws--tall .ws-main { grid-row: 3; }
+  .screen--4bit .ws--tall .ws-when { grid-row: 4; }
+  .screen--4bit .ws--tall .ws-tag { border-right: 0; border-bottom: calc(var(--u) * 2.5px) solid #000; padding: calc(var(--u) * 10px) calc(var(--u) * 24px); }
+  .screen--4bit .ws--tall .ws-main { padding: calc(var(--z) * 14px) calc(var(--u) * 24px) 0; gap: calc(var(--z) * 6px); }
+  .screen--4bit .ws--tall .ws-desc { -webkit-line-clamp: 3; }
+  .screen--4bit .ws--tall .ws-sub { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .screen--4bit .ws--tall .ws-when { justify-self: start; text-align: left; margin: calc(var(--z) * 10px) calc(var(--u) * 24px) 0; }
+
+  /* The OG (1- and 2-bit, per ADR-0005): a grid filled row by row, no gray, nothing under 10px */
+  :is(.screen--1bit, .screen--2bit) .ws { --u: .58; --k: 1; padding: 0; gap: 6px; }
+  :is(.screen--1bit, .screen--2bit) .ws-head { font-size: 22px; padding-bottom: 4px; border-bottom-width: 2px; }
+  :is(.screen--1bit, .screen--2bit) .ws-list { display: grid; grid-template-columns: repeat(var(--og-cols), minmax(0, 1fr)); grid-template-rows: repeat(var(--og-rows), minmax(0, 1fr)); gap: 4px 14px; }
+  :is(.screen--1bit, .screen--2bit) .ws-card { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "tag when" "main main"; gap: 2px 10px; align-content: start; padding: 0 6px 4px 0; border: 2px solid #000; border-radius: 6px; }
+  :is(.screen--1bit, .screen--2bit) .ws-tag { grid-area: tag; justify-self: start; border-right: 0; border-bottom: 2px solid #000; border-bottom-right-radius: 6px; padding: 2px 6px; font-size: calc(var(--ok) * 14px); gap: 5px; }
+  :is(.screen--1bit, .screen--2bit) .ws-tag svg { width: calc(var(--ok) * 17px); height: calc(var(--ok) * 17px); }
+  :is(.screen--1bit, .screen--2bit) .ws-main { grid-area: main; gap: 1px; padding: 0 0 0 6px; }
+  :is(.screen--1bit, .screen--2bit) .ws-desc { font-size: calc(var(--ok) * 26px); -webkit-line-clamp: 1; }
+  /* A grid cell holds one line at full size, or two at a smaller size for a long description */
+  :is(.screen--1bit, .screen--2bit) .long .ws-desc { font-size: calc(var(--ok) * 19px); line-height: 1.05; -webkit-line-clamp: 2; }
+  :is(.screen--1bit, .screen--2bit) .ws-when { grid-area: when; justify-self: end; max-width: 100%; font-size: calc(var(--ok) * 16px); }
+  :is(.screen--1bit, .screen--2bit) .ws-sub { display: none; }
+  :is(.screen--1bit, .screen--2bit) .ws-sub.trk { display: block; color: #000; font-size: 13px; }
+  /* Only the words are cut on the OG, never the STALE mark */
+  :is(.screen--1bit, .screen--2bit) .ws-when { display: flex; align-items: center; justify-content: flex-end; }
+  :is(.screen--1bit, .screen--2bit) .ws-wt { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  :is(.screen--1bit, .screen--2bit) .ws-stale { flex-shrink: 0; }
+  /* In the OG grid, a half-width card has no room beside the "when": STALE sits in the card's corner instead */
+  :is(.screen--1bit, .screen--2bit) .ws:not(.ws--tall):not(.ws--poster) .ws-card { position: relative; }
+  :is(.screen--1bit, .screen--2bit) .ws:not(.ws--tall):not(.ws--poster) .ws-stale { position: absolute; right: 5px; bottom: 4px; }
+  :is(.screen--1bit, .screen--2bit) .ws--stale:not(.ws--tall):not(.ws--poster) .ws-main { padding-right: 40px; }
+  :is(.screen--1bit, .screen--2bit) .ws:not(.ws--tall):not(.ws--poster) .ws-when.late .ws-stale { color: #000; border-color: #000; }
+  :is(.screen--1bit, .screen--2bit) .ws-when.late { padding: 1px 5px; border-radius: 3px; }
+  :is(.screen--1bit, .screen--2bit) .s-delivered .ws-tag { box-shadow: inset 0 0 0 2px #000; border-bottom: 0; border-radius: 0 0 6px 0; }
+  :is(.screen--1bit, .screen--2bit) .ws-stale { font-size: 10px; border-width: 1px; border-radius: 3px; margin-left: 5px; padding: 0 3px; }
+  :is(.screen--1bit, .screen--2bit) .ws-more { font-size: 14px; padding: 3px 0; border-top-width: 1px; }
+  :is(.screen--1bit, .screen--2bit) .ws-errs { gap: 6px; }
+  :is(.screen--1bit, .screen--2bit) .ws-err { font-size: 14px; gap: 6px; border-radius: 6px; padding: 2px 10px 3px 8px; }
+  /* On the OG the description sits centred in the space under the tab row */
+  :is(.screen--1bit, .screen--2bit) .ws-card { grid-template-rows: auto 1fr; }
+  :is(.screen--1bit, .screen--2bit) .ws-main { align-self: center; }
+  /* With 2–3 on the OG each ticket is full width, so when moves under the description and the pair centres below the tab */
+  :is(.screen--1bit, .screen--2bit) .ws--tall .ws-card { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto auto 1fr; grid-template-areas: "tag" "." "main" "when" "."; }
+  :is(.screen--1bit, .screen--2bit) .ws--tall .ws-desc { -webkit-line-clamp: 2; }
+  :is(.screen--1bit, .screen--2bit) .ws--tall .long .ws-desc { font-size: calc(var(--ok) * 26px); line-height: 1.1; }
+  :is(.screen--1bit, .screen--2bit) .ws--tall .ws-when { justify-self: start; padding-left: 6px; font-size: calc(var(--ok) * 18px); }
+
+  /* Poster, on both devices, for a single delivery: no box; status, description, when and event as one centred group */
+  .ws.ws--poster .ws-list { display: flex; flex-direction: column; justify-content: center; }
+  .ws.ws--poster .ws-card { flex: 0 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "tag" "desc" "when" "sub"; justify-items: start; align-content: start; gap: calc(var(--u) * 18px); padding: 0; border: 0; border-radius: 0; overflow: visible; }
+  .ws.ws--poster .ws-main { display: contents; }
+  .ws.ws--poster .ws-tag { grid-area: tag; align-self: start; border: calc(var(--u) * 3px) solid #000; border-radius: calc(var(--u) * 8px); padding: calc(var(--u) * 8px) calc(var(--u) * 18px); font-size: calc(var(--u) * 24px); }
+  .ws.ws--poster .ws-tag svg { width: calc(var(--u) * 32px); height: calc(var(--u) * 32px); }
+  .ws.ws--poster .ws-desc { grid-area: desc; font-size: calc(var(--u) * 76px); line-height: 1.05; -webkit-line-clamp: 3; }
+  .ws.ws--poster .ws-when { grid-area: when; justify-self: start; text-align: left; font-size: calc(var(--u) * 104px); line-height: 1; }
+  .ws.ws--poster .ws-sub { grid-area: sub; display: block; white-space: normal; font-size: calc(var(--u) * 28px); }
+</style>
+
+<div class="view view--full">
+<div class="layout"><div class="ws{% if stale %} ws--stale{% endif %}{% if n == 1 %} ws--poster{% elsif n <= 3 %} ws--tall{% endif %}" style="--k: {{ k }}; --ok: {{ ok }}; --og-cols: {{ og_cols }}; --og-rows: {{ og_rows }}">
+  {%- assign err_n = errors | size -%}
+  {%- if err_n > 0 -%}
+  <div class="ws-errs">
+    {%- for e in errors -%}
+    <span class="ws-err"><svg viewBox="0 0 24 24" width="1.1em" height="1.1em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-0.18em"><path d="M12 3L2 20.5h20z"/><path d="M12 10v4.5M12 17.5v.5"/></svg>
+      {%- comment -%} A failure from an earlier day names the day, so an overnight outage never reads as this morning. Both stamps carry the same offset. {%- endcomment -%}
+      {%- assign since_day = e.since | slice: 0, 10 -%}{%- assign upd_day = updated_at | slice: 0, 10 -%}
+      {%- if since_day == upd_day -%}{%- assign since = e.since | date: "%-I:%M %p" -%}{%- else -%}{%- assign since = e.since | date: "%a %-I:%M %p" -%}{%- endif -%}
+      {%- comment -%} A rejected key never fixes itself, so it is named apart from an outage. {%- endcomment -%}
+      <span>{% if e.source == "parcel-key" %}Parcel key rejected since {{ since }}{% else %}Parcel down since {{ since }}{% endif %}</span>{%- if stale and n > 0 -%}<span class="why">· showing its last data</span>{%- endif -%}
+    </span>
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
+  {%- comment -%} The headline is 46px on the X, shrinking to fit one line when long (about 40px holds 56 characters). {%- endcomment -%}
+  {%- assign hlen = headline | size -%}{%- assign hpx = 2240 | divided_by: hlen -%}{%- if hpx > 46 -%}{%- assign hpx = 46 -%}{%- endif -%}
+  {%- if headline != blank -%}<div class="ws-head" style="--hpx: {{ hpx }}px">{{ headline | escape }}</div>{%- endif -%}
+  <div class="ws-list">
+  {%- assign key_err = errors | where: "source", "parcel-key" | size -%}
+  {%- if n == 0 -%}<div class="ws-empty">{% if key_err > 0 %}Nothing to show until the Parcel key is fixed{% else %}Nothing to show until Parcel is back{% endif %}</div>{%- endif -%}
+  {%- for d in deliveries limit: 8 -%}
+    {%- case d.status -%}
+    {%- when "stuck" -%}{%- assign label = "Stuck" -%}{%- assign icon = '<path d="M12 3L2 20.5h20z"/><path d="M12 10v4.5M12 17.5v.5"/>' -%}
+    {%- when "delivered" -%}{%- assign label = "Delivered" -%}{%- assign icon = '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7.5 12.5l3 3 6-7"/>' -%}
+    {%- when "out_for_delivery" -%}{%- assign label = "Out for delivery" -%}{%- assign icon = '<path d="M2 6h11v10H2zM13 9h4.5l3.5 3.5V16h-8"/><circle cx="6" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/>' -%}
+    {%- when "ready_for_pickup" -%}{%- assign label = "Ready for pickup" -%}{%- assign icon = '<path d="M3 10l1.5-6h15L21 10M4 10v10h16V10M3 10h18"/><path d="M9 20v-5h6v5"/>' -%}
+    {%- when "on_the_way" -%}{%- assign label = "On the way" -%}{%- assign icon = '<path d="M3 12h16M13 6l6 6-6 6"/>' -%}
+    {%- else -%}{%- assign label = "Not shipped yet" -%}{%- assign icon = '<path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5l9 4.5 9-4.5M12 12v9"/>' -%}
+    {%- endcase -%}
+    {%- assign len = d.description | size -%}
+    <div class="ws-card s-{{ d.status }}{% if d.status == prev %} rep{% endif %}{% if len > 26 %} long{% endif %}{% if forloop.index > x_lim %} x-cut{% endif %}">
+      <span class="ws-tag"><span class="ws-tg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">{{ icon }}</svg><span class="ws-lbl">{{ label }}</span></span></span>
+      <div class="ws-main">
+        <span class="ws-desc">{{ d.description | escape }}</span>
+        {%- if d.status == "stuck" -%}
+        <span class="ws-sub trk"><span class="ws-trk">{{ d.tracking | escape }}</span> · <b>{{ d.carrier | escape }}</b></span>
+        {%- else -%}
+        <span class="ws-sub"><b>{{ d.carrier | escape }}</b>{% if d.event %} · {{ d.event | escape }}{% endif %}{% if d.location %} · {{ d.location | escape }}{% endif %}</span>
+        {%- endif -%}
+      </div>
+      <span class="ws-when{% if d.late %} late{% endif %}">{%- comment -%} A two-part "when" ("Missed delivery · Today") may only wrap at its dot. {%- endcomment -%}<span class="ws-wt">{% if d.when contains " · " %}<span class="np">{{ d.when | escape | replace: " · ", ' ·</span> <span class="np">' }}</span>{% else %}{{ d.when | escape }}{% endif %}</span>{% if stale %}<span class="ws-stale">stale</span>{% endif %}</span>
+    </div>
+    {%- assign prev = d.status -%}
+  {%- endfor -%}
+  </div>
+  {%- if more_x > 0 -%}<div class="ws-more x-only">+{{ more_x }} more {% if more_x == 1 %}delivery{% else %}deliveries{% endif %} in Parcel</div>{%- endif -%}
+  {%- if more > 0 -%}<div class="ws-more og-only">+{{ more }} more {% if more == 1 %}delivery{% else %}deliveries{% endif %} in Parcel</div>{%- endif -%}
+</div></div>
+<div class="title_bar">
+  <span class="title" style="display:flex;align-items:center;gap:8px"><svg viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.2em"><path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5l9 4.5 9-4.5M12 12v9"/></svg> Where's My Stuff?</span>
+  <span class="instance">updated {{ updated_at | date: "%-I:%M %p" }}</span>
+</div>
+</div>

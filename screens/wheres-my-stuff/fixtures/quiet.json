@@ -1,0 +1,15 @@
+{
+  "updated_at": "2026-10-30T09:41:00-04:00",
+  "errors": [],
+  "headline": "1 coming",
+  "deliveries": [
+    {
+      "status": "on_the_way",
+      "description": "Framework Laptop 13 DIY Edition (Ryzen AI 300)",
+      "carrier": "FedEx",
+      "when": "Wed",
+      "event": "Left FedEx origin facility",
+      "location": "Taoyuan, Taiwan"
+    }
+  ]
+}

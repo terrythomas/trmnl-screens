@@ -1,0 +1,90 @@
+{
+  "updated_at": "2026-10-30T09:41:00-04:00",
+  "errors": [],
+  "headline": "1 stuck · 3 out for delivery · 1 delivered · 1 to pick up · 5 coming",
+  "deliveries": [
+    {
+      "status": "stuck",
+      "description": "Replacement charger",
+      "carrier": "DHL eCommerce Solutions",
+      "when": "Missed delivery · Today",
+      "event": "Label created, awaiting item",
+      "location": "Columbus, OH",
+      "tracking": "1Z999AA10123456784"
+    },
+    {
+      "status": "out_for_delivery",
+      "description": "Coffee beans",
+      "carrier": "Amazon",
+      "when": "Today by 8 PM",
+      "location": "Dayton, OH"
+    },
+    {
+      "status": "out_for_delivery",
+      "description": "Out-for-delivery extra 1",
+      "carrier": "Amazon",
+      "when": "Today by 8 PM",
+      "location": "Dayton, OH"
+    },
+    {
+      "status": "out_for_delivery",
+      "description": "Out-for-delivery extra 2",
+      "carrier": "Amazon",
+      "when": "Today by 8 PM",
+      "location": "Dayton, OH"
+    },
+    {
+      "status": "delivered",
+      "description": "<i>Socks</i> & sandals — 3 pairs",
+      "carrier": "USPS",
+      "when": "8:12 AM",
+      "event": "front door",
+      "location": "Springfield, OH"
+    },
+    {
+      "status": "ready_for_pickup",
+      "description": "Camera lens",
+      "carrier": "FedEx",
+      "when": "Pick up by Nov 6",
+      "location": "FedEx Office, Columbus OH"
+    },
+    {
+      "status": "on_the_way",
+      "description": "Supercalifragilisticexpialidociousnessofthisdescription",
+      "carrier": "UPS",
+      "when": "Late · was Wed",
+      "event": "Departed facility",
+      "location": "Indianapolis, IN",
+      "late": true
+    },
+    {
+      "status": "on_the_way",
+      "description": "Framework Laptop 13 DIY Edition (Ryzen AI 300)",
+      "carrier": "FedEx",
+      "when": "Wed",
+      "event": "Left FedEx origin facility",
+      "location": "Taoyuan, Taiwan"
+    },
+    {
+      "status": "on_the_way",
+      "description": "Desk lamp",
+      "carrier": "USPS",
+      "when": "Nov 12",
+      "event": "In transit to next facility",
+      "location": "Atlanta, GA"
+    },
+    {
+      "status": "not_shipped",
+      "description": "Board game",
+      "carrier": "DHL",
+      "when": "Nov 14",
+      "event": "Shipment information received"
+    },
+    {
+      "status": "not_shipped",
+      "description": "Phone case",
+      "carrier": "USPS",
+      "when": "No estimate yet"
+    }
+  ]
+}
