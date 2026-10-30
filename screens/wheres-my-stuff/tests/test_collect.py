@@ -99,16 +99,6 @@ def test_no_deliveries():
     assert "stale" not in payload
 
 
-def test_stale_with_nothing_left_has_no_stale_flag():
-    delivered = {"carrier_code": "usps", "description": "Keyboard", "status_code": 0, "tracking_number": "94001",
-                 "events": [{"event": "Delivered", "date": "October 30, 2026 08:12"}]}
-    wms.collect(NOW, FakeParcel([delivered], {}))
-    payload = wms.collect(NOW + timedelta(hours=40), FakeParcel(fail=True, carriers={}))
-    assert payload["deliveries"] == []
-    assert "stale" not in payload
-    assert payload["errors"][0]["source"] == "parcel"
-
-
 def test_carrier_list_cached_and_optional():
     source = FakeParcel([out_for_delivery()], {"amzlus": "Amazon"})
     wms.collect(NOW, source)

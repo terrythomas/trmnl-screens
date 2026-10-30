@@ -222,7 +222,7 @@ Where a delivery stands, simplified from Parcel's own codes into one of: **Stuck
 _Avoid_: State, stage, progress
 
 **Stuck**:
-A delivery that needs you to investigate: Parcel has frozen it, a delivery attempt failed, or the carrier reports an exception. Its ticket says which: "No update since Oct 24", "Missed delivery · Today" or "Carrier problem · Today". The only status shown with its tracking number.
+A delivery that needs you to investigate: Parcel has frozen it, a delivery attempt failed, or the carrier reports an exception. Its ticket says which: "No update since Oct 24", "Missed delivery · Today" or "Carrier problem · Today". The only status shown with its tracking number, and its tab leads with a yield sign.
 _Avoid_: Frozen, lost, exception, problem
 
 **Not shipped yet**:
@@ -230,7 +230,7 @@ A delivery the carrier hasn't started moving: a label exists but the carrier doe
 _Avoid_: Pending, info received, not found
 
 **Delivered**:
-A delivery the carrier reports as handed over. It stays on the screen for 36 hours after delivery, then drops off; deleting it in Parcel removes it sooner. Its ticket shows the delivery time, since its tab already says Delivered.
+A delivery the carrier reports as handed over. It stays on the screen until it is deleted in Parcel. Its ticket shows the delivery time, since its tab already says Delivered.
 _Avoid_: Completed, arrived, done
 
 **Headline**:
