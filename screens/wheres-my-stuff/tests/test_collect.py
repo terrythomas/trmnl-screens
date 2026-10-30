@@ -126,3 +126,11 @@ def test_missing_key_is_an_error_not_a_crash():
     payload = wms.collect(NOW)
     assert payload["errors"][0]["source"] == "parcel-key"
     assert payload["deliveries"] == []
+
+
+def test_unknown_status_code_is_logged_once_per_run(caplog):
+    unknown = [out_for_delivery(status_code=42, tracking_number="A"), out_for_delivery(status_code=42, tracking_number="B")]
+    with caplog.at_level("WARNING"):
+        payload = wms.collect(NOW, FakeParcel(unknown, {}))
+    assert [d["status"] for d in payload["deliveries"]] == ["on_the_way", "on_the_way"]
+    assert [r.getMessage() for r in caplog.records if "status code" in r.getMessage()] == ["unknown Parcel status code 42, shown as On the way"]

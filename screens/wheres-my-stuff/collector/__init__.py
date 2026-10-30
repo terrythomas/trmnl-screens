@@ -9,7 +9,7 @@ from typing import Any
 
 from collector.sections import Section, collect_sections
 
-from .rules import headline, record, shown
+from .rules import STATUS, headline, record, shown
 from .sources.parcel import ParcelError, ParcelKeyError, ParcelSource
 
 log = logging.getLogger(__name__)
@@ -30,6 +30,8 @@ def collect(now: datetime | None = None, source: ParcelSource | None = None) -> 
         if not raw:
             return None
         carriers = _carriers(parcel, state_dir / "carriers.json", now)
+        for code in sorted({r["status_code"] for r in raw} - STATUS.keys(), key=str):
+            log.warning("unknown Parcel status code %s, shown as On the way", code)
         return {"records": [record(r, carriers) for r in raw]}
 
     payload = collect_sections({"parcel": Section("parcel", build)}, state_dir / "deliveries.json", now)

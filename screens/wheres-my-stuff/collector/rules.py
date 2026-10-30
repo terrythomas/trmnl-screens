@@ -26,10 +26,11 @@ EMOJI = re.compile("[\U0001F000-\U0001FAFF☀-➿️‍]")
 def record(raw: dict, carriers: dict[str, str]) -> dict:
     """One Parcel delivery as the screen stores it: JSON-safe, dates in local TZ, no labels."""
     status = STATUS.get(raw["status_code"], "on_the_way")
-    tracking = raw.get("tracking_number", "")
-    code = raw.get("carrier_code", "")
+    # `or` as well as get(): one null field in one delivery must not fail the whole screen.
+    tracking = raw.get("tracking_number") or ""
+    code = raw.get("carrier_code") or ""
     newest = (raw.get("events") or [{}])[0]
-    description = " ".join(EMOJI.sub("", raw.get("description", "")).split())
+    description = " ".join(EMOJI.sub("", raw.get("description") or "").split())
     return {
         "status": status,
         "code": raw["status_code"],

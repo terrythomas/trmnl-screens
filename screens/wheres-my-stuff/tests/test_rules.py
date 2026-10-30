@@ -185,3 +185,9 @@ def test_headline():
     busy = d("stuck", *["out_for_delivery"] * 3, "delivered", "ready_for_pickup", *["on_the_way"] * 3, *["not_shipped"] * 2)
     assert rules.headline(busy) == "1 stuck · 3 out for delivery · 1 delivered · 1 to pick up · 5 coming"
     assert rules.headline([]) == ""
+
+
+def test_record_survives_null_fields():
+    r = rules.record({"status_code": 2, "tracking_number": "TN1", "description": None, "carrier_code": None,
+                      "events": None, "date_expected": None, "timestamp_expected_end": None}, CARRIERS)
+    assert (r["description"], r["carrier"], r["event"], r["expected"], r["by"]) == ("TN1", "", None, None, None)
