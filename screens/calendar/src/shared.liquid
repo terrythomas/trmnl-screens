@@ -18,6 +18,13 @@ times are shown by adding the user's UTC offset and formatting as UTC.
 {%- assign sod = now_s | plus: off | modulo: 86400 -%}
 {%- assign today0_s = now_s | minus: sod -%}
 {%- assign midnight_s = today0_s | plus: 86400 -%}
+{%- comment -%}
+From here off is only for printing. The date filter prints epochs in the engine's own zone (LaraPaper: its app time zone;
+trmnlp: UTC), so off becomes the shift from that zone: the engine's offset is its printed clock read back as UTC, minus now.
+No "T" in the format: LaraPaper passes it to PHP date(), where it prints the zone name.
+{%- endcomment -%}
+{%- assign eng_s = now_s | date: "%Y-%m-%d %H:%M:%S" | append: " UTC" | date: "%s" | plus: 0 -%}
+{%- assign off = off | minus: eng_s | plus: now_s -%}
 {%- assign cf = trmnl.plugin_settings.custom_fields_values -%}
 {%- assign wd = cf.workday_start | default: "9:00" | split: ":" -%}
 {%- assign wd_start_s = wd[0] | times: 3600 | plus: today0_s -%}{%- assign m = wd[1] | times: 60 -%}{%- assign wd_start_s = wd_start_s | plus: m -%}
