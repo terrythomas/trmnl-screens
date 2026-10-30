@@ -39,9 +39,9 @@ Parcel's `status_code` maps to one **Status**:
 An unknown code is treated as On the way and logged once per run. Stuck deliveries are always shown, never hidden, so they prompt a look.
 
 ### Which deliveries
-- Everything Parcel returns, except Delivered deliveries more than **36 hours** past their delivered time.
-- The delivered time is the date of the newest event, read in `TZ`. If it can't be parsed, the delivery stays until Parcel stops returning it.
-- Event dates look like `October 30, 2026 22:27`, in the event location's local time, newest first. The collector reads them as `TZ` local time; the error is at most a few hours on a 36-hour window.
+- Everything Parcel returns. Parcel keeps a Delivered delivery in its list until it is deleted in the app, so it stays on the screen until then; there is no time limit (changed 2026-10-30, was 36 hours).
+- The delivered time is the date of the newest event, read in `TZ`.
+- Event dates look like `October 30, 2026 22:27`, in the event location's local time, newest first. The collector reads them as `TZ` local time; the error is at most a few hours.
 
 ### Action order
 Deliveries are sorted by Status in this order: Stuck, Out for delivery, Delivered, Ready for pickup, On the way, Not shipped yet. Within a status, the soonest expected date comes first (Delivered: the newest delivery first; Stuck: the longest silent first); a delivery with no estimate goes last. A Late delivery sorts as if due today. Ties keep Parcel's order.
@@ -52,7 +52,7 @@ Deliveries are sorted by Status in this order: Stuck, Out for delivery, Delivere
 | Status | `when` |
 |---|---|
 | Stuck | by cause, with the newest event's date: frozen (1) "No update since Oct 24" (always the month and day); failed attempt (6) "Missed delivery · Today"; exception (7) "Carrier problem · Today"; "No updates yet" with no events |
-| Delivered | the delivered time, "8:12 AM"; "Yesterday 8:12 AM" when it was yesterday; "Delivered" when the time can't be read |
+| Delivered | the delivered time, "8:12 AM"; "Yesterday 8:12 AM" when it was yesterday; "Wed 8:12 AM" within the last 6 days; "Oct 20" when older; "Delivered" when the time can't be read |
 | Out for delivery | "Today by 8 PM" from `timestamp_expected_end` (`:MM` only when not on the hour); "Today" without it |
 | Ready for pickup | "Pick up by Nov 6" from `date_expected_end` (the date leads, so the OG never cuts it); "Waiting for you" without it |
 | On the way, Not shipped yet | the expected date (`date_expected`); "No estimate yet" without it |
@@ -72,7 +72,7 @@ Counts in action order: Stuck, Out for delivery and Delivered by name, Ready for
 
 ### Visibility
 - No deliveries: the template sets `TRMNL_SKIP_DISPLAY`, unless the error banner has been up for 24 hours or more, so a broken collector is never mistaken for a quiet week.
-- The screen leaves the playlist on its own once the last Delivered delivery passes 36 hours or is removed from Parcel.
+- The screen leaves the playlist on its own once every delivery is gone from Parcel, Delivered ones included.
 
 ### Failure behaviour
 - If Parcel fails, the collector pushes its last good deliveries marked stale and raises the error banner ("Parcel down since 7:15 AM", with the weekday when it started on an earlier day), as on the other screens. Labels are worked out again from the stored data on every run, so a stale "Today" still becomes "Yesterday" or Late.
@@ -100,14 +100,14 @@ Counts in action order: Stuck, Out for delivery and Delivered by name, Ready for
 - `deliveries` holds every shown delivery in action order. The template shows the first 8 (7 on the X while `errors` is not empty, since the banner costs a row) and counts the rest as "+N more deliveries in Parcel". Action order makes the cut ones the furthest-out On the way and Not shipped yet; another status is cut only when more deliveries than that need you.
 - `status` is one of `stuck`, `delivered`, `out_for_delivery`, `ready_for_pickup`, `on_the_way`, `not_shipped`.
 - `description` falls back to the tracking number when Parcel has none. Emoji are removed from it (the OG cannot draw them). `event`, `location`, `tracking` (Stuck only) and `late` are left out when empty or false.
-- `stale` is present only while Parcel is failing and `deliveries` holds its last good data. With no deliveries to show (none stored, or all filtered out since), there is no `stale`; the banner alone reports the failure.
+- `stale` is present only while Parcel is failing and `deliveries` holds its last good data. With no deliveries stored there is no `stale`; the banner alone reports the failure.
 - With no deliveries, `deliveries` is `[]` and `headline` is `""`.
 
 ## Design (template)
 
 The **Tickets** theme, chosen from two themes in mock-ups and refined through two design critiques and passes on layout, edge cases, copy, type and device fit. The renders are in the private gallery artifact (see the plan).
 
-- **Ticket:** a boxed label per delivery with its status on a tab: icon and status name in capitals. Stuck and Out for delivery tabs are solid black (go look, wait by the door). Delivered's tab is outlined: inside its box on an X row, hugging its icon and label on a tall ticket. Other tabs are plain.
+- **Ticket:** a boxed label per delivery with its status on a tab: icon and status name in capitals. Stuck and Out for delivery tabs are solid black (go look, wait by the door); Stuck's icon is a yield sign (an upside-down triangle, drawn, a size larger than the other icons). Delivered's tab is outlined: inside its box on an X row, hugging its icon and label on a tall ticket. Other tabs are plain.
 - **Headline** above the tickets, heavy, with a rule under it, on one line. On the X it is 46px, shrinking to fit one line when long (2240 ÷ length, in px). Hidden when blank.
 - **X, 4 or more deliveries:** one column of up to 8 rows: tab, then description (32px) over the sub line (19px), then `when` (30px) on the right; 4–5 rows scale everything by 1.2. A long `when` wraps onto a second line (at most 320px wide) instead of squeezing the description; a two-part `when` ("Missed delivery · Today") wraps only after its dot. A Late `when` is a black pill. Long descriptions (over 26 characters) drop to 27px; all clamp to one line. In a run of one status, only the first tab names it; the rest show its icon alone, like a ditto mark.
 - **X, 2–3 deliveries (tall):** each ticket fills its share of the height: tab across the top, description (up to 3 lines), sub line, then `when`, as one centred group sharing one left edge. Three tall tickets under the error banner step their text down one size so the `when` line still fits.
@@ -126,8 +126,8 @@ The **Tickets** theme, chosen from two themes in mock-ups and refined through tw
 ## Testing
 
 - **Source adapter:** pytest with `httpx.MockTransport` against invented responses that keep Parcel's real shape (never a real response; [ADR-0003](../adr/0003-public-repo-secrets-policy.md)): the request's path, query and header; error wrapping without the URL or key; omitted fields.
-- **Screen collector:** pytest with a fake source and a fixed `now`, covering the status map, the 36-hour boundary, action order, every `when` row, Late, event de-duplication, the headline fold, stale relabelling and the empty payload.
-- **Template:** checked by eye in `trmnlp serve` with every fixture in `fixtures/` on the X and the OG, then once on LaraPaper. The fixtures cover a busy day (`busy`, `sample`), long and odd text (`edge`), 1–3 deliveries (`quiet`, `door`), failures with data (`stale`, `busy-stale`, `bad-key`) and without (`empty-error`). Every fixture is in action order.
+- **Screen collector:** pytest with a fake source and a fixed `now`, covering the status map, Delivered staying, action order, every `when` row, Late, event de-duplication, the headline fold, stale relabelling and the empty payload.
+- **Template:** checked by eye in `trmnlp serve` with every fixture in `fixtures/` on the X and the OG, then once on LaraPaper. The fixtures cover a busy day (`busy`, `sample`), long and odd text (`edge`), 1–3 deliveries (`quiet`, `door`, `stuck`), failures with data (`stale`, `busy-stale`, `bad-key`) and without (`empty-error`). Every fixture is in action order.
 
 ## Out of scope (v1)
 
@@ -138,7 +138,6 @@ The **Tickets** theme, chosen from two themes in mock-ups and refined through tw
 ## Open source checks
 
 Confirm with real data before calling the screen done, then delete this section:
-- Whether `filter_mode=recent` returns Delivered deliveries. On 2026-10-30 `recent` and `active` both returned one in-transit delivery. If it doesn't, Delivered can't be shown, and the 36-hour rule needs another source.
 - What a Stuck delivery's response looks like, especially whether `date_expected` is kept.
 
-Settled: a wrong key gets HTTP 401 with `{"success": false, "error_message": "Account not found"}` (checked 2026-10-30), so it reads as "Parcel key rejected". On LaraPaper (checked 2026-10-30), Liquid's `size` counts characters, so the headline shrink matches the preview, but `escape` turns "·" into `&middot;`: text is split on " · " before it is escaped.
+Settled: `recent` keeps Delivered deliveries until they are deleted in Parcel (seen 2026-10-30). A wrong key gets HTTP 401 with `{"success": false, "error_message": "Account not found"}` (checked 2026-10-30), so it reads as "Parcel key rejected". On LaraPaper (checked 2026-10-30), Liquid's `size` counts characters, so the headline shrink matches the preview, but `escape` turns "·" into `&middot;`: text is split on " · " before it is escaped.

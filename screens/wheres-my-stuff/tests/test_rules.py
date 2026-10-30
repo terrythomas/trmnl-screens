@@ -146,10 +146,10 @@ def test_late():
     assert "late" not in d
 
 
-def test_delivered_36_hours():
-    edge = NOW - timedelta(hours=36)
-    assert rules.shown([rec("delivered", last_event_at=edge.isoformat())], NOW)
-    assert rules.shown([rec("delivered", last_event_at=(edge - timedelta(minutes=1)).isoformat())], NOW) == []
+def test_delivered_stays_until_deleted_in_parcel():
+    [d] = rules.shown([rec("delivered", last_event_at=at(2026, 10, 20, 8, 12))], NOW)
+    assert d["when"] == "Oct 20"  # older than 6 days: the date, as everywhere else
+    assert when(rec("delivered", last_event_at=at(2026, 10, 24, 8, 12))) == "Sat 8:12 AM"
     assert when(rec("delivered")) == "Delivered"
 
 

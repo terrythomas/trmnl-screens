@@ -40,7 +40,7 @@ def collect(now: datetime | None = None, source: ParcelSource | None = None) -> 
     deliveries = shown(section.get("records", []), now)
     result = {"updated_at": now.isoformat(timespec="seconds"), "headline": headline(deliveries),
               "deliveries": deliveries, "errors": payload["errors"]}
-    if section.get("stale") and deliveries:
+    if section.get("stale"):
         result["stale"] = True
     return result
 

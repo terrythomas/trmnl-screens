@@ -5,7 +5,7 @@ Records keep dates, not labels, so a stale record is labelled again on every run
 
 import re
 from collections import Counter
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 # Parcel's status_code → Status (spec: Status). Unknown codes read as On the way.
 STATUS = {0: "delivered", 1: "stuck", 2: "on_the_way", 3: "ready_for_pickup", 4: "out_for_delivery",
@@ -17,7 +17,6 @@ LABEL = {"stuck": "Stuck", "out_for_delivery": "Out for delivery", "delivered": 
 # Headline words per Status; On the way and Not shipped yet count together.
 PART = {"stuck": "stuck", "out_for_delivery": "out for delivery", "delivered": "delivered",
         "ready_for_pickup": "to pick up", "on_the_way": "coming", "not_shipped": "coming"}
-DELIVERED_FOR = timedelta(hours=36)
 
 # Emoji and pictographs, which the OG cannot draw (spec: Payload contract).
 EMOJI = re.compile("[\U0001F000-\U0001FAFF☀-➿️‍]")
@@ -73,11 +72,9 @@ def _event_time(value):
 
 
 def shown(records: list[dict], now: datetime) -> list[dict]:
-    """The payload's deliveries: Delivered past 36 hours dropped, labelled for `now`, in action order."""
+    """The payload's deliveries, labelled for `now`, in action order. Delivered stays until it is deleted in Parcel."""
     today = now.date()
-    kept = [r for r in records if not (r["status"] == "delivered" and r["last_event_at"]
-                                       and now - datetime.fromisoformat(r["last_event_at"]) > DELIVERED_FOR)]
-    tickets = [(_sort_key(r, today), _ticket(r, today)) for r in kept]
+    tickets = [(_sort_key(r, today), _ticket(r, today)) for r in records]
     return [t for _, t in sorted(tickets, key=lambda kt: kt[0])]
 
 
@@ -114,6 +111,8 @@ def _when(r, today):
             return "Delivered", False
         clock = event_at.strftime("%-I:%M %p")
         days = (today - event_at.date()).days
+        if days > 6:
+            return _month_day(event_at.date()), False
         return (clock if days == 0 else f"Yesterday {clock}" if days == 1 else f"{event_at:%a} {clock}"), False
     if status == "ready_for_pickup":
         end = _date(r["expected_end"])

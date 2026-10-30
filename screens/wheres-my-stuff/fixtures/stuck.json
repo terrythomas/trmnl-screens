@@ -1,0 +1,16 @@
+{
+  "updated_at": "2026-10-30T09:41:00-04:00",
+  "errors": [],
+  "headline": "1 stuck",
+  "deliveries": [
+    {
+      "status": "stuck",
+      "description": "Replacement charger",
+      "carrier": "UPS",
+      "when": "No update since Oct 24",
+      "event": "Label created, awaiting item",
+      "location": "Columbus, OH",
+      "tracking": "1Z999AA10123456784"
+    }
+  ]
+}
