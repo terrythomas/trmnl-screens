@@ -1,5 +1,7 @@
 import importlib
 import time
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -78,3 +80,108 @@ def test_event_repeating_status_is_trimmed(code, event, kept):
     r = rules.record(raw(status_code=code, events=[{"event": event, "date": "October 30, 2026 08:12", "location": "Dayton, OH"}]), CARRIERS)
     assert r["event"] == kept
     assert r["location"] == "Dayton, OH"
+
+
+# From stored records to the payload. NOW is a Friday.
+NY = ZoneInfo("America/New_York")
+NOW = datetime(2026, 10, 30, 9, 41, tzinfo=NY)
+
+
+def rec(status="on_the_way", code=None, **fields):
+    codes = {"stuck": 1, "out_for_delivery": 4, "delivered": 0, "ready_for_pickup": 3, "on_the_way": 2, "not_shipped": 8}
+    base = {"status": status, "code": codes[status] if code is None else code, "description": "Item", "carrier": "UPS",
+            "tracking": "TN1", "event": None, "location": None, "expected": None, "expected_end": None, "by": None,
+            "last_event_at": None}
+    return {**base, **fields}
+
+
+def at(*args):
+    return datetime(*args, tzinfo=NY).isoformat()
+
+
+def when(record):
+    [d] = rules.shown([record], NOW)
+    return d["when"]
+
+
+def test_day_words():
+    assert when(rec(expected="2026-10-30")) == "Today"
+    assert when(rec(expected="2026-10-31")) == "Tomorrow"
+    assert when(rec(expected="2026-11-04")) == "Wed"
+    assert when(rec(expected="2026-11-05")) == "Thu"
+    assert when(rec(expected="2026-11-06")) == "Nov 6"
+
+
+@pytest.mark.parametrize("record, expected", [
+    (rec("stuck", 1, last_event_at=at(2026, 10, 24, 14, 10)), "No update since Oct 24"),
+    (rec("stuck", 6, last_event_at=at(2026, 10, 30, 7, 50)), "Missed delivery · Today"),
+    (rec("stuck", 6, last_event_at=at(2026, 10, 29, 16, 0)), "Missed delivery · Yesterday"),
+    (rec("stuck", 7, last_event_at=at(2026, 10, 27, 16, 20)), "Carrier problem · Tue"),
+    (rec("stuck", 7, last_event_at=at(2026, 10, 20, 16, 20)), "Carrier problem · Oct 20"),
+    (rec("stuck", 1), "No updates yet"),
+    (rec("delivered", last_event_at=at(2026, 10, 30, 8, 12)), "8:12 AM"),
+    (rec("delivered", last_event_at=at(2026, 10, 29, 18, 30)), "Yesterday 6:30 PM"),
+    (rec("delivered", last_event_at=at(2026, 10, 28, 22, 0)), "Wed 10:00 PM"),
+    (rec("out_for_delivery", by=at(2026, 10, 30, 20, 0)), "Today by 8 PM"),
+    (rec("out_for_delivery", by=at(2026, 10, 30, 20, 30)), "Today by 8:30 PM"),
+    (rec("out_for_delivery"), "Today"),
+    (rec("ready_for_pickup", expected_end="2026-11-06"), "Pick up by Nov 6"),
+    (rec("ready_for_pickup"), "Waiting for you"),
+    (rec("on_the_way", expected="2026-11-12"), "Nov 12"),
+    (rec("on_the_way"), "No estimate yet"),
+    (rec("not_shipped"), "No estimate yet"),
+])
+def test_when_by_status(record, expected):
+    assert when(record) == expected
+
+
+def test_late():
+    [d] = rules.shown([rec(expected="2026-10-28")], NOW)
+    assert (d["when"], d["late"]) == ("Late · was Wed", True)
+    assert when(rec(expected="2026-10-20")) == "Late · was Oct 20"
+    [d] = rules.shown([rec("out_for_delivery", by=at(2026, 10, 29, 20, 0))], NOW)
+    assert (d["when"], d["late"]) == ("Late · was Thu", True)
+    assert when(rec("out_for_delivery", last_event_at=at(2026, 10, 29, 7, 40))) == "Late · was Thu"
+    [d] = rules.shown([rec(expected="2026-11-12")], NOW)
+    assert "late" not in d
+
+
+def test_delivered_36_hours():
+    edge = NOW - timedelta(hours=36)
+    assert rules.shown([rec("delivered", last_event_at=edge.isoformat())], NOW)
+    assert rules.shown([rec("delivered", last_event_at=(edge - timedelta(minutes=1)).isoformat())], NOW) == []
+    assert when(rec("delivered")) == "Delivered"
+
+
+def test_action_order():
+    records = [rec("not_shipped"), rec("on_the_way"), rec("ready_for_pickup"), rec("delivered"),
+               rec("out_for_delivery"), rec("stuck")]
+    assert [d["status"] for d in rules.shown(records, NOW)] == list(rules.ORDER)
+
+    coming = [rec(description="no estimate"), rec(description="Nov 12", expected="2026-11-12"),
+              rec(description="today", expected="2026-10-30"), rec(description="Nov 4", expected="2026-11-04"),
+              rec(description="late", expected="2026-10-28")]
+    assert [d["description"] for d in rules.shown(coming, NOW)] == ["late", "today", "Nov 4", "Nov 12", "no estimate"]
+
+    delivered = [rec("delivered", description="older", last_event_at=at(2026, 10, 29, 18, 0)),
+                 rec("delivered", description="newer", last_event_at=at(2026, 10, 30, 8, 0))]
+    assert [d["description"] for d in rules.shown(delivered, NOW)] == ["newer", "older"]
+
+
+def test_sub_line_fields():
+    stuck, moving = rules.shown([rec("stuck", 1, event="Label created", location="Dayton, OH"),
+                                 rec(event="Departed facility", location=None)], NOW)
+    assert stuck == {"status": "stuck", "description": "Item", "carrier": "UPS", "when": "No updates yet", "tracking": "TN1"}
+    assert moving == {"status": "on_the_way", "description": "Item", "carrier": "UPS", "when": "No estimate yet",
+                      "event": "Departed facility"}
+
+
+def test_headline():
+    def d(*statuses):
+        return [{"status": s} for s in statuses]
+    assert rules.headline(d("out_for_delivery", "delivered", "on_the_way")) == "1 out for delivery · 1 delivered · 1 coming"
+    assert rules.headline(d("on_the_way", "not_shipped")) == "2 coming"
+    assert rules.headline(d("ready_for_pickup")) == "1 to pick up"
+    busy = d("stuck", *["out_for_delivery"] * 3, "delivered", "ready_for_pickup", *["on_the_way"] * 3, *["not_shipped"] * 2)
+    assert rules.headline(busy) == "1 stuck · 3 out for delivery · 1 delivered · 1 to pick up · 5 coming"
+    assert rules.headline([]) == ""
