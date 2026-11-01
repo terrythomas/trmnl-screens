@@ -21,7 +21,7 @@ The phone pushing the day's events to the Calendar screen. Unlike a collector, i
 _Avoid_: Collector, companion
 
 **Device**:
-A physical TRMNL display: the **X** (large, 16 grays) or the **OG** (small, 1–2 bit). Every screen supports both. Each screen still picks its primary device, the one its design starts from; the Media screen targets the X, the Calendar screen the OG.
+A physical TRMNL display: the **X** (large, 16 grays) or the **OG** (small, 1–2 bit). Every screen supports both. Each screen still picks its primary device, the one its design starts from; the Media screen targets the X, the Calendar and How's It Outside? screens the OG.
 
 ## Media screen
 
@@ -244,6 +244,52 @@ _Avoid_: Overdue, delayed
 **Action order**:
 The order deliveries are shown in, by what you'd do next: Stuck, Out for delivery, Delivered, Ready for pickup, On the way, Not shipped yet. Within a status, soonest expected first; no estimate goes last. The screen shows at most eight tickets (seven on the X while the error banner is up). The rest are counted in a "+N more" footer; because of action order, the furthest-out On the way and Not shipped yet deliveries go first, and another status is only hidden when more deliveries than that need you. With no deliveries left to show, the screen leaves the playlist.
 _Avoid_: Priority, sort order
+
+## How's It Outside? screen
+
+**How's It Outside?**:
+The screen answering how to head out: current conditions, what to bring, and the outlook ahead. Stays in the playlist around the clock.
+_Avoid_: Weather screen, forecast
+
+**Outlook**:
+The span of time How's It Outside? forecasts: a **Day outlook** from 06:00 to 10:00, a **Rolling outlook** at every other time. The two meet at 10:00.
+_Avoid_: Forecast window, horizon, range
+
+**Day outlook**:
+From now until 22:00 today, so the morning look covers the whole day ahead.
+
+**Rolling outlook**:
+From now until 12 hours from now.
+
+**Alert**:
+A National Weather Service watch, warning or advisory for the location that is in effect now or starts within 24 hours. Any severity counts. Each is shown as its own card across the top, naming the alert and when it ends or starts ("Tornado Warning until 4:15pm", "Flood Watch from 6pm"). Alerts in effect come first, as solid cards; alerts starting later follow as outlined cards. At most three cards show; the last counts the rest ("+1 more"). With no alerts there are no cards.
+_Avoid_: Warning (one kind of alert), notice
+
+**Verdict**:
+A direct answer to "what do I bring?": a jacket grade, **Umbrella** and **Sunscreen**. Only a verdict that asks you to bring something is shown, large beside the current conditions with its reason under it ("Feels 39° at 10pm"); "no jacket", "no umbrella" and "no sunscreen" are never shown, so with nothing to bring the conditions fill the space. The jacket and umbrella verdicts look only at the waking hours of the outlook; sunscreen looks at the whole outlook.
+_Avoid_: Recommendation, advice, tip
+
+**Waking hours**:
+06:00 to 22:00. When the outlook holds none (late at night), the jacket and umbrella verdicts look at the next morning's waking hours instead.
+
+**Jacket grade**:
+How much to wear against the cold, set by the coldest feels-like temperature in the waking hours of the outlook: no jacket (65°F or above), light jacket (50–64°F), heavy jacket (35–49°F), heavy jacket with hat and gloves (below 35°F). Each step has its own icon.
+_Avoid_: Layer, coat level
+
+**Umbrella**:
+The verdict when it will probably rain or snow: some hour in the waking hours of the outlook has a precipitation chance of 50% or more. When that hour is snow, the verdict reads **Snow** with a snow icon instead.
+_Avoid_: Rain gear
+
+**Sunscreen**:
+The verdict when the UV index reaches 3 or more at any hour of the outlook. Shown with the current UV and the peak, e.g. "UV 2 now · peaks 5 at 1pm".
+
+**Air quality**:
+The US EPA AQI as a number with a mark for its level instead of a word: a check for Good (up to 50), a yield sign for Moderate (51–100), and a siren on black from "Unhealthy for sensitive groups" (101) up.
+_Avoid_: Pollution, smog
+
+**Pollen level**:
+Tree, grass and weed pollen, each on Google's 0–5 index shown as a word. Only types above None are shown. The tree pollen highest that day is also named when tree pollen is above none. With no pollen at all, or only a previous day's, pollen is left off the screen entirely.
+_Avoid_: Pollen count (a grain count, which this is not), allergy index
 
 ## Health
 
