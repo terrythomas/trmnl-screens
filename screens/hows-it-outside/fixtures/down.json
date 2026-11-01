@@ -1,0 +1,16 @@
+{
+  "updated_at": "2026-10-31T16:45:00-04:00",
+  "now": {
+    "missing_since": "11:15am"
+  },
+  "alerts": [],
+  "air": {
+    "aqi": 44
+  },
+  "errors": [
+    {
+      "source": "open-meteo",
+      "since": "2026-10-31T11:15:00-04:00"
+    }
+  ]
+}

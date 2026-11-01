@@ -1,0 +1,109 @@
+{
+  "updated_at": "2026-09-08T18:30:00-04:00",
+  "now": {
+    "temp": 76,
+    "conditions": "Clear",
+    "icon": "sun",
+    "high": 81,
+    "low": 64
+  },
+  "verdicts": {
+    "jacket": "none",
+    "umbrella": null,
+    "sunscreen": false,
+    "uv": "UV 1 now",
+    "jacket_why": "Feels 68\u00b0 at 10pm"
+  },
+  "alerts": [],
+  "outlook": {
+    "kind": "rolling",
+    "hours": [
+      {
+        "time": "7pm",
+        "icon": "sun",
+        "temp": 74,
+        "sunset": "7:18pm"
+      },
+      {
+        "time": "8pm",
+        "icon": "moon",
+        "temp": 72
+      },
+      {
+        "time": "9pm",
+        "icon": "moon",
+        "temp": 70
+      },
+      {
+        "time": "10pm",
+        "icon": "moon",
+        "temp": 69
+      },
+      {
+        "time": "11pm",
+        "icon": "moon",
+        "temp": 68
+      },
+      {
+        "time": "12am",
+        "icon": "moon",
+        "temp": 67
+      },
+      {
+        "time": "1am",
+        "icon": "moon",
+        "temp": 66
+      },
+      {
+        "time": "2am",
+        "icon": "moon",
+        "temp": 66
+      },
+      {
+        "time": "3am",
+        "icon": "moon",
+        "temp": 65
+      },
+      {
+        "time": "4am",
+        "icon": "fog",
+        "temp": 65
+      },
+      {
+        "time": "5am",
+        "icon": "fog",
+        "temp": 64
+      },
+      {
+        "time": "6am",
+        "icon": "fog",
+        "temp": 64,
+        "sunrise": "6:33am"
+      }
+    ]
+  },
+  "pollen": [
+    {
+      "type": "Weed",
+      "level": "Moderate"
+    },
+    {
+      "type": "Grass",
+      "level": "Low"
+    }
+  ],
+  "air": {
+    "aqi": 63
+  },
+  "sun": [
+    {
+      "kind": "set",
+      "at": "7:18pm"
+    },
+    {
+      "kind": "rise",
+      "at": "6:33am"
+    }
+  ],
+  "errors": []
+}

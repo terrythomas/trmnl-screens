@@ -1,0 +1,201 @@
+{%- comment -%}
+How's It Outside? (Panel): current conditions lead on the left, the verdicts that ask you to bring something
+stack on the right, the outlook runs across as a strip of columns, and pollen, air and sun share one line at the bottom.
+Sizes are calc(var(--u) * Npx): OG is --u 1, the X scales up and shows every hour. The collector works out every label.
+{%- endcomment -%}
+<style>
+  .hi { --u: 1; display: flex; flex-direction: column; gap: calc(var(--u) * 10px); width: 100%; height: 100%; padding: 2px 4px 0; }
+  .hi, .hi * { font-family: var(--title-font-family); color: #000; }
+  .hi svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .hi-alert { display: flex; align-items: center; gap: calc(var(--u) * 10px); background: #000; border-radius: calc(var(--u) * 7px); padding: calc(var(--u) * 4px) calc(var(--u) * 12px); }
+  .hi-alert, .hi-alert * { color: #fff; }
+  .hi-alert svg { width: calc(var(--u) * 24px); height: calc(var(--u) * 24px); }
+  .hi-alert b { font-size: calc(var(--u) * 21px); white-space: nowrap; }
+  /* A long alert name is cut, never its time */
+  .hi-alert .ev { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .hi-alert .wh { flex-shrink: 0; margin-left: calc(var(--u) * -4px); }
+  /* An alert that hasn't started yet is outlined instead of solid */
+  .hi-alert.later { background: #fff; box-shadow: inset 0 0 0 calc(var(--u) * 2.5px) #000; }
+  .hi-alert.later, .hi-alert.later * { color: #000; }
+  .hi-alert .more { margin-left: auto; font-size: calc(var(--u) * 18px); font-weight: 700; white-space: nowrap; }
+
+  .hi-err { align-self: flex-start; display: inline-flex; align-items: center; gap: calc(var(--u) * 8px); border: calc(var(--u) * 2.5px) solid #000; border-radius: calc(var(--u) * 7px); padding: calc(var(--u) * 2px) calc(var(--u) * 12px) calc(var(--u) * 3px) calc(var(--u) * 8px); font-size: calc(var(--u) * 18px); font-weight: 700; white-space: nowrap; }
+  .hi-err svg { width: calc(var(--u) * 20px); height: calc(var(--u) * 20px); stroke-width: 2.4; }
+  .hi-down { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .hi-top { flex: 1; min-height: 0; display: grid; grid-template-columns: calc(var(--u) * 340px) minmax(0, 1fr); gap: calc(var(--u) * 24px); }
+  /* With nothing to bring, the conditions take the whole width */
+  .hi-top.solo { grid-template-columns: minmax(0, 1fr); }
+  .hi-now { display: flex; flex-direction: column; justify-content: center; gap: calc(var(--u) * 4px); }
+  .hi-temp { display: flex; align-items: center; gap: calc(var(--u) * 10px); font-size: calc(var(--u) * var(--t, 1) * 100px); font-weight: 700; line-height: .9; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  .hi-temp svg { width: calc(var(--u) * var(--t, 1) * 64px); height: calc(var(--u) * var(--t, 1) * 64px); stroke-width: 1.7; }
+  /* The degree is drawn as a ring: the OG's bitmap font turns a large ° into a blob */
+  .deg { align-self: flex-start; flex-shrink: 0; width: calc(var(--u) * var(--t, 1) * 21px); height: calc(var(--u) * var(--t, 1) * 21px); margin: calc(var(--u) * var(--t, 1) * 6px) 0 0 calc(var(--u) * var(--t, 1) * -6px); border: calc(var(--u) * var(--t, 1) * 5.5px) solid #000; border-radius: 50%; }
+  .hi-cond { font-size: calc(var(--u) * max(var(--t, 1), .8) * 30px); font-weight: 700; line-height: 1.1; }
+  .hi-det { font-family: var(--description-font-family); font-size: max(15px, calc(var(--u) * max(var(--t, 1), .85) * 19px)); line-height: 1.3; }
+  .hi-missing { font-size: calc(var(--u) * 34px); font-weight: 700; line-height: 1.15; }
+
+  .hi-vs { display: flex; flex-direction: column; justify-content: center; gap: calc(var(--u) * 8px); }
+  .hi-v { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: calc(var(--u) * 14px); }
+  .hi-ic { display: flex; gap: calc(var(--u) * 2px); align-items: center; justify-content: center; min-width: calc(var(--u) * 50px); height: calc(var(--u) * 50px); border-radius: calc(var(--u) * 9px); border: calc(var(--u) * 2.5px) solid #000; padding: 0 calc(var(--u) * 6px); }
+  .hi-ic svg { width: calc(var(--u) * 34px); height: calc(var(--u) * 34px); }
+  .hi-ic.trio svg { width: calc(var(--u) * 27px); height: calc(var(--u) * 27px); }
+  /* Only verdicts that ask you to bring something show, each on a black tile */
+  .hi-v.yes .hi-ic { background: #000; }
+  .hi-v.yes .hi-ic svg { color: #fff; stroke: #fff; }
+  .hi-v.yes .hi-ic svg path[fill] { fill: #000; }
+  .hi-vt { display: flex; flex-direction: column; min-width: 0; }
+  .hi-vl { font-size: calc(var(--u) * 30px); font-weight: 700; line-height: 1.05; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+    .hi-vw { font-family: var(--description-font-family); font-size: max(15px, calc(var(--u) * 16px)); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .hi-tl { display: flex; border-top: calc(var(--u) * 2px) solid #000; padding-top: calc(var(--u) * 6px); }
+  .hi-h { flex: 1; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 2px); min-width: 0; }
+  .hi-h .t { font-size: max(16px, calc(var(--u) * 15px)); font-weight: 700; white-space: nowrap; }
+  .hi-h svg { width: calc(var(--u) * 28px); height: calc(var(--u) * 28px); }
+  .hi-h .d { font-size: calc(var(--u) * 22px); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+  /* Precipitation chance as a bar with no track, so rain hours stand out at a glance */
+  .hi-h .p { height: calc(var(--u) * 26px); display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+  .hi-h .p i { display: block; width: calc(var(--u) * 26px); background: #000; }
+  .hi-h .p span { font-family: var(--description-font-family); font-size: calc(var(--u) * 13px); line-height: 1.1; }
+  .hi-h .s { display: inline-flex; align-items: center; gap: calc(var(--u) * 2px); font-family: var(--description-font-family); font-size: max(15px, calc(var(--u) * 14px)); white-space: nowrap; }
+  .hi-h .s svg { width: calc(var(--u) * 18px); height: calc(var(--u) * 18px); }
+
+  .hi-foot { display: flex; flex-wrap: wrap; align-items: center; overflow: hidden; height: calc(var(--u) * 27px); row-gap: 20px; gap: calc(var(--u) * 18px); font-size: calc(var(--u) * 17px); white-space: nowrap; border-top: calc(var(--u) * 1.5px) solid #000; padding: calc(var(--u) * 4px) 0 calc(var(--u) * 2px); }
+  .hi-foot > span { display: inline-flex; align-items: center; gap: calc(var(--u) * 5px); }
+  .hi-foot svg { width: calc(var(--u) * 20px); height: calc(var(--u) * 20px); }
+  .hi-foot .sun { margin-left: auto; }
+  .hi-foot .aq.alert { background: #000; color: #fff; border-radius: calc(var(--u) * 5px); padding: 0 calc(var(--u) * 8px) 0 calc(var(--u) * 5px); }
+  .hi-foot .sun + .sun { margin-left: 0; }
+  .hi-foot .aq.alert * { color: #fff; }
+
+  .screen--4bit .hi { --u: 1.55; }
+  /* The X has room to spare above the strip: the conditions and verdicts grow into it; a long footer wraps */
+  .screen--4bit .hi-top { --u: 1.9; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: calc(var(--u) * 40px); }
+  .screen--4bit .hi-top.solo { grid-template-columns: minmax(0, 1fr); }
+  /* Each alert card costs height: the top block and the strip step down so three cards still fit */
+  .hi--a1, .hi--a2, .hi--a3 { gap: calc(var(--u) * 7px); }
+  /* The temperature gives up the most; verdicts, the screen's answer, barely shrink */
+  .hi--a2 .hi-now { --t: .8; }
+  .hi--a3 .hi-now { --t: .62; }
+  .hi--a2 .hi-vs { --u: .95; }
+  .hi--a3 .hi-vs { --u: .88; }
+  .screen--4bit .hi--a2 .hi-now { --t: .85; }
+  .screen--4bit .hi--a3 .hi-now { --t: .7; }
+  .screen--4bit .hi--a2 .hi-vs { --u: 1.8; }
+  .screen--4bit .hi--a3 .hi-vs { --u: 1.6; }
+  .screen--4bit .hi--a3 .hi-tl { --u: 1.4; }
+  /* The OG's percentages are too small to read across a room: the bar alone carries the chance */
+  :is(.screen--1bit, .screen--2bit) .hi-h .p span { display: none; }
+  :is(.screen--1bit, .screen--2bit) .hi-h .p { height: 18px; }
+  /* Three cards on the OG: their text steps down so the conditions block keeps its High and Low */
+  :is(.screen--1bit, .screen--2bit) .hi--a3 .hi-alert { padding-block: 3px; }
+  :is(.screen--1bit, .screen--2bit) .hi--a3 .hi-alert b { font-size: 19px; }
+  :is(.screen--1bit, .screen--2bit) .hi--a3 .hi-cond { font-size: 24px; }
+  .screen--4bit .og-only, :is(.screen--1bit, .screen--2bit) .x-only { display: none; }
+  /* The OG shows every other hour, always keeping the sunrise or sunset hour */
+  :is(.screen--1bit, .screen--2bit) .hi-h.odd:not(.sunh) { display: none; }
+</style>
+{%- assign n_alerts = alerts | size -%}{%- if n_alerts > 3 -%}{%- assign n_alerts = 3 -%}{%- endif -%}
+<div class="view view--full">
+<div class="layout"><div class="hi hi--a{{ n_alerts }}">
+  {%- comment -%} Up to three alerts, one card each: those in effect first (solid), then those starting later (outlined). The rest are counted on the last card. Each card shrinks the blocks below it. {%- endcomment -%}
+  {%- for a in alerts limit: 3 -%}
+  <div class="hi-alert{% if a.upcoming %} later{% endif %}"><svg viewBox="0 0 24 24" style="stroke-width:2.4"><path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/><path d="M12 16h.01"/></svg>
+    <b class="ev">{{ a.event | escape }}</b><b class="wh">{{ a.when | escape }}</b>{% if forloop.last and more_alerts > 0 %}<span class="more">+{{ more_alerts }} more</span>{% endif %}</div>
+  {%- endfor -%}
+  {%- comment -%} With no forecast left the big message says it all; the pill is for sections still showing data. {%- endcomment -%}
+  {%- unless now.missing_since -%}{%- for e in errors -%}
+  <span class="hi-err"><svg viewBox="0 0 24 24"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>{% case e.source %}{% when "open-meteo-air" %}Air quality{% when "nws" %}Alerts{% when "google-pollen", "google-pollen-key" %}Pollen{% else %}Weather{% endcase %}{% if e.source == "google-pollen-key" %} key rejected{% else %} down{% endif %} since {{ e.since | date: "%-I:%M %p" }}</span>
+  {%- endfor -%}{%- endunless -%}
+  {%- if now.missing_since -%}<div class="hi-down"><div class="hi-missing">No weather since {{ now.missing_since }}</div></div>{%- else -%}
+  {%- comment -%} Count the verdicts that ask you to bring something; "no" verdicts are never shown. {%- endcomment -%}
+  {%- assign bring = 0 -%}
+  {%- if verdicts.jacket and verdicts.jacket != "none" -%}{%- assign bring = bring | plus: 1 -%}{%- endif -%}
+  {%- if verdicts.umbrella -%}{%- assign bring = bring | plus: 1 -%}{%- endif -%}
+  {%- if verdicts.sunscreen -%}{%- assign bring = bring | plus: 1 -%}{%- endif -%}
+  <div class="hi-top{% if bring == 0 %} solo{% endif %}">
+    <div class="hi-now">
+      {%- assign ic_name = now.icon -%}
+{%- case ic_name -%}
+{%- when "sun" -%}{%- assign ic = '<path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/>' -%}
+{%- when "moon" -%}{%- assign ic = '<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/>' -%}
+{%- when "partly" -%}{%- assign ic = '<g transform="translate(8.5 -1.5) scale(.62)"><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M12 3v1m8 8h1m-2.4 -6.4l-.7 .7m-12.1 -.7l.7 .7"/></g><path d="M7 20a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7z" fill="#fff"/>' -%}
+{%- when "cloud" -%}{%- assign ic = '<path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878"/>' -%}
+{%- when "fog" -%}{%- assign ic = '<path d="M7 16a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-12"/><path d="M5 20l14 0"/>' -%}
+{%- when "rain" -%}{%- assign ic = '<path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7"/><path d="M11 13v2m0 3v2m4 -5v2m0 3v2"/>' -%}
+{%- when "storm" -%}{%- assign ic = '<path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"/><path d="M13 14l-2 4l3 0l-2 4"/>' -%}
+{%- when "snow" -%}{%- assign ic = '<path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7"/><path d="M11 15v.01m0 3v.01m0 3v.01m4 -4v.01m0 3v.01"/>' -%}
+{%- endcase -%}
+      <div class="hi-temp">{{ now.temp }}<span class="deg"></span><svg viewBox="0 0 24 24">{{ ic }}</svg></div>
+      <div class="hi-cond">{{ now.conditions | escape }}</div>
+      <div class="hi-det">{% if now.feels %}Feels {{ now.feels }}°{% if now.wind %}, wind {{ now.wind }} mph{% endif %}<br>{% elsif now.wind %}Wind {{ now.wind }} mph<br>{% endif %}High {{ now.high }}° · Low {{ now.low }}°</div>
+    </div>
+    {%- if bring > 0 -%}
+    <div class="hi-vs">
+      {%- assign jk = '<path d="M16 3l-4 5l-4 -5"/><path d="M12 19a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-8.172a2 2 0 0 1 .586 -1.414l.828 -.828a2 2 0 0 0 .586 -1.414v-2.172a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v2.172a2 2 0 0 0 .586 1.414l.828 .828a2 2 0 0 1 .586 1.414v8.172a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2z"/><path d="M20 13h-3a1 1 0 0 0 -1 1v2a1 1 0 0 0 1 1h3"/><path d="M4 17h3a1 1 0 0 0 1 -1v-2a1 1 0 0 0 -1 -1h-3"/><path d="M12 19v-11"/>' -%}
+      {%- case verdicts.jacket -%}
+      {%- when "light" -%}{%- assign jl = "Light jacket" -%}{%- capture ji %}<svg viewBox="0 0 24 24" style="stroke-width:1.6">{{ jk }}</svg>{% endcapture -%}
+      {%- when "heavy" -%}{%- assign jl = "Heavy jacket" -%}{%- capture ji %}<svg viewBox="0 0 24 24" style="stroke-width:2.6">{{ jk }}</svg>{% endcapture -%}
+      {%- when "bundle" -%}{%- assign jl = "Coat, hat, gloves" -%}{%- capture ji %}<svg viewBox="0 0 24 24" style="stroke-width:2.4">{{ jk }}</svg><svg viewBox="0 0 24 24" style="stroke-width:2.4"><path d="M5 16a7 7 0 0 1 14 0"/><path d="M4 16h16v4h-16z"/><circle cx="12" cy="6.6" r="1.6"/></svg><svg viewBox="0 0 24 24" style="stroke-width:2.4"><path d="M8 21h8v-4l2.6 -3.6a1.9 1.9 0 0 0 -3 -2.3l-.6 .8v-4.9a3.5 3.5 0 0 0 -7 0z"/><path d="M8 17.5h8"/></svg>{% endcapture -%}
+      {%- endcase -%}
+      {%- if verdicts.jacket != "none" -%}
+      <div class="hi-v yes"><span class="hi-ic{% if verdicts.jacket == 'bundle' %} trio{% endif %}">{{ ji }}</span><span class="hi-vt"><span class="hi-vl">{{ jl }}</span><span class="hi-vw">{{ verdicts.jacket_why | escape }}</span></span></div>
+      {%- endif -%}
+      {%- if verdicts.umbrella == "snow" -%}
+      <div class="hi-v yes"><span class="hi-ic"><svg viewBox="0 0 24 24"><path d="M10 4l2 1l2 -1"/><path d="M12 2v6.5l3 1.72"/><path d="M17.928 6.268l.134 2.232l1.866 1.232"/><path d="M20.66 7l-5.629 3.25l.01 3.458"/><path d="M19.928 14.268l-1.866 1.232l-.134 2.232"/><path d="M20.66 17l-5.629 -3.25l-2.99 1.738"/><path d="M14 20l-2 -1l-2 1"/><path d="M12 22v-6.5l-3 -1.72"/><path d="M6.072 17.732l-.134 -2.232l-1.866 -1.232"/><path d="M3.34 17l5.629 -3.25l-.01 -3.458"/><path d="M4.072 9.732l1.866 -1.232l.134 -2.232"/><path d="M3.34 7l5.629 3.25l2.99 -1.738"/></svg></span><span class="hi-vt"><span class="hi-vl">Snow</span><span class="hi-vw">{{ verdicts.umbrella_why | escape }}</span></span></div>
+      {%- elsif verdicts.umbrella == "rain" -%}
+      <div class="hi-v yes"><span class="hi-ic"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 16 0z"/><path d="M12 12v6a2 2 0 0 0 4 0"/></svg></span><span class="hi-vt"><span class="hi-vl">Umbrella</span><span class="hi-vw">{{ verdicts.umbrella_why | escape }}</span></span></div>
+      {%- endif -%}
+      {%- if verdicts.sunscreen -%}
+      <div class="hi-v yes"><span class="hi-ic"><svg viewBox="0 0 24 24"><path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z"/><path d="M6.343 17.657l-1.414 1.414"/><path d="M6.343 6.343l-1.414 -1.414"/><path d="M17.657 6.343l1.414 -1.414"/><path d="M17.657 17.657l1.414 1.414"/><path d="M4 12h-2"/><path d="M12 4v-2"/><path d="M20 12h2"/><path d="M12 20v2"/></svg></span><span class="hi-vt"><span class="hi-vl">Sunscreen</span><span class="hi-vw">{{ verdicts.uv | escape }}</span></span></div>
+      {%- endif -%}
+    </div>
+    {%- endif -%}
+  </div>
+  {%- endif -%}
+  {%- if outlook -%}
+  <div class="hi-tl">
+    {%- for h in outlook.hours -%}
+    {%- assign ic_name = h.icon -%}
+{%- case ic_name -%}
+{%- when "sun" -%}{%- assign ic = '<path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/>' -%}
+{%- when "moon" -%}{%- assign ic = '<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/>' -%}
+{%- when "partly" -%}{%- assign ic = '<g transform="translate(8.5 -1.5) scale(.62)"><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M12 3v1m8 8h1m-2.4 -6.4l-.7 .7m-12.1 -.7l.7 .7"/></g><path d="M7 20a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7z" fill="#fff"/>' -%}
+{%- when "cloud" -%}{%- assign ic = '<path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878"/>' -%}
+{%- when "fog" -%}{%- assign ic = '<path d="M7 16a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-12"/><path d="M5 20l14 0"/>' -%}
+{%- when "rain" -%}{%- assign ic = '<path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7"/><path d="M11 13v2m0 3v2m4 -5v2m0 3v2"/>' -%}
+{%- when "storm" -%}{%- assign ic = '<path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"/><path d="M13 14l-2 4l3 0l-2 4"/>' -%}
+{%- when "snow" -%}{%- assign ic = '<path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7"/><path d="M11 15v.01m0 3v.01m0 3v.01m4 -4v.01m0 3v.01"/>' -%}
+{%- endcase -%}
+    {%- assign odd = forloop.index0 | modulo: 2 -%}
+    <div class="hi-h{% if odd == 1 %} odd{% endif %}{% if h.sunrise or h.sunset %} sunh{% endif %}">
+      <span class="t">{{ h.time }}</span>
+      <svg viewBox="0 0 24 24">{{ ic }}</svg>
+      <span class="d">{{ h.temp }}°</span>
+      {%- assign ph = h.precip | default: 0 | times: 0.16 -%}
+      <span class="p">{% if h.precip %}<span>{{ h.precip }}%</span><i style="height: calc(var(--u) * {{ ph }}px)"></i>{% endif %}</span>
+      {%- if h.sunrise -%}<span class="s"><svg viewBox="0 0 24 24"><path d="M3 17h1m16 0h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7m-9.7 5.7a4 4 0 0 1 8 0"/><path d="M3 21l18 0"/><path d="M12 9v-6l3 3m-6 0l3 -3"/></svg>{{ h.sunrise }}</span>{%- endif -%}
+      {%- if h.sunset -%}<span class="s"><svg viewBox="0 0 24 24"><path d="M3 17h1m16 0h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7m-9.7 5.7a4 4 0 0 1 8 0"/><path d="M3 21l18 0"/><path d="M12 3v6l3 -3m-6 0l3 3"/></svg>{{ h.sunset }}</span>{%- endif -%}
+    </div>
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
+  <div class="hi-foot">
+    {%- comment -%} Pollen types above None, highest first; the first is bold. {%- endcomment -%}
+    {%- for pl in pollen -%}<span>{% if forloop.first %}<svg viewBox="0 0 24 24"><path d="M7 15h10v4a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2v-4z"/><path d="M12 9a6 6 0 0 0 -6 -6h-3v2a6 6 0 0 0 6 6h3"/><path d="M12 11a6 6 0 0 1 6 -6h3v1a6 6 0 0 1 -6 6h-3"/><path d="M12 15l0 -6"/></svg><b>{{ pl.type }} {{ pl.level }}</b>{% else %}{{ pl.type }} {{ pl.level }}{% endif %}{% if pl.plant %} ({{ pl.plant }}){% endif %}</span>{%- endfor -%}
+    {%- comment -%} Air quality reads as a mark instead of a word: a check up to 50, a yield sign to 100, a siren on black above. {%- endcomment -%}
+    {%- if air -%}
+    {%- if air.aqi <= 50 -%}{%- assign aqi_ic = '<path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M9 12l2 2l4 -4"/>' -%}
+    {%- elsif air.aqi <= 100 -%}{%- assign aqi_ic = '<path d="M2.5 4h19L12 20.5z"/><path d="M7.6 7.2h8.8L12 15.4z" stroke-width="1.4"/>' -%}
+    {%- else -%}{%- assign aqi_ic = '<path d="M8 16v-4a4 4 0 0 1 8 0v4"/><path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7"/><path d="M6 16m0 1a1 1 0 0 1 1 -1h10a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-10a1 1 0 0 1 -1 -1z"/>' -%}
+    {%- endif -%}
+    <span class="aq{% if air.aqi > 100 %} alert{% endif %}"><svg viewBox="0 0 24 24">{{ aqi_ic }}</svg><b>AQI {{ air.aqi }}</b></span>
+    {%- endif -%}
+    {%- comment -%} The next sunrise and sunset, soonest first, so the later one is what drops off a full line. {%- endcomment -%}
+    {%- for e in sun -%}<span class="sun">{% if e.kind == "rise" %}<svg viewBox="0 0 24 24"><path d="M3 17h1m16 0h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7m-9.7 5.7a4 4 0 0 1 8 0"/><path d="M3 21l18 0"/><path d="M12 9v-6l3 3m-6 0l3 -3"/></svg>{% else %}<svg viewBox="0 0 24 24"><path d="M3 17h1m16 0h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7m-9.7 5.7a4 4 0 0 1 8 0"/><path d="M3 21l18 0"/><path d="M12 3v6l3 -3m-6 0l3 3"/></svg>{% endif %}{{ e.at }}</span>{%- endfor -%}
+  </div>
+</div></div>
+<div class="title_bar">
+  <span class="title">How's It Outside?</span>
+  <span class="instance">updated {{ updated_at | date: "%-I:%M %p" }}</span>
+</div>
+</div>

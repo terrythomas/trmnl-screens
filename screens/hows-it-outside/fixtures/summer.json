@@ -1,0 +1,119 @@
+{
+  "updated_at": "2026-07-14T14:05:00-04:00",
+  "now": {
+    "temp": 91,
+    "feels": 97,
+    "conditions": "Sunny",
+    "icon": "sun",
+    "high": 93,
+    "low": 74
+  },
+  "verdicts": {
+    "jacket": "none",
+    "umbrella": "rain",
+    "sunscreen": true,
+    "uv": "UV 8 now \u00b7 peaks 8 at 2pm",
+    "umbrella_why": "70% at 7pm"
+  },
+  "alerts": [],
+  "outlook": {
+    "kind": "rolling",
+    "hours": [
+      {
+        "time": "3pm",
+        "icon": "sun",
+        "temp": 92
+      },
+      {
+        "time": "4pm",
+        "icon": "sun",
+        "temp": 93
+      },
+      {
+        "time": "5pm",
+        "icon": "partly",
+        "temp": 91,
+        "precip": 20
+      },
+      {
+        "time": "6pm",
+        "icon": "cloud",
+        "temp": 88,
+        "precip": 40
+      },
+      {
+        "time": "7pm",
+        "icon": "storm",
+        "temp": 82,
+        "precip": 70
+      },
+      {
+        "time": "8pm",
+        "icon": "storm",
+        "temp": 79,
+        "precip": 60,
+        "sunset": "8:24pm"
+      },
+      {
+        "time": "9pm",
+        "icon": "rain",
+        "temp": 78,
+        "precip": 35
+      },
+      {
+        "time": "10pm",
+        "icon": "cloud",
+        "temp": 77
+      },
+      {
+        "time": "11pm",
+        "icon": "moon",
+        "temp": 76
+      },
+      {
+        "time": "12am",
+        "icon": "moon",
+        "temp": 76
+      },
+      {
+        "time": "1am",
+        "icon": "moon",
+        "temp": 75
+      },
+      {
+        "time": "2am",
+        "icon": "moon",
+        "temp": 74
+      }
+    ]
+  },
+  "pollen": [
+    {
+      "type": "Grass",
+      "level": "Moderate"
+    },
+    {
+      "type": "Weed",
+      "level": "Low"
+    },
+    {
+      "type": "Tree",
+      "level": "Very low",
+      "plant": "Pine"
+    }
+  ],
+  "air": {
+    "aqi": 112
+  },
+  "sun": [
+    {
+      "kind": "set",
+      "at": "8:24pm"
+    },
+    {
+      "kind": "rise",
+      "at": "5:37am"
+    }
+  ],
+  "errors": []
+}
