@@ -1,0 +1,120 @@
+{
+  "updated_at": "2026-01-19T23:10:00-05:00",
+  "now": {
+    "temp": 22,
+    "feels": 12,
+    "conditions": "Clear",
+    "icon": "moon",
+    "high": 31,
+    "low": 18,
+    "wind": 16
+  },
+  "verdicts": {
+    "jacket": "bundle",
+    "umbrella": "snow",
+    "sunscreen": false,
+    "uv": "UV 0 now",
+    "jacket_why": "Feels 9\u00b0 at 7am",
+    "umbrella_why": "80% at 8am"
+  },
+  "alerts": [
+    {
+      "event": "Wind Chill Advisory",
+      "when": "until 10am"
+    },
+    {
+      "event": "Winter Storm Watch",
+      "when": "from Tue 6am",
+      "upcoming": true
+    }
+  ],
+  "outlook": {
+    "kind": "rolling",
+    "hours": [
+      {
+        "time": "12am",
+        "icon": "moon",
+        "temp": 21
+      },
+      {
+        "time": "1am",
+        "icon": "moon",
+        "temp": 20
+      },
+      {
+        "time": "2am",
+        "icon": "cloud",
+        "temp": 20
+      },
+      {
+        "time": "3am",
+        "icon": "cloud",
+        "temp": 19,
+        "precip": 20
+      },
+      {
+        "time": "4am",
+        "icon": "cloud",
+        "temp": 19,
+        "precip": 30
+      },
+      {
+        "time": "5am",
+        "icon": "cloud",
+        "temp": 18,
+        "precip": 45
+      },
+      {
+        "time": "6am",
+        "icon": "snow",
+        "temp": 19,
+        "precip": 60
+      },
+      {
+        "time": "7am",
+        "icon": "snow",
+        "temp": 21,
+        "precip": 75,
+        "sunrise": "7:16am"
+      },
+      {
+        "time": "8am",
+        "icon": "snow",
+        "temp": 23,
+        "precip": 80
+      },
+      {
+        "time": "9am",
+        "icon": "snow",
+        "temp": 25,
+        "precip": 70
+      },
+      {
+        "time": "10am",
+        "icon": "snow",
+        "temp": 27,
+        "precip": 55
+      },
+      {
+        "time": "11am",
+        "icon": "cloud",
+        "temp": 28,
+        "precip": 30
+      }
+    ]
+  },
+  "air": {
+    "aqi": 29
+  },
+  "sun": [
+    {
+      "kind": "rise",
+      "at": "7:16am"
+    },
+    {
+      "kind": "set",
+      "at": "4:55pm"
+    }
+  ],
+  "errors": []
+}

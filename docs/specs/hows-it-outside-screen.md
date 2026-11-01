@@ -1,6 +1,6 @@
 # Spec: How's It Outside? screen (v1)
 
-Status: requirements and design settled (2026-10-31; Panel, critiqued and revised); collector next
+Status: collector and template built (2026-11-01); LaraPaper check next
 Glossary: [CONTEXT.md](../../CONTEXT.md) · Decisions: [docs/adr/](../adr/)
 
 ## Problem
@@ -35,11 +35,11 @@ One location, from `HOWS_IT_OUTSIDE_LATITUDE` / `HOWS_IT_OUTSIDE_LONGITUDE`. Uni
 - Hours are whole hours from the next hour on, through the outlook's end.
 
 ### Verdicts
-**Waking hours** are 06:00–22:00. The jacket and umbrella verdicts read only the outlook's waking hours; when it has none, they read the next morning's 06:00–22:00 instead.
+**Waking hours** are 06:00–22:00. The jacket and umbrella verdicts read only the outlook's waking hours. A 12-hour Rolling outlook always holds some, even late at night.
 
 - **Jacket grade** from the coldest feels-like temperature: `none` (65°F or above), `light` (50–64), `heavy` (35–49), `bundle` (below 35: heavy jacket with hat and gloves).
 - **Umbrella** when some hour's precipitation probability is 50% or more; `snow` instead of `rain` when that hour's weather code is snow (71–77, 85–86).
-- **Sunscreen** when the UV index reaches 3 or more at any hour of the whole outlook, the current hour included. Its reason line: "UV 2 now · peaks 5 at 1pm".
+- **Sunscreen** when the UV index reaches 3 or more at any hour of the whole outlook, the current hour included. Its reason line: "UV 2 now · peaks 5 at 1pm", naming the peak only when it rounds higher than now.
 - Only verdicts that ask you to bring something are shown; a jacket grade of `none`, no umbrella and no sunscreen show nothing.
 - **Reason lines:** the jacket's names the coldest feels-like temperature and its hour, "Feels 39° at 10pm" (the earliest hour on a tie); the umbrella's the highest chance and its hour, "70% at 10am" (the earliest on a tie).
 
@@ -47,7 +47,7 @@ One location, from `HOWS_IT_OUTSIDE_LATITUDE` / `HOWS_IT_OUTSIDE_LONGITUDE`. Uni
 Temperature; "feels 43°" when feels-like differs by 3° or more; conditions in words from the weather code ("Light rain"); today's high and low; wind ("Wind 18 mph") only above 15 mph.
 
 ### Alerts
-- Every active NWS alert whose onset is within 24 hours and whose end is after now (no end counts as ongoing). Any severity.
+- Every active NWS alert whose onset is within 24 hours and whose end is after now (no end counts as ongoing, and reads "in effect"). Any severity. NWS sends one copy per forecast zone, so alerts with the same event, onset and end are one card.
 - Alerts in effect come first, ordered by NWS severity (Extreme, Severe, Moderate, Minor, Unknown), then soonest end. Alerts starting later follow, soonest onset first, then severity.
 - Each alert is a card: its event name and when, "until 6pm" when in effect, "from 2pm" before onset (the weekday when not today). A long name is cut with "…"; the time and "+N more" never are. A card for an alert in effect is solid black; one starting later is outlined. Overlapping alerts (a tornado warning inside a severe thunderstorm warning) each get their own card. The collector sends at most three, and counts the rest in `more_alerts`. NWS headlines repeat the event name, so they are not shown.
 

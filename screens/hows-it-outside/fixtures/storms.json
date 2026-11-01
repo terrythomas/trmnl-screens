@@ -1,0 +1,131 @@
+{
+  "updated_at": "2026-06-02T15:40:00-04:00",
+  "now": {
+    "temp": 84,
+    "feels": 90,
+    "conditions": "Thunderstorm",
+    "icon": "storm",
+    "high": 88,
+    "low": 66,
+    "wind": 24
+  },
+  "verdicts": {
+    "jacket": "none",
+    "umbrella": "rain",
+    "sunscreen": true,
+    "uv": "UV 4 now",
+    "umbrella_why": "90% at 4pm"
+  },
+  "alerts": [
+    {
+      "event": "Tornado Warning",
+      "when": "until 4:15pm"
+    },
+    {
+      "event": "Hurricane Force Wind Warning",
+      "when": "until Wed 11:45pm"
+    },
+    {
+      "event": "Flood Watch",
+      "when": "from 6pm",
+      "upcoming": true
+    }
+  ],
+  "more_alerts": 1,
+  "outlook": {
+    "kind": "rolling",
+    "hours": [
+      {
+        "time": "4pm",
+        "icon": "storm",
+        "temp": 80,
+        "precip": 90
+      },
+      {
+        "time": "5pm",
+        "icon": "storm",
+        "temp": 76,
+        "precip": 85
+      },
+      {
+        "time": "6pm",
+        "icon": "rain",
+        "temp": 73,
+        "precip": 60
+      },
+      {
+        "time": "7pm",
+        "icon": "rain",
+        "temp": 72,
+        "precip": 40
+      },
+      {
+        "time": "8pm",
+        "icon": "cloud",
+        "temp": 71,
+        "precip": 20,
+        "sunset": "8:21pm"
+      },
+      {
+        "time": "9pm",
+        "icon": "cloud",
+        "temp": 70
+      },
+      {
+        "time": "10pm",
+        "icon": "cloud",
+        "temp": 69
+      },
+      {
+        "time": "11pm",
+        "icon": "moon",
+        "temp": 68
+      },
+      {
+        "time": "12am",
+        "icon": "moon",
+        "temp": 68
+      },
+      {
+        "time": "1am",
+        "icon": "moon",
+        "temp": 67
+      },
+      {
+        "time": "2am",
+        "icon": "fog",
+        "temp": 66
+      },
+      {
+        "time": "3am",
+        "icon": "fog",
+        "temp": 66
+      }
+    ]
+  },
+  "pollen": [
+    {
+      "type": "Grass",
+      "level": "High"
+    },
+    {
+      "type": "Tree",
+      "level": "Low",
+      "plant": "Oak"
+    }
+  ],
+  "air": {
+    "aqi": 41
+  },
+  "sun": [
+    {
+      "kind": "set",
+      "at": "8:21pm"
+    },
+    {
+      "kind": "rise",
+      "at": "5:27am"
+    }
+  ],
+  "errors": []
+}

@@ -270,7 +270,7 @@ A direct answer to "what do I bring?": a jacket grade, **Umbrella** and **Sunscr
 _Avoid_: Recommendation, advice, tip
 
 **Waking hours**:
-06:00 to 22:00. When the outlook holds none (late at night), the jacket and umbrella verdicts look at the next morning's waking hours instead.
+06:00 to 22:00, the hours the jacket and umbrella verdicts look at.
 
 **Jacket grade**:
 How much to wear against the cold, set by the coldest feels-like temperature in the waking hours of the outlook: no jacket (65°F or above), light jacket (50–64°F), heavy jacket (35–49°F), heavy jacket with hat and gloves (below 35°F). Each step has its own icon.
@@ -281,7 +281,7 @@ The verdict when it will probably rain or snow: some hour in the waking hours of
 _Avoid_: Rain gear
 
 **Sunscreen**:
-The verdict when the UV index reaches 3 or more at any hour of the outlook. Shown with the current UV and the peak, e.g. "UV 2 now · peaks 5 at 1pm".
+The verdict when the UV index reaches 3 or more at any hour of the outlook. Shown with the current UV, and the peak when it is higher, e.g. "UV 2 now · peaks 5 at 1pm".
 
 **Air quality**:
 The US EPA AQI as a number with a mark for its level instead of a word: a check for Good (up to 50), a yield sign for Moderate (51–100), and a siren on black from "Unhealthy for sensitive groups" (101) up.

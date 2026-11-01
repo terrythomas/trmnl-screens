@@ -1,0 +1,127 @@
+{
+  "updated_at": "2026-04-21T09:15:00-04:00",
+  "now": {
+    "temp": 48,
+    "feels": 43,
+    "conditions": "Light rain",
+    "icon": "rain",
+    "high": 56,
+    "low": 41,
+    "wind": 18
+  },
+  "verdicts": {
+    "jacket": "heavy",
+    "umbrella": "rain",
+    "sunscreen": false,
+    "uv": "UV 1 now \u00b7 peaks 2 at 1pm",
+    "jacket_why": "Feels 39\u00b0 at 10pm",
+    "umbrella_why": "70% at 10am"
+  },
+  "alerts": [
+    {
+      "event": "Wind Advisory",
+      "when": "until 6pm"
+    }
+  ],
+  "outlook": {
+    "kind": "day",
+    "hours": [
+      {
+        "time": "10am",
+        "icon": "rain",
+        "temp": 49,
+        "precip": 70
+      },
+      {
+        "time": "11am",
+        "icon": "rain",
+        "temp": 50,
+        "precip": 65
+      },
+      {
+        "time": "12pm",
+        "icon": "rain",
+        "temp": 51,
+        "precip": 55
+      },
+      {
+        "time": "1pm",
+        "icon": "cloud",
+        "temp": 53,
+        "precip": 30
+      },
+      {
+        "time": "2pm",
+        "icon": "cloud",
+        "temp": 55,
+        "precip": 20
+      },
+      {
+        "time": "3pm",
+        "icon": "partly",
+        "temp": 56
+      },
+      {
+        "time": "4pm",
+        "icon": "partly",
+        "temp": 56
+      },
+      {
+        "time": "5pm",
+        "icon": "sun",
+        "temp": 55
+      },
+      {
+        "time": "6pm",
+        "icon": "sun",
+        "temp": 53
+      },
+      {
+        "time": "7pm",
+        "icon": "sun",
+        "temp": 51,
+        "sunset": "7:41pm"
+      },
+      {
+        "time": "8pm",
+        "icon": "moon",
+        "temp": 48
+      },
+      {
+        "time": "9pm",
+        "icon": "moon",
+        "temp": 46
+      },
+      {
+        "time": "10pm",
+        "icon": "moon",
+        "temp": 45
+      }
+    ]
+  },
+  "pollen": [
+    {
+      "type": "Tree",
+      "level": "High",
+      "plant": "Oak"
+    },
+    {
+      "type": "Grass",
+      "level": "Low"
+    }
+  ],
+  "air": {
+    "aqi": 38
+  },
+  "sun": [
+    {
+      "kind": "set",
+      "at": "7:41pm"
+    },
+    {
+      "kind": "rise",
+      "at": "6:12am"
+    }
+  ],
+  "errors": []
+}

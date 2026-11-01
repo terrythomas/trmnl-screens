@@ -1,0 +1,108 @@
+{
+  "updated_at": "2026-10-31T13:05:00-04:00",
+  "now": {
+    "temp": 57,
+    "conditions": "Cloudy",
+    "icon": "cloud",
+    "high": 61,
+    "low": 47
+  },
+  "verdicts": {
+    "jacket": "light",
+    "umbrella": null,
+    "sunscreen": false,
+    "uv": "UV 1 now \u00b7 peaks 2 at 1pm",
+    "jacket_why": "Feels 50\u00b0 at 10pm"
+  },
+  "alerts": [],
+  "outlook": {
+    "kind": "rolling",
+    "hours": [
+      {
+        "time": "2pm",
+        "icon": "cloud",
+        "temp": 58
+      },
+      {
+        "time": "3pm",
+        "icon": "cloud",
+        "temp": 59
+      },
+      {
+        "time": "4pm",
+        "icon": "partly",
+        "temp": 59
+      },
+      {
+        "time": "5pm",
+        "icon": "partly",
+        "temp": 57
+      },
+      {
+        "time": "6pm",
+        "icon": "partly",
+        "temp": 55,
+        "sunset": "5:52pm"
+      },
+      {
+        "time": "7pm",
+        "icon": "moon",
+        "temp": 53
+      },
+      {
+        "time": "8pm",
+        "icon": "moon",
+        "temp": 52
+      },
+      {
+        "time": "9pm",
+        "icon": "moon",
+        "temp": 51
+      },
+      {
+        "time": "10pm",
+        "icon": "moon",
+        "temp": 50
+      },
+      {
+        "time": "11pm",
+        "icon": "cloud",
+        "temp": 49
+      },
+      {
+        "time": "12am",
+        "icon": "cloud",
+        "temp": 48,
+        "precip": 20
+      },
+      {
+        "time": "1am",
+        "icon": "cloud",
+        "temp": 48,
+        "precip": 30
+      }
+    ]
+  },
+  "air": {
+    "aqi": 52
+  },
+  "sun": [
+    {
+      "kind": "set",
+      "at": "5:52pm"
+    },
+    {
+      "kind": "rise",
+      "at": "7:27am"
+    }
+  ],
+  "stale": [
+    "forecast"
+  ],
+  "errors": [
+    {
+      "source": "open-meteo",
+      "since": "2026-10-31T11:15:00-04:00"
+    }
+  ]
+}
