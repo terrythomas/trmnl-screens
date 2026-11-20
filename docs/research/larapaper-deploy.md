@@ -97,5 +97,5 @@ Consequences:
 
 ## Not covered
 
-- How a page scales for a real TRMNL X. The image test called LaraPaper's image generator without a device, so the page filled only the default 800×480 area. The tracer bullet (#4) checks this on hardware.
+- How a page scales for a real TRMNL X. The image test called LaraPaper's image generator without a device, so the page filled only the default 800×480 area. Settled by the tracer bullet (#4): rendering with a `Device` whose device model is set gives the device's full size and scale.
 - `GET /api/companion/plugin_settings` plus `POST /api/companion/plugin_settings/{id}/data` is an authenticated alternative to the webhook. It wasn't tested, and it would need the full-access API token in the collector, while the webhook only needs a UUID scoped to one plugin. Read in LaraPaper's code (`CompanionController::pluginSettings`), the GET lists only each webhook recipe's `id`, `name`, `plugin_id`, `strategy` and `read_only?`, with no custom field values, so it can't give a collector its plugin settings (#30).

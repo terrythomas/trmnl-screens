@@ -1,6 +1,6 @@
 # Spec: Media screen (v1) and repo foundation
 
-Status: ready for tickets
+Status: implemented. The payload contract is current and the code cites it; the rest records the v1 design.
 Glossary: [CONTEXT.md](../../CONTEXT.md) · Decisions: [docs/adr/](../adr/)
 
 ## Problem
@@ -190,10 +190,3 @@ Approved in the layout prototype (#5). Screenshots and the prototype template ar
 - Other Plex users and other Plex servers.
 - Device refresh and rotation settings.
 - Other screens.
-
-## Open items to verify early
-
-1. Whether LaraPaper's `POST /api/plugin_settings/{id}/archive` (or `trmnlp push` with a custom server) accepts a trmnlp zip end to end. If not, deploy falls back to uploading the zip in the UI, documented in the README.
-2. Whether the collector container can reach LaraPaper and every source on the deployment's network, and which Docker networking mode the example compose file should recommend. **Resolved in #12:** the default bridge network reaches sources on other machines by LAN address; services in Docker on the same host are reached by joining their network and using container names. The README covers both.
-3. Whether LaraPaper's Liquid renderer, the default PHP keepsuit one, supports the filters the template needs (`date`, `size`, `slice`). If not, use `preferred_renderer: trmnl-liquid` or move the formatting into the collector.
-
