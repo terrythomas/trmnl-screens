@@ -31,9 +31,9 @@ The primary **Device** for both is the OG, the display watched during the workin
 
 ### Volatility and big move
 - **Volatility** is the standard deviation of daily price changes over the past 252 trading days (about a year), from daily closes.
-- The **30-day** volatility is the standard deviation of 21-trading-day changes over the same year.
+- The **30-day** volatility is the standard deviation of 21-trading-day changes over the year up to the start of the current 30 days. Including the current 30 days would let a big slide widen its own yardstick: an invented 46% fall measured that way did not count as big.
 - A **Big move** is a day change larger than **1.5×** the daily volatility, or a 30-day change larger than **3×** the 30-day volatility, up or down. Both multipliers are adjustable per stock and per account.
-- After the 16:00 close, the day change is measured to the latest after-hours price, so an earnings reaction at 16:30 counts as the day's move.
+- After the 16:00 close, the after-hours move is measured from the day's closing price against the same 1.5× daily test, so an earnings reaction at 16:30 makes a big move on its own.
 - The one-year change is shown but never makes a big move.
 - Measured on two volatile tech stocks over the past year, 1.5× daily showed each on about 43–57 days a year, and 3× over 30 days on about 30–38.
 
@@ -110,7 +110,7 @@ Daily data is cached in `STATE_DIR/bull-or-bear/`, `STATE_DIR/cha-ching/` and `S
 
 ## Configuration
 
-- `.env`, Bull or Bear?: the stocks, each with its symbol, LaraPaper webhook and plugin id, and optional multipliers; `FINNHUB_API_KEY`.
+- `.env`, Bull or Bear?: `BULL_OR_BEAR_INSTANCES=aapl,msft` lists the stocks; the collector runs each as its own screen, `bull-or-bear-aapl`, with `BULL_OR_BEAR_AAPL_WEBHOOK_UUID`, `_PLUGIN_ID` and optional `_DAY_MULTIPLE` and `_THIRTY_MULTIPLE`. `scripts/deploy bull-or-bear-aapl` deploys the shared template as that stock's plugin, named "Bull or Bear? · AAPL". `FINNHUB_API_KEY`; without it the screen runs without earnings and the banner says so.
 - `.env`, Cha-Ching!: the accounts, each with a nickname, its SnapTrade account id, webhook and plugin id, and optional multipliers; `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CONSUMER_KEY`.
 - `.env`, Payday: per account, its own webhook and plugin id, sharing the Cha-Ching! account's nickname and SnapTrade account id.
 - Plus the existing `LARAPAPER_URL`, `TZ`, `STATE_DIR`. Symbols, nicknames and account ids live only in `.env`.

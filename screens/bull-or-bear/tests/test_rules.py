@@ -50,6 +50,15 @@ def test_a_steady_slide_is_a_big_thirty_day_move():
     assert m.big_thirty and not m.big_day
 
 
+def test_a_slide_does_not_widen_its_own_yardstick():
+    # A quiet year, then a 21-day slide: the slide's own 21-day changes must not count toward "typical".
+    history = zigzag(231, step=0.005)
+    for _ in range(20):
+        history.append(history[-1] * 0.985)
+    price = history[-1] * 0.985
+    assert rules.moves(history, price, None).big_thirty
+
+
 def test_the_lead_prefers_after_hours_then_today_then_thirty_days():
     m = rules.Moves(0.05, -0.08, 0.3, 0.1, True, True, True)
     assert rules.lead(m, None, False)["kind"] == "after_hours"

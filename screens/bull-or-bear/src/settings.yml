@@ -1,0 +1,9 @@
+---
+name: Bull or Bear?
+description: One stock, shown on a big move, its earnings day or a dividend pay date
+strategy: webhook
+refresh_interval: 15
+no_screen_padding: 'no'
+dark_mode: 'no'
+static_data: ''
+framework_version: latest

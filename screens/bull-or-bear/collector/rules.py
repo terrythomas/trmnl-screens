@@ -46,7 +46,8 @@ def moves(history: list[float], price: float, after: float | None,
     """`history` is daily closes, oldest first, ending with the previous close; `price` is today's."""
     shown = after or price
     series = history + [price]
-    daily, monthly = volatility(history), volatility(history, THIRTY)
+    # Each yardstick stops before the move it judges, so a big move can't widen its own measure of "typical".
+    daily, monthly = volatility(history), volatility(history[:-THIRTY], THIRTY)
     day = price / history[-1] - 1
     late = after / price - 1 if after else None
     thirty = shown / series[-THIRTY - 1] - 1
