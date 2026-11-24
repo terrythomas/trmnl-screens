@@ -21,7 +21,7 @@ The phone pushing the day's events to the Calendar screen. Unlike a collector, i
 _Avoid_: Collector, companion
 
 **Device**:
-A physical TRMNL display: the **X** (large, 16 grays) or the **OG** (small, 1–2 bit). Every screen supports both. Each screen still picks its primary device, the one its design starts from; the Media screen targets the X, the Calendar, How's It Outside?, Bull or Bear? and Cha-Ching! screens the OG.
+A physical TRMNL display: the **X** (large, 16 grays) or the **OG** (small, 1–2 bit). Every screen supports both. Each screen still picks its primary device, the one its design starts from; the Media screen targets the X, the Calendar, How's It Outside?, Bull or Bear?, Cha-Ching! and Payday screens the OG.
 
 ## Media screen
 
@@ -329,7 +329,7 @@ _Avoid_: Market hours, trading hours
 ## Cha-Ching! screen
 
 **Cha-Ching!**:
-The screen showing how one account did, and only inside the market window on a big move or a pay date for one of its holdings. Each account is its own screen. Named for the question behind it: how much did I make today? Never shows dollar values.
+The screen showing how one account did, and only inside the market window on a big move. Dividends count inside its moves but are never called out on it; they have their own screen, Payday. Each account is its own screen. Named for the question behind it: how much did I make today? Never shows dollar values.
 _Avoid_: Portfolio screen, account dashboard
 
 **Account**:
@@ -345,12 +345,34 @@ A change in value that counts dividends as well as price. Cha-Ching! measures in
 _Avoid_: Performance, yield
 
 **Top contributors**:
-The two or three holdings that did the most to the account's move, shown beside it.
-_Avoid_: Top movers, leaders
+The two or three holdings that did the most to the account's move (shares × price change), pushing the same way as the move. Listed under "Behind the drop" or "Behind the gain".
+_Avoid_: Top movers, biggest movers (those are the largest % changes, which is not the same), leaders
 
 **Balance-only account**:
 An account whose holdings can't be read, only its balance. Its move is measured from balances recorded over time, so deposits, withdrawals and trades do count as moves; the 30-day move needs 30 days of recorded balances first.
 _Avoid_: Manual account
+
+## Payday screen
+
+**Payday**:
+The screen showing one account's dividends, and only inside the market window on a day a dividend is paid into it. Lists the dividends paid today and those coming in the next 7 days, and a year of monthly dividend income. Never shows dollar totals.
+_Avoid_: Dividend screen, income screen
+
+**Dividend payment**:
+Cash from a dividend landing in an account, on its pay date. Shown per holding with its amount per share and its yield.
+_Avoid_: Payout, distribution, income
+
+**Upcoming dividend**:
+A declared dividend for a holding whose pay date falls in the next 7 days.
+_Avoid_: Expected dividend, scheduled payout
+
+**Yield**:
+A holding's yearly dividends as a percentage of its current price, e.g. 5.6%. Says how generous a dividend is without saying how much is held.
+_Avoid_: Return, total return
+
+**Dividend rhythm**:
+Twelve monthly bars of an account's dividend income, drawn without amounts, so the months that pay more stand out but no sum is shown.
+_Avoid_: Income chart, dividend history
 
 ## Health
 

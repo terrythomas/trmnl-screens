@@ -1,18 +1,19 @@
-# Spec: Bull or Bear? and Cha-Ching! screens (v1)
+# Spec: Bull or Bear?, Cha-Ching! and Payday screens (v1)
 
-Status: requirements settled (2026-11-24); Bull or Bear? layout chosen (Poster theme, split-scale chart); Cha-Ching! layout to follow in the same language; source facts to confirm (see Open source checks)
+Status: requirements settled (2026-11-24); Bull or Bear? layout chosen (Poster theme, split-scale chart with a dashed hatch); Cha-Ching! and Payday layouts in the same language; source facts to confirm (see Open source checks)
 Glossary: [CONTEXT.md](../../CONTEXT.md) · Decisions: [docs/adr/](../adr/)
 
 ## Problem
 
-The household holds a few individual stocks and a couple of brokerage accounts, but does not watch the market. They want the display to speak up only when something worth knowing happens, during the hours it can happen: a stock or an account has made a move that is unusual for it, a company reports earnings, or a dividend is paid. On a quiet day, a weekend or a market holiday, neither screen appears.
+The household holds a few individual stocks and a couple of brokerage accounts, but does not watch the market. They want the display to speak up only when something worth knowing happens, during the hours it can happen: a stock or an account has made a move that is unusual for it, a company reports earnings, or a dividend is paid. On a quiet day, a weekend or a market holiday, none of the screens appears.
 
 ## Solution
 
-Two new **Screens**, each fed by a **Collector** like the other screens ([ADR-0001](../adr/0001-collector-pushes-to-larapaper.md)):
+Three new **Screens**, each fed by a **Collector** like the other screens ([ADR-0001](../adr/0001-collector-pushes-to-larapaper.md)):
 
 - **Bull or Bear?** (`screens/bull-or-bear/`): one stock per screen. Each configured stock has its own LaraPaper plugin and webhook, so each is its own playlist item.
 - **Cha-Ching!** (`screens/cha-ching/`): one **Account** per screen, again one plugin per account. Accounts are kept apart because they serve different purposes.
+- **Payday** (`screens/payday/`): one account's dividends per screen, one plugin per account. An income account rarely makes a big move, so its dividends get their own screen instead of riding on Cha-Ching!.
 
 Both share one set of market rules: the **Trading day**, the **Market window** and the **Big move** test. Prices come from Yahoo's chart endpoint ([ADR-0014](../adr/0014-prices-from-yahoo-chart-endpoint.md)); holdings come from SnapTrade ([ADR-0013](../adr/0013-holdings-through-snaptrade.md)); an account's move is worked out from its holdings, not its balance ([ADR-0015](../adr/0015-account-moves-from-holdings.md)).
 
@@ -64,18 +65,27 @@ Otherwise the template sets `TRMNL_SKIP_DISPLAY`.
 - Volatility comes from the same calculation applied to the past year: the daily total-return series of today's holdings.
 
 ### When it shows
-Inside the market window, when any of these holds:
-- a big move for the account (1.5× daily, 3× 30-day);
-- a dividend paid into the account today, from SnapTrade's account activity.
+Inside the market window, on a big move for the account (1.5× daily, 3× 30-day). Dividends count inside the moves (total return) but never show the screen or appear on it; Payday covers them.
 
 ### What it shows
-- **Lead:** the triggering change in % (day or 30-day), large; on a dividend-only day, "Dividends paid today".
-- **Top contributors:** the two or three holdings that did the most to the move, each with its own % change.
-- **Row of changes:** day, 30-day and one-year, in % only.
-- **Dividends:** holdings that paid today, by symbol and per-share amount ("O $0.27/share"). Never totals.
+- **Lead:** the triggering change in % (day or 30-day), large.
+- **Top contributors:** under "Behind the drop" or "Behind the gain", the two or three holdings whose shares × price change did the most to the move, pushing the same way, each with its own % change.
+- **Row of changes:** day, 30-day and one-year, in % only, leaving out the one already shown as the lead.
 - **Chart:** the one-year total-return line of today's holdings, on the same split time scale as Bull or Bear?, high and low marked with date.
 - **Title bar:** the account's nickname from `.env`, and "as of 2:45 PM".
-- **No dollar values anywhere:** no account value, no position sizes, no dividend totals.
+- **No dollar values anywhere:** no account value, no position sizes.
+
+## Payday
+
+### When it shows
+Inside the market window, on a day a **Dividend payment** lands in the account (its pay date), from SnapTrade's account activity. Otherwise the template sets `TRMNL_SKIP_DISPLAY`.
+
+### What it shows
+- **Paid today:** each holding that paid, as "O · $0.27/share · 5.6% yield". **Yield** is the past year's dividends per share over today's price, from Yahoo's dividend history.
+- **Coming up:** **Upcoming dividends** for the account's holdings with a pay date in the next 7 days, in the same form with the pay date ("VZ · $0.69/share · Fri"), from Nasdaq. Left off when there are none or Nasdaq has no data.
+- **Dividend rhythm:** twelve monthly bars of the account's dividend income over the past year, with no axis or amounts. Like Cha-Ching!'s moves, it is worked out from today's holdings × each holding's past dividends per share ([ADR-0015](../adr/0015-account-moves-from-holdings.md)), so no transaction history is needed. The current month is drawn in the dashed hatch.
+- **Title bar:** "Payday", the account's nickname, and "as of 2:45 PM".
+- **No dollar totals anywhere:** only per-share amounts and yields.
 
 ## Failure behaviour
 - If Yahoo fails, the collector pushes its last good data marked stale and raises the error banner, as on the other screens. Yahoo is known to answer HTTP 429 to bursts; one request per stock per run keeps well under that.
@@ -92,21 +102,24 @@ Inside the market window, when any of these holds:
 | Price, after-hours price, one-year daily closes (raw and adjusted) | Yahoo `v8/finance/chart`, browser User-Agent, no key ([ADR-0014](../adr/0014-prices-from-yahoo-chart-endpoint.md)) | every run |
 | Trading days, early closes | `exchange_calendars` (offline) | every run |
 | Next earnings date and time of day | Finnhub `/calendar/earnings` (free key) | once a day |
+| Past dividends per share (yield, dividend rhythm) | Yahoo `v8/finance/chart` with `events=div` | once a day |
 | Upcoming dividends with pay dates | Nasdaq `api/quote/{symbol}/dividends` (unofficial, browser User-Agent) | once a day |
-| Holdings, dividends paid into an account | SnapTrade personal API key, read-only connections ([ADR-0013](../adr/0013-holdings-through-snaptrade.md)) | once a day |
+| Holdings, dividend payments into an account | SnapTrade personal API key, read-only connections ([ADR-0013](../adr/0013-holdings-through-snaptrade.md)) | once a day |
 
-Daily data is cached in `STATE_DIR/bull-or-bear/` and `STATE_DIR/cha-ching/`.
+Daily data is cached in `STATE_DIR/bull-or-bear/`, `STATE_DIR/cha-ching/` and `STATE_DIR/payday/`.
 
 ## Configuration
 
 - `.env`, Bull or Bear?: the stocks, each with its symbol, LaraPaper webhook and plugin id, and optional multipliers; `FINNHUB_API_KEY`.
 - `.env`, Cha-Ching!: the accounts, each with a nickname, its SnapTrade account id, webhook and plugin id, and optional multipliers; `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CONSUMER_KEY`.
+- `.env`, Payday: per account, its own webhook and plugin id, sharing the Cha-Ching! account's nickname and SnapTrade account id.
 - Plus the existing `LARAPAPER_URL`, `TZ`, `STATE_DIR`. Symbols, nicknames and account ids live only in `.env`.
 
 ## Testing
 
 - **Market rules:** pytest with fixed dates for trading days, an early close, a holiday, the window edges and `visible_until`.
 - **Volatility and big move:** pytest on invented price series with known standard deviations, at and either side of each multiplier, including the after-hours case.
+- **Payday:** pytest on invented holdings and dividend histories: yield, the 7-day upcoming window, monthly rhythm bars, and no screen on a day without a payment.
 - **Account move:** pytest on invented holdings and histories: contributors, total return, and a deposit not counting as a move.
 - **Source adapters:** `httpx.MockTransport` against invented responses in each source's real shape, never real responses or real holdings ([ADR-0003](../adr/0003-public-repo-secrets-policy.md)).
 - **Template:** by eye in `trmnlp serve` on the OG and the X with fixtures for each lead (day, after hours, 30-day, earnings, pay date), a stale run, and a long company name.
