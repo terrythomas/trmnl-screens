@@ -16,5 +16,5 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - run: pip install -e '.[dev,game-time]'
+      - run: pip install -e '.[dev,game-time,bull-or-bear]'
       - run: pytest -q

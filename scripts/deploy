@@ -9,6 +9,9 @@ data, so the screen's collector runs once afterwards.
 
 Needs LARAPAPER_URL and LARAPAPER_API_TOKEN, plus <SCREEN>_PLUGIN_ID once the
 plugin exists. Without a plugin ID, the plugin is created and its ID printed.
+
+An instance of a screen (see <SCREEN>_INSTANCES), e.g. `scripts/deploy bull-or-bear-aapl`,
+deploys the screen's template as its own plugin, named "<screen name> · AAPL".
 """
 
 import io
@@ -25,7 +28,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def main(screen: str) -> int:
-    src = ROOT / "screens" / screen / "src"
+    base, instance = _split(screen)
+    src = ROOT / "screens" / base / "src"
     if not src.is_dir():
         sys.exit(f"no such screen: {src.relative_to(ROOT)}")
 
@@ -44,7 +48,7 @@ def main(screen: str) -> int:
 
     api.post(
         f"/plugin_settings/{plugin_id}/archive",
-        files={"file": ("plugin.zip", _zip(src), "application/zip")},
+        files={"file": ("plugin.zip", _zip(src, instance), "application/zip")},
     ).raise_for_status()
     print(f"deployed {screen}")
 
@@ -61,11 +65,28 @@ def main(screen: str) -> int:
     return subprocess.call([sys.executable, "-m", "collector", "--once", "--screen", screen], cwd=ROOT)
 
 
-def _zip(src: Path) -> bytes:
+def _split(screen: str) -> tuple[str, str | None]:
+    """("bull-or-bear", "aapl") for an instance, (screen, None) for a screen with its own folder."""
+    if (ROOT / "screens" / screen).is_dir():
+        return screen, None
+    for folder in sorted((ROOT / "screens").iterdir(), key=lambda p: -len(p.name)):
+        if screen.startswith(folder.name + "-"):
+            return folder.name, screen[len(folder.name) + 1:]
+    return screen, None
+
+
+def _zip(src: Path, instance: str | None = None) -> bytes:
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         for path in sorted(src.iterdir()):
-            if path.is_file():
+            if not path.is_file():
+                continue
+            if instance and path.name == "settings.yml":
+                # Each instance is its own plugin; its name says which one.
+                text = "".join(f"{line.rstrip()} · {instance.upper()}\n" if line.startswith("name:") else line
+                               for line in path.read_text().splitlines(keepends=True))
+                zf.writestr(path.name, text)
+            else:
                 zf.write(path, path.name)  # flat: LaraPaper expects files at the zip root
     return buf.getvalue()
 

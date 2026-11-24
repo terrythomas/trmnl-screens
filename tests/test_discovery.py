@@ -73,3 +73,26 @@ def test_finding_screens_imports_none_of_them(tmp_path):
         assert e.name == "not_an_installed_package"
     else:
         raise AssertionError("expected the import to fail on load")
+
+
+def _instanced(tmp_path):
+    pkg = tmp_path / "ticker" / "collector"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text("def collect(instance=None):\n    return {'instance': instance}\n")
+    return pkg / "__init__.py"
+
+
+def test_a_screen_runs_once_per_listed_instance(tmp_path):
+    init = _instanced(tmp_path)
+
+    screens = find_screens(tmp_path, {"TICKER_INSTANCES": "aapl, msft"})
+
+    assert screens == {"ticker-aapl": init, "ticker-msft": init}
+    assert load_screen("ticker-msft", init).collect() == {"instance": "msft"}
+
+
+def test_a_screen_without_instances_runs_once(tmp_path):
+    init = _instanced(tmp_path)
+
+    assert find_screens(tmp_path, {}) == {"ticker": init}
+    assert load_screen("ticker", init).collect() == {"instance": None}

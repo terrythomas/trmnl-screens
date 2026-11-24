@@ -1,0 +1,115 @@
+{%- comment -%}
+Bull or Bear?, the Poster layout. Payload contract and design: docs/specs/market-screens.md. Vocabulary: CONTEXT.md.
+The collector decides whether the stock shows (show) and when the market window ends (visible_until, epoch seconds);
+the template leaves the playlist past that time, so a screen pushed at 19:45 is gone at 20:00 without another push.
+The chart arrives as points on the split time scale in a 1000x300 box. Sizes are calc(var(--u) * Npx): OG is --u 1.
+{%- endcomment -%}
+{%- assign now_s = preview_now | default: "now" | date: "%s" | plus: 0 -%}
+{%- assign until = visible_until | default: 0 | plus: 0 -%}
+{%- if show != true or now_s >= until -%}<script>window.TRMNL_SKIP_DISPLAY = true</script>{%- endif -%}
+<style>
+  .bb { --u: 1; display: flex; flex-direction: column; gap: calc(var(--u) * 8px); width: 100%; height: 100%; padding: 2px 4px 0; }
+  .bb, .bb * { font-family: var(--title-font-family); color: #000; }
+  .bb-err { align-self: flex-start; border: calc(var(--u) * 2.5px) solid #000; border-radius: calc(var(--u) * 7px); padding: 0 calc(var(--u) * 10px); font-size: calc(var(--u) * 17px); font-weight: 700; }
+  .bb-top { display: flex; align-items: flex-end; justify-content: space-between; gap: calc(var(--u) * 16px); }
+  .bb-id { display: flex; flex-direction: column; min-width: 0; }
+  .bb-sym { font-size: calc(var(--u) * 30px); font-weight: 700; line-height: 1; letter-spacing: .02em; }
+  .bb-name { font-family: var(--description-font-family); font-size: max(15px, calc(var(--u) * 16px)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bb-lead { display: flex; align-items: center; gap: calc(var(--u) * 10px); margin-top: calc(var(--u) * 4px); }
+  .bb-tri { width: 0; height: 0; border-left: calc(var(--u) * 22px) solid transparent; border-right: calc(var(--u) * 22px) solid transparent; }
+  .bb-tri.up { border-bottom: calc(var(--u) * 36px) solid #000; }
+  .bb-tri.down { border-top: calc(var(--u) * 36px) solid #000; }
+  .bb-pct { font-size: calc(var(--u) * 84px); font-weight: 700; line-height: .9; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .bb-when { font-size: calc(var(--u) * 20px); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+  .bb-badge { display: inline-block; background: #000; color: #fff; border-radius: calc(var(--u) * 8px); padding: calc(var(--u) * 4px) calc(var(--u) * 14px); font-size: calc(var(--u) * 34px); font-weight: 700; white-space: nowrap; }
+  .bb-tag { display: inline-block; border: calc(var(--u) * 2.5px) solid #000; border-radius: calc(var(--u) * 6px); padding: 0 calc(var(--u) * 8px); font-size: calc(var(--u) * 16px); font-weight: 700; margin-top: calc(var(--u) * 4px); }
+  .bb-px { text-align: right; flex-shrink: 0; }
+  .bb-price { font-size: calc(var(--u) * 46px); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .bb-pl { font-family: var(--description-font-family); font-size: max(15px, calc(var(--u) * 17px)); line-height: 1.3; white-space: nowrap; }
+  .bb-pl b { font-family: var(--title-font-family); }
+  .bb-row { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border-top: calc(var(--u) * 2px) solid #000; border-bottom: calc(var(--u) * 2px) solid #000; padding: calc(var(--u) * 4px) 0; }
+  .bb-c { display: flex; flex-direction: column; padding-left: calc(var(--u) * 8px); border-left: calc(var(--u) * 1.5px) solid #000; }
+  .bb-c:first-child { border-left: 0; padding-left: 0; }
+  .bb-c .l { font-size: max(14px, calc(var(--u) * 14px)); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+  .bb-c .v { font-size: calc(var(--u) * 26px); font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .bb-c .s { font-family: var(--description-font-family); font-size: max(14px, calc(var(--u) * 14px)); }
+  .bb-chart { flex: 1; min-height: 0; position: relative; margin: calc(var(--u) * 18px) 0 calc(var(--u) * 20px); }
+  .bb-chart svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .bb-chart polyline { fill: none; stroke: #000; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  .bb-chart .all { stroke-width: calc(var(--u) * 1.6px); }
+  .bb-chart .recent { stroke-width: calc(var(--u) * 5px); }
+  .bb-mk { position: absolute; width: 0; height: 0; }
+  .bb-mk i { position: absolute; left: calc(var(--u) * -5px); top: calc(var(--u) * -5px); width: calc(var(--u) * 10px); height: calc(var(--u) * 10px); border-radius: 50%; background: #000; }
+  .bb-mk span { position: absolute; white-space: nowrap; font-size: max(14px, calc(var(--u) * 15px)); font-weight: 700; background: #fff; padding: 0 calc(var(--u) * 3px); }
+  .bb-mk.hi span { bottom: calc(var(--u) * 6px); }
+  .bb-mk.lo span { top: calc(var(--u) * 6px); }
+  .bb-mk span { left: calc(var(--u) * -10px); }
+  .bb-mk.r span { left: auto; right: calc(var(--u) * -10px); }
+.bb-main { flex: 1; min-height: 0; display: grid; grid-template-columns: calc(var(--u) * 330px) minmax(0, 1fr); gap: calc(var(--u) * 22px); }
+  .bb-main .bb-top { flex-direction: column; align-items: flex-start; justify-content: center; gap: calc(var(--u) * 10px); }
+  .bb-main .bb-sym { font-size: calc(var(--u) * 52px); }
+  .bb-main .bb-name { display: block; margin-top: calc(var(--u) * 2px); }
+  .bb-main .bb-pct { font-size: calc(var(--u) * 72px); }
+  .bb-main .bb-badge { font-size: calc(var(--u) * 26px); white-space: normal; }
+  .bb-px.p { text-align: left; }
+  .bb-main .bb-chart { margin: calc(var(--u) * 26px) 0 calc(var(--u) * 26px); }
+  .bb-row { border-bottom: 0; }
+
+  .bb-chart .div { position: absolute; top: calc(var(--u) * -14px); bottom: 0; border-left: calc(var(--u) * 2px) solid #000; }
+  .bb-chart .div { left: 64%; }
+  .bb-chart .lab { position: absolute; bottom: calc(var(--u) * -20px); font-size: max(14px, calc(var(--u) * 15px)); font-weight: 700; letter-spacing: .06em; }
+  .bb-chart .lvl { position: absolute; left: 64%; right: 0; border-top: calc(var(--u) * 2px) dashed #000; }
+  .bb-chart .lab { bottom: auto; top: calc(var(--u) * -22px); }
+  .bb-chart .lab.y { left: 0; } .bb-chart .lab.m { left: calc(64% + calc(var(--u) * 6px)); }
+  .bb-chart .halo { fill: none; stroke: #fff; stroke-width: calc(var(--u) * 13px); stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  .bb-chart .zone { position: absolute; top: calc(var(--u) * -14px); bottom: 0; left: 64%; right: 0; background: repeating-linear-gradient(135deg, #000 0 1px, transparent 1px calc(var(--u) * 8px)); -webkit-mask-image: repeating-linear-gradient(45deg, #000 0 calc(var(--u) * 4px), transparent calc(var(--u) * 4px) calc(var(--u) * 8px)); mask-image: repeating-linear-gradient(45deg, #000 0 calc(var(--u) * 4px), transparent calc(var(--u) * 4px) calc(var(--u) * 8px)); }
+  .bb-chart .lab.m { background: #fff; padding-right: calc(var(--u) * 4px); }
+  .screen--4bit .bb { --u: 1.55; }
+</style>
+<div class="view view--full"><div class="layout">
+<div class="bb">
+  {%- if errors.size > 0 -%}<div class="bb-err">{{ errors[0].label }}</div>{%- endif -%}
+  <div class="bb-main">
+  <div class="bb-top">
+    <div class="bb-id">
+      <div class="bb-sym">{{ symbol }} <span class="bb-name">{{ name | escape }}</span></div>
+      {%- if lead.kind == "badge" -%}
+      <div class="bb-lead"><span class="bb-badge">{{ lead.label }}</span></div>
+      {%- else -%}
+      <div class="bb-lead"><i class="bb-tri {{ lead.dir }}"></i><span class="bb-pct">{{ lead.value }}</span></div>
+      <div class="bb-when">{{ lead.label }}{% if lead.sub %} <span class="bb-name">{{ lead.sub }}</span>{% endif %}</div>
+      {%- if badge -%}<div><span class="bb-tag">{{ badge }}</span></div>{%- endif -%}
+      {%- endif -%}
+    </div>
+    <div class="bb-px p">
+      <div class="bb-price">{{ price }}</div>
+      {%- if after_line -%}
+      <div class="bb-pl">{{ close_line }}</div>
+      <div class="bb-pl"><b>{{ after_line }}</b></div>
+      {%- endif -%}
+      {%- if dividend -%}<div class="bb-pl"><b>{{ dividend }}</b></div>{%- endif -%}
+    </div>
+  </div>
+  <div class="bb-chart">
+    <div class="zone"></div>
+    <div class="div"></div>
+    <svg viewBox="0 0 1000 300" preserveAspectRatio="none"><polyline class="all" points="{{ chart.line }}"/><polyline class="halo" points="{{ chart.recent }}"/><polyline class="recent" points="{{ chart.recent }}"/></svg>
+    {%- assign h = chart.high -%}{%- assign l = chart.low -%}
+    <div class="bb-mk hi{% if h.x > 45 %} r{% endif %}" style="left: {{ h.x }}%; top: {{ h.y }}%"><i></i><span>{{ h.label }}</span></div>
+    <div class="bb-mk lo{% if l.x > 45 %} r{% endif %}" style="left: {{ l.x }}%; top: {{ l.y }}%"><i></i><span>{{ l.label }}</span></div>
+    <div class="lvl" style="top: {{ chart.start_y }}%"></div>
+    <span class="lab y">1 YEAR</span><span class="lab m">30 DAYS</span>
+  </div>
+  </div>
+  <div class="bb-row">
+    {%- for c in changes -%}
+    <div class="bb-c"><span class="l">{{ c.label }}</span><span class="v">{{ c.value }}</span>{% if c.sub %}<span class="s">{{ c.sub }}</span>{% endif %}</div>
+    {%- endfor -%}
+  </div>
+</div>
+</div>
+<div class="title_bar">
+  <span class="title">Bull or Bear?</span>
+  <span class="instance">as of {{ as_of }}{% if stale %} · STALE{% endif %}</span>
+</div>
+</div>

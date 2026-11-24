@@ -21,7 +21,7 @@ The phone pushing the day's events to the Calendar screen. Unlike a collector, i
 _Avoid_: Collector, companion
 
 **Device**:
-A physical TRMNL display: the **X** (large, 16 grays) or the **OG** (small, 1–2 bit). Every screen supports both. Each screen still picks its primary device, the one its design starts from; the Media screen targets the X, the Calendar and How's It Outside? screens the OG.
+A physical TRMNL display: the **X** (large, 16 grays) or the **OG** (small, 1–2 bit). Every screen supports both. Each screen still picks its primary device, the one its design starts from; the Media screen targets the X, the Calendar, How's It Outside?, Bull or Bear?, Cha-Ching! and Payday screens the OG.
 
 ## Media screen
 
@@ -290,6 +290,89 @@ _Avoid_: Pollution, smog
 **Pollen level**:
 Tree, grass and weed pollen, each on Google's 0–5 index shown as a word. Only types above None are shown. The tree pollen highest that day is also named when tree pollen is above none. With no pollen at all, or only a previous day's, pollen is left off the screen entirely.
 _Avoid_: Pollen count (a grain count, which this is not), allergy index
+
+## Bull or Bear? screen
+
+**Bull or Bear?**:
+The screen showing one stock, and only when it has made a big move, it is the stock's earnings day, or it is a pay date. Each stock is its own screen. Named for the question it answers at a glance: up or down?
+_Avoid_: Stock screen, ticker, stock tracker
+
+
+**Trading day**:
+A day the New York Stock Exchange holds a session. Weekends and market holidays are not trading days; early-close days are.
+_Avoid_: Market day, business day, weekday
+
+**Volatility**:
+How much a stock's price typically moves, measured from its own daily closes over the past year. A stock that often swings 3% has higher volatility than one that rarely moves 1%.
+_Avoid_: Risk, beta
+
+**Big move**:
+A price change larger than a multiple of the stock's own volatility for that span, up or down: 1.5× for the day (including after hours) and 3× over 30 days, each adjustable per stock. Big for one stock can be ordinary for another; there is no fixed percentage. The one-year change is shown for context but never makes a big move.
+_Avoid_: Significant move, swing, spike
+
+**After hours**:
+Trading from the 16:00 close to 20:00 ET. Its move is measured against that day's close and counts toward the day's big move. Pre-market trading is ignored.
+_Avoid_: Extended hours, post-market
+
+**Earnings day**:
+A trading day on which the company reports its quarterly results. The stock is shown that day whether or not it has made a big move.
+_Avoid_: Earnings call, disclosure day
+
+**Pay date**:
+The day a dividend's cash is paid to shareholders. A pay date shows the stock even without a big move; a dividend whose pay date is still ahead is shown as information but does not show the stock by itself.
+_Avoid_: Dividend date, payout day, ex-dividend date (the earlier day the price drops by the dividend)
+
+**Market window**:
+09:30 to 20:00 ET on a trading day: the regular session plus after hours. A stock is shown only inside the market window, and only on a big move, an earnings day or a pay date.
+_Avoid_: Market hours, trading hours
+
+## Cha-Ching! screen
+
+**Cha-Ching!**:
+The screen showing how one account did, and only inside the market window on a big move. Dividends count inside its moves but are never called out on it; they have their own screen, Payday. Each account is its own screen. Named for the question behind it: how much did I make today? Never shows dollar values.
+_Avoid_: Portfolio screen, account dashboard
+
+**Account**:
+One brokerage account, shown on its own Cha-Ching! screen under a nickname. Accounts are kept separate because they serve different purposes.
+_Avoid_: Portfolio (all accounts together), brokerage
+
+**Holdings**:
+The stocks and funds an account owns today, with their share counts. An account's move is how its holdings would have moved over the span, so deposits and withdrawals never look like gains or losses.
+_Avoid_: Positions, portfolio
+
+**Total return**:
+A change in value that counts dividends as well as price. Cha-Ching! measures in total return; Bull or Bear? shows plain price change, as stock quotes do.
+_Avoid_: Performance, yield
+
+**Top contributors**:
+The two or three holdings that did the most to the account's move (shares × price change), pushing the same way as the move. Listed under "Behind the drop" or "Behind the gain".
+_Avoid_: Top movers, biggest movers (those are the largest % changes, which is not the same), leaders
+
+**Balance-only account**:
+An account whose holdings can't be read, only its balance. Its move is measured from balances recorded over time, so deposits, withdrawals and trades do count as moves; the 30-day move needs 30 days of recorded balances first.
+_Avoid_: Manual account
+
+## Payday screen
+
+**Payday**:
+The screen showing one account's dividends, and only inside the market window on a day a dividend is paid into it. Lists the dividends paid today and those coming in the next 7 days, and a year of monthly dividend income. Never shows dollar totals.
+_Avoid_: Dividend screen, income screen
+
+**Dividend payment**:
+Cash from a dividend landing in an account, on its pay date. Shown per holding with its amount per share and its yield.
+_Avoid_: Payout, distribution, income
+
+**Upcoming dividend**:
+A declared dividend for a holding whose pay date falls in the next 7 days.
+_Avoid_: Expected dividend, scheduled payout
+
+**Yield**:
+A holding's yearly dividends as a percentage of its current price, e.g. 5.6%. Says how generous a dividend is without saying how much is held.
+_Avoid_: Return, total return
+
+**Dividend rhythm**:
+Twelve monthly bars of an account's dividend income, drawn without amounts, so the months that pay more stand out but no sum is shown.
+_Avoid_: Income chart, dividend history
 
 ## Health
 
