@@ -1,6 +1,6 @@
 # Spec: Bull or Bear? and Cha-Ching! screens (v1)
 
-Status: requirements settled (2026-11-24); layouts to be chosen from mock-up renders; source facts to confirm (see Open source checks)
+Status: requirements settled (2026-11-24); Bull or Bear? layout chosen (Poster theme, split-scale chart); Cha-Ching! layout to follow in the same language; source facts to confirm (see Open source checks)
 Glossary: [CONTEXT.md](../../CONTEXT.md) · Decisions: [docs/adr/](../adr/)
 
 ## Problem
@@ -48,10 +48,10 @@ Otherwise the template sets `TRMNL_SKIP_DISPLAY`.
 
 ### What it shows
 - **Lead:** the change that triggered the screen, large, with the current price beside it. Order of preference when several hold: after-hours big move, day big move, 30-day big move. On an earnings day or pay date with no big move, a badge leads instead: "Earnings after close", "Earnings before open", "Earnings today" (time not given), or "Dividend paid today".
-- **Row of changes:** previous close, the day change, the price 21 trading days ago with the 30-day change, and the one-year change, each in % and price. All are plain price changes, as stock quotes show them.
+- **Row of changes:** previous close, the day change, the 30-day change (with the price 21 trading days ago) and the one-year change, all plain price changes as stock quotes show them. A change already shown as the lead is left out of the row: the day change when the lead is the day or after hours (the close line carries it), the 30-day change when the lead is the 30-day move (the lead then reads "from $223.41").
 - **After hours:** after 16:00, two lines: "Close $142.80 (+2.3%)" and "After hours $131.40 (−8.0%)". With no after-hours trade yet, only the close line.
 - **Dividend line:** when a declared dividend's pay date is today or within 7 days: "Pays $0.27 · Nov 16". Left off when no data.
-- **Chart:** one year of daily closes as a line, the last 30 days drawn heavier. The one-year high and low are marked with their price and date ("High $231 · Feb 12").
+- **Chart:** one year of daily closes on a **split time scale**: the first 231 trading days fill the left 64% of the width and the last 21 (30 days) the right 36%, separated by a vertical divider and labelled "1 YEAR" and "30 DAYS". Both parts share one price scale. The 30-day part is drawn heavier, with a dashed line at its starting price so its change reads at a glance. At true scale the last 30 days would fill only 8% of the width, which tested too thin to read on the OG. The one-year high and low are marked with their price and date ("High $231 · Feb 12").
 - **Title bar:** the ticker and company name, and "as of 2:45 PM" (the price's own time, not the push time).
 
 ## Cha-Ching!
@@ -73,7 +73,7 @@ Inside the market window, when any of these holds:
 - **Top contributors:** the two or three holdings that did the most to the move, each with its own % change.
 - **Row of changes:** day, 30-day and one-year, in % only.
 - **Dividends:** holdings that paid today, by symbol and per-share amount ("O $0.27/share"). Never totals.
-- **Chart:** the one-year total-return line of today's holdings, last 30 days heavier, high and low marked with date.
+- **Chart:** the one-year total-return line of today's holdings, on the same split time scale as Bull or Bear?, high and low marked with date.
 - **Title bar:** the account's nickname from `.env`, and "as of 2:45 PM".
 - **No dollar values anywhere:** no account value, no position sizes, no dividend totals.
 
