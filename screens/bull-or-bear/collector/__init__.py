@@ -25,7 +25,7 @@ def collect(instance: str | None = None, now: datetime | None = None, yahoo=None
     symbol = (instance or "").upper()
     if not SYMBOL.match(symbol):
         raise SourceError("Bull or Bear? runs once per stock: set BULL_OR_BEAR_INSTANCES, e.g. aapl,msft")
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now().astimezone()  # times on screen are printed in now's zone, as on the other screens
     window = market.current(now)
     if window is None:
         return {"symbol": symbol, "show": False}  # outside the market window nothing is fetched
@@ -40,7 +40,7 @@ def collect(instance: str | None = None, now: datetime | None = None, yahoo=None
     dividends = _daily(state_dir / "dividends.json", today, errors, lambda: (nasdaq or NasdaqSource()).dividends(symbol))
 
     for e in errors:
-        e["label"] = _banner(e)
+        e["label"] = _banner(e, now)
     quote = found.get("quote")
     if not quote:
         return {"symbol": symbol, "show": False, "errors": errors}
@@ -66,7 +66,7 @@ def screen(symbol: str, quote: dict, now: datetime, window: market.Window, earni
     out = {
         "symbol": symbol,
         "name": quote["name"],
-        "as_of": as_of.astimezone().strftime("%-I:%M %p"),
+        "as_of": as_of.astimezone(now.tzinfo).strftime("%-I:%M %p"),
         "price": rules.money(after or price),
         "show": lead is not None,
         "visible_until": int(window.ends.timestamp()),
@@ -116,10 +116,10 @@ def _daily(path: Path, today: date, errors: list, fetch: Callable[[], list]) -> 
     return items
 
 
-def _banner(error: dict) -> str:
+def _banner(error: dict, now: datetime) -> str:
     if error["source"] == "finnhub-key":
         return "Earnings off: Finnhub key missing or rejected"
-    since = datetime.fromisoformat(error["since"]).astimezone()
+    since = datetime.fromisoformat(error["since"]).astimezone(now.tzinfo)
     return f"Prices down since {since:%-I:%M %p}"
 
 

@@ -65,7 +65,6 @@ class Nasdaq:
 @pytest.fixture(autouse=True)
 def state(tmp_path, monkeypatch):
     monkeypatch.setenv("STATE_DIR", str(tmp_path))
-    monkeypatch.setenv("TZ", "America/New_York")
 
 
 def run(now=None, yahoo=None, finnhub=None, nasdaq=None, instance="exmp"):
